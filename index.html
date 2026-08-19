@@ -116,7 +116,7 @@ function phoneApp(){
 function desktopApp(){
  let state;try{state=JSON.parse(localStorage.getItem("urr_state"))||{ro:"",jobs:[],notes:[]}}catch{state={ro:"",jobs:[],notes:[]}}
  window.state=state;
- app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 12 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
+ app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 13 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
  const ds=document.getElementById("dstatus"),q=document.getElementById("qr"),ro=document.getElementById("ro"),banner=document.getElementById("roBanner"),sourceWrap=document.getElementById("sourceWrap"),sourceImg=document.getElementById("sourceImg");
  const aiStatus=document.getElementById("aiStatus"),aiProgress=document.getElementById("aiProgress"),aiProgressLabel=document.getElementById("aiProgressLabel");
  let hf=null,processor=null,model=null,aiLoading=null,currentPhoto=null;
@@ -190,7 +190,25 @@ Rules: Extract every repair row in order. RO is the repair order number if visib
  function fallbackVisionResult(raw,kind){
    const t=String(raw||"").replace(/\r/g,"");
    const ro=(t.match(/\b(?:RO|REPAIR\s*ORDER|WO)\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i)||[])[1]||"";
-   return {ro,jobs:[],notes:["Vision result could not be structured automatically. Review source photo."]};
+   const jobs=[];
+   for(const line of t.split("\n").map(x=>x.trim()).filter(Boolean)){
+     const n=(line.match(/^\s*(\d{1,2})[.)\-:]?\s+/)||[])[1];
+     if(!n)continue;
+     if(kind==="approval"){
+       let status="";
+       if(/\b(APPROVED|APPROVE|FIX|YES)\b/i.test(line))status="APPROVED";
+       else if(/\b(DECLINED|DECLINE|AS\s*IS|NO)\b/i.test(line))status="DECLINED";
+       else if(/\bRECON\b/i.test(line))status="RECON";
+       else if(/\bNOTE\b/i.test(line))status="NOTE";
+       if(status)jobs.push({num:Number(n),status,confidence:.5,comment:"Recovered from plain model output — verify."});
+     }else{
+       const rest=line.replace(/^\s*\d{1,2}[.)\-:]?\s*/,"");
+       if(/[A-Za-z]{3}/.test(rest)){
+         jobs.push({num:Number(n),title:rest,hours:"",parts:"",confidence:.45,comment:"Recovered from plain model output — verify."});
+       }
+     }
+   }
+   return {ro,jobs,notes:["Vision output needed fallback parsing. Verify orange fields."]};
  }
 
  async function analyzePhoto(kind,imageData){
@@ -241,15 +259,35 @@ Rules: Extract every repair row in order. RO is the repair order number if visib
      } finally {
        clearInterval(activity);
      }
-     let finalText=streamed;
-     try{
-       const decoded=processor.batch_decode(output.sequences,{skip_special_tokens:true});
-       if(decoded&&decoded[0])finalText=decoded[0];
-     }catch{}
+     // TextStreamer already returns only the model's answer. Prefer it.
+     // batch_decode includes the entire prompt, which contains our example JSON
+     // and was causing the parser to grab the wrong opening brace.
+     let finalText=String(streamed||"").trim();
+     if(!finalText){
+       try{
+         const decoded=processor.batch_decode(output.sequences,{skip_special_tokens:true});
+         finalText=(decoded&&decoded[0])?decoded[0]:"";
+         const assistantMarkers=["Assistant:","assistant:","<|assistant|>"];
+         for(const marker of assistantMarkers){
+           const i=finalText.lastIndexOf(marker);
+           if(i>=0){finalText=finalText.slice(i+marker.length).trim();break;}
+         }
+       }catch{}
+     }
+
      let parsed;
-     try{parsed=JSON.parse(cleanJSONText(finalText));}
-     catch{parsed=fallbackVisionResult(finalText,kind);}
-     setAIProgress(100,"Analysis complete.","ready");
+     try{
+       parsed=JSON.parse(cleanJSONText(finalText));
+     }catch(e){
+       console.warn("Structured parse failed. Raw model output:", finalText);
+       parsed=fallbackVisionResult(finalText,kind);
+     }
+     const jobCount=Array.isArray(parsed?.jobs)?parsed.jobs.length:0;
+     if(jobCount){
+       setAIProgress(100,`Analysis complete — ${jobCount} job${jobCount===1?"":"s"} read.`,"ready");
+     }else{
+       setAIProgress(100,"Analysis finished, but no repair rows were extracted.","error");
+     }
      apply(kind,parsed);
      if(conn&&conn.open)conn.send({type:"analysis_done",ro:(parsed&&parsed.ro)||state.ro||""});
      ds.textContent="Updated from phone";ds.className="status sync";
