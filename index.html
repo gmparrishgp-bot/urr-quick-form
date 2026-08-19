@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1400px;margin:auto;padding:20px}.top{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#667085}.card{background:#fff;border:1px solid #d8dee9;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.grid{display:grid;grid-template-columns:320px 1fr;gap:16px}.qrbox{text-align:center}.qr{width:220px;height:220px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}.qr img,.qr canvas{width:220px!important;height:220px!important}.status{font-weight:700;padding:6px 10px;border-radius:999px;display:inline-block;background:#fff1cc;color:#8a6200}.status.connected{background:#dff7e8;color:#147a3f}.status.error{background:#fee4e2;color:#b42318}.status.sync{background:#e8f1ff;color:#175cd3}.ro-row{display:flex;gap:8px;align-items:center;margin:12px 0}.ro-row input{font-size:20px;font-weight:700;padding:10px 12px;width:220px;border:2px solid #98a2b3;border-radius:8px}.banner{padding:10px 12px;border-radius:8px;margin:10px 0;background:#fff4e5;border:1px solid #f7b955;display:none}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;background:#172033;color:#fff}.btn.secondary{background:#eef2f6;color:#172033}.btn.copy{background:#0b6bcb}.btn.small{padding:7px 10px;font-size:12px}.jobs{display:flex;flex-direction:column;gap:10px}.job{display:grid;grid-template-columns:75px 120px minmax(260px,1fr) 90px 100px 100px 230px;gap:8px;align-items:center;border:1px solid #e4e7ec;border-radius:10px;padding:10px;background:#fff}.job.low{border:2px solid #f79009;background:#fffcf5}.job input,.job select{width:100%;padding:8px;border:1px solid #cfd4dc;border-radius:6px}.title{font-weight:700}.price{font-weight:800}.actions{display:flex;gap:6px;align-items:center}.copied{font-size:11px;color:#147a3f;font-weight:700}.comment{grid-column:1/-1;color:#8a6200;font-size:12px}.source img{max-width:100%;max-height:360px;border-radius:8px;border:1px solid #d8dee9}.ai-status{padding:10px 12px;border-radius:8px;background:#eef2f6;margin:10px 0;font-weight:700}.ai-status.ready{background:#dff7e8;color:#147a3f}.ai-status.error{background:#fee4e2;color:#b42318}.phone{max-width:520px;margin:0 auto;padding:22px}.phone h1{text-align:center}.big{display:block;width:100%;font-size:22px;padding:22px;margin:18px 0;border:0;border-radius:14px;font-weight:800;color:#fff;background:#172033;text-align:center}.big.approval{background:#0b6bcb}.phone input[type=file]{display:none}.msg{padding:12px;border-radius:10px;background:#eef2f6;margin-top:12px;text-align:center}.msg.connected{background:#dff7e8;color:#147a3f}.msg.error{background:#fee4e2;color:#b42318}.retry-link{display:block;margin-top:10px;font-weight:800;text-decoration:underline;cursor:pointer;color:#175cd3}.spinner{display:inline-block;width:16px;height:16px;border:2px solid #ddd;border-top-color:#172033;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:900px){.grid{grid-template-columns:1fr}.job{grid-template-columns:60px 100px 1fr 80px 90px}.price{grid-column:1/3}.actions{grid-column:3/-1}}@media(max-width:620px){.wrap{padding:10px}.brand{font-size:22px}}
+:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1400px;margin:auto;padding:20px}.top{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#667085}.card{background:#fff;border:1px solid #d8dee9;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.grid{display:grid;grid-template-columns:320px 1fr;gap:16px}.qrbox{text-align:center}.qr{width:220px;height:220px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}.qr img,.qr canvas{width:220px!important;height:220px!important}.status{font-weight:700;padding:6px 10px;border-radius:999px;display:inline-block;background:#fff1cc;color:#8a6200}.status.connected{background:#dff7e8;color:#147a3f}.status.error{background:#fee4e2;color:#b42318}.status.sync{background:#e8f1ff;color:#175cd3}.ro-row{display:flex;gap:8px;align-items:center;margin:12px 0}.ro-row input{font-size:20px;font-weight:700;padding:10px 12px;width:220px;border:2px solid #98a2b3;border-radius:8px}.banner{padding:10px 12px;border-radius:8px;margin:10px 0;background:#fff4e5;border:1px solid #f7b955;display:none}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;background:#172033;color:#fff}.btn.secondary{background:#eef2f6;color:#172033}.btn.copy{background:#0b6bcb}.btn.small{padding:7px 10px;font-size:12px}.jobs{display:flex;flex-direction:column;gap:10px}.job{display:grid;grid-template-columns:75px 120px minmax(260px,1fr) 90px 100px 100px 230px;gap:8px;align-items:center;border:1px solid #e4e7ec;border-radius:10px;padding:10px;background:#fff}.job.low{border:2px solid #f79009;background:#fffcf5}.job input,.job select{width:100%;padding:8px;border:1px solid #cfd4dc;border-radius:6px}.title{font-weight:700}.price{font-weight:800}.actions{display:flex;gap:6px;align-items:center}.copied{font-size:11px;color:#147a3f;font-weight:700}.comment{grid-column:1/-1;color:#8a6200;font-size:12px}.source img{max-width:100%;max-height:360px;border-radius:8px;border:1px solid #d8dee9}.ai-status{padding:10px 12px;border-radius:8px;background:#eef2f6;margin:10px 0;font-weight:700}.ai-status.ready{background:#dff7e8;color:#147a3f}.ai-status.error{background:#fee4e2;color:#b42318}.progress-wrap{height:14px;background:#e4e7ec;border-radius:999px;overflow:hidden;margin:8px 0 4px}.progress-bar{height:100%;width:0%;background:#175cd3;transition:width .25s ease}.progress-label{font-size:12px;color:#667085}.phone{max-width:520px;margin:0 auto;padding:22px}.phone h1{text-align:center}.big{display:block;width:100%;font-size:22px;padding:22px;margin:18px 0;border:0;border-radius:14px;font-weight:800;color:#fff;background:#172033;text-align:center}.big.approval{background:#0b6bcb}.phone input[type=file]{display:none}.msg{padding:12px;border-radius:10px;background:#eef2f6;margin-top:12px;text-align:center}.msg.connected{background:#dff7e8;color:#147a3f}.msg.error{background:#fee4e2;color:#b42318}.retry-link{display:block;margin-top:10px;font-weight:800;text-decoration:underline;cursor:pointer;color:#175cd3}.spinner{display:inline-block;width:16px;height:16px;border:2px solid #ddd;border-top-color:#172033;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:900px){.grid{grid-template-columns:1fr}.job{grid-template-columns:60px 100px 1fr 80px 90px}.price{grid-column:1/3}.actions{grid-column:3/-1}}@media(max-width:620px){.wrap{padding:10px}.brand{font-size:22px}}
 </style>
 </head>
 <body><div id="app"></div>
@@ -70,7 +70,21 @@ function phoneApp(){
    conn=peer.connect(host,{reliable:true});
    let opened=false;
    conn.on("open",()=>{opened=true;if(retryTimer)clearTimeout(retryTimer);ps.textContent="Connected to computer";ps.className="msg connected";pm.textContent="Ready to take a photo.";conn.send({type:"refresh",reason:"phone_connected",ts:Date.now()});setInterval(()=>{if(conn&&conn.open)conn.send({type:"heartbeat",ts:Date.now()});},5000);});
-   conn.on("data",d=>{if(d&&d.type==="ro")pm.textContent=d.ro?`RO #${d.ro}`:"Ready to take a photo.";});
+   conn.on("data",d=>{
+     if(!d)return;
+     if(d.type==="ro"){pm.textContent=d.ro?`RO #${d.ro}`:"Ready to take a photo.";}
+     else if(d.type==="ai_progress"){
+       const pct=Number.isFinite(d.percent)?` ${d.percent}%`:"";
+       pm.textContent=(d.message||"Computer is analyzing the photo…")+pct;
+       pm.className="msg";
+     }else if(d.type==="analysis_done"){
+       pm.textContent=d.ro?`Analysis complete — RO #${d.ro}`:"Analysis complete. RO was not read confidently; review it on the computer.";
+       pm.className="msg connected";
+     }else if(d.type==="analysis_error"){
+       pm.textContent="Computer could not finish the read. Review the message on the computer.";
+       pm.className="msg error";
+     }
+   });
    conn.on("error",e=>{console.error(e);});
    conn.on("close",()=>{if(!opened&&attempts<15)retryTimer=setTimeout(connectToComputer,2000);});
    retryTimer=setTimeout(()=>{if(!opened&&attempts<15){try{conn.close()}catch{}connectToComputer()}else if(!opened){setPhoneConnectionError("Could not connect to computer.");}},2500);
@@ -87,7 +101,7 @@ function phoneApp(){
       const data=await compress(f,2200,.92);
       conn.send({type:"photo",kind,sourceImage:data,ts:Date.now()});
       conn.send({type:"refresh",reason:kind+"_photo_sent",ts:Date.now()});
-      pm.textContent=`${kind==="quote"?"Quote":"Approval"} photo sent. Computer is reading it now.`;
+      pm.textContent=`${kind==="quote"?"Quote":"Approval"} photo sent. Computer is analyzing the whole sheet, including the RO.`;
       pm.className="msg connected";
     }catch(e){
       pm.textContent=e.message||"Could not send photo";
@@ -102,9 +116,9 @@ function phoneApp(){
 function desktopApp(){
  let state;try{state=JSON.parse(localStorage.getItem("urr_state"))||{ro:"",jobs:[],notes:[]}}catch{state={ro:"",jobs:[],notes:[]}}
  window.state=state;
- app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 9 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
+ app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 10 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
  const ds=document.getElementById("dstatus"),q=document.getElementById("qr"),ro=document.getElementById("ro"),banner=document.getElementById("roBanner"),sourceWrap=document.getElementById("sourceWrap"),sourceImg=document.getElementById("sourceImg");
- const aiStatus=document.getElementById("aiStatus");
+ const aiStatus=document.getElementById("aiStatus"),aiProgress=document.getElementById("aiProgress"),aiProgressLabel=document.getElementById("aiProgressLabel");
  let aiWorker=null, aiReady=false, pendingAI=null, modelStarted=false;
  function makeAIWorker(){
    const workerCode = `
@@ -148,7 +162,7 @@ async function loadModel(){
 
 function promptFor(kind){
   if(kind==="approval"){
-    return \`You are visually reviewing a Bish's RV Used Recommended Repairs approval sheet. Read the ENTIRE image, including handwriting, checkmarks, circles, notes, and row numbers. Use RV/service context to resolve handwriting. Return ONLY valid JSON with no markdown and no extra text:
+    return \`You are visually reviewing a Bish's RV Used Recommended Repairs approval sheet. Read the ENTIRE image, including handwriting, checkmarks, circles, notes, and row numbers. Use RV/service context to resolve handwriting. Your response MUST begin with { and end with }. Return ONLY one JSON object, no markdown, no explanation:
 {"ro":"","jobs":[{"num":1,"status":"APPROVED","confidence":0.95,"comment":""}],"notes":[]}
 Rules:
 - RO is the repair order number if visible.
@@ -161,7 +175,7 @@ Rules:
 - If a mark is ambiguous, use your best contextual read, lower confidence, and explain briefly in comment.
 - Read like an experienced RV service manager, not a character OCR engine.\`;
   }
-  return \`You are visually reviewing a Bish's RV Used Recommended Repairs technician quote sheet. Read the ENTIRE image and interpret the handwriting using RV service context. Return ONLY valid JSON with no markdown and no extra text:
+  return \`You are visually reviewing a Bish's RV Used Recommended Repairs technician quote sheet. Read the ENTIRE image and interpret the handwriting using RV service context. Your response MUST begin with { and end with }. Return ONLY one JSON object, no markdown, no explanation:
 {"ro":"","jobs":[{"num":1,"title":"","hours":"","parts":"","confidence":0.95,"comment":""}],"notes":[]}
 Rules:
 - Extract every repair row in order.
@@ -177,11 +191,45 @@ Rules:
 - Treat this as visual reasoning over the document, not simple OCR.\`;
 }
 
-function extractJSON(s){
-  s=String(s||"").trim();
+function cleanupJSONText(s){
+  s=String(s||"").trim()
+    .replace(new RegExp("\\x60\\x60\\x60json","gi"),"").replace(new RegExp("\\x60\\x60\\x60","g"),"")
+    .replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
   const first=s.indexOf("{"), last=s.lastIndexOf("}");
-  if(first<0 || last<first) throw new Error("Vision model did not return structured data.");
-  return JSON.parse(s.slice(first,last+1));
+  if(first>=0 && last>first) s=s.slice(first,last+1);
+  s=s.replace(/,\s*([}\]])/g,"$1");
+  return s;
+}
+function looseResult(s,kind){
+  const t=String(s||"").replace(/\r/g,"");
+  const ro=(t.match(/\b(?:RO|REPAIR\s*ORDER|WO)\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i)||[])[1]||"";
+  const jobs=[];
+  const lines=t.split("\n").map(x=>x.trim()).filter(Boolean);
+  for(const line of lines){
+    if(kind==="approval"){
+      const nm=(line.match(/^\s*(\d{1,2})[.)-]?\s+/)||[])[1]||"";
+      let status="";
+      if(/\b(APPROVED|APPROVE|FIX|YES)\b/i.test(line))status="APPROVED";
+      else if(/\b(DECLINED|DECLINE|AS\s*IS|NO)\b/i.test(line))status="DECLINED";
+      else if(/\bRECON\b/i.test(line))status="RECON";
+      else if(/\bNOTE\b/i.test(line))status="NOTE";
+      if(status) jobs.push({num:nm||jobs.length+1,status,confidence:.55,comment:"Recovered from unstructured vision output."});
+    }else{
+      const m=line.match(/^\s*(\d{1,2})[.)-]?\s*(.*?)\s*(?:\||,)\s*(?:HRS?|HOURS?|LABOR)?\s*[:=]?\s*(\.?\d+(?:\.\d+)?)?\s*(?:\||,)\s*(?:PARTS?)?\s*[:=$]?\s*\$?(\d+(?:\.\d+)?)?/i);
+      if(m && /[A-Za-z]{3}/.test(m[2]||"")){
+        jobs.push({num:m[1]||jobs.length+1,title:(m[2]||"").trim(),hours:(m[3]||"").replace(/^\./,"0."),parts:m[4]||"",confidence:.5,comment:"Recovered from unstructured vision output — verify."});
+      }
+    }
+  }
+  return {ro,jobs,notes:["Vision output required fallback parsing. Verify all orange fields."]};
+}
+function extractStructured(s,kind){
+  const cleaned=cleanupJSONText(s);
+  try{
+    const obj=JSON.parse(cleaned);
+    if(obj && typeof obj==="object") return obj;
+  }catch{}
+  return looseResult(s,kind);
 }
 
 async function analyze(imageData,kind){
@@ -191,21 +239,27 @@ async function analyze(imageData,kind){
   const messages=[{role:"user",content:[{type:"image",image:imageData},{type:"text",text:promptFor(kind)}]}];
   const prompt=processor.apply_chat_template(messages,{add_generation_prompt:true});
   const inputs=await processor(prompt,[image],{do_image_splitting:true});
-  let generated="";
+  let streamed="";
   const streamer=new TextStreamer(processor.tokenizer,{
     skip_prompt:true,
     skip_special_tokens:true,
-    callback_function:chunk=>{generated+=chunk; self.postMessage({type:"analysis_stream",text:generated});}
+    callback_function:chunk=>{streamed+=chunk; self.postMessage({type:"analysis_stream",text:streamed});}
   });
-  await model.generate({
+  const output=await model.generate({
     ...inputs,
     do_sample:false,
     repetition_penalty:1.05,
-    max_new_tokens:1100,
-    streamer
+    max_new_tokens:900,
+    streamer,
+    return_dict_in_generate:true
   });
-  const parsed=extractJSON(generated);
-  self.postMessage({type:"analysis_complete",kind,result:parsed});
+  let finalText=streamed;
+  try{
+    const decoded=processor.batch_decode(output.sequences,{skip_special_tokens:true});
+    if(decoded && decoded[0]) finalText=decoded[0];
+  }catch{}
+  const parsed=extractStructured(finalText,kind);
+  self.postMessage({type:"analysis_complete",kind,result:parsed,raw:finalText});
 }
 
 self.onmessage=async e=>{
@@ -222,20 +276,49 @@ self.onmessage=async e=>{
    aiWorker=new Worker(url,{type:"module"});
    aiWorker.onmessage=e=>{
      const m=e.data||{};
-     if(m.type==="model_status"){aiStatus.textContent=m.message;aiStatus.className="ai-status";}
-     else if(m.type==="model_progress"){aiStatus.textContent=`Loading local vision model… ${m.progress}%${m.file?" • "+m.file:""}`;}
-     else if(m.type==="model_ready"){aiReady=true;aiStatus.textContent="Local vision AI ready.";aiStatus.className="ai-status ready"; if(pendingAI){const x=pendingAI;pendingAI=null;aiWorker.postMessage({type:"analyze",kind:x.kind,imageData:x.imageData});}}
-     else if(m.type==="analysis_status"){aiStatus.textContent=m.message;aiStatus.className="ai-status";}
-     else if(m.type==="analysis_stream"){aiStatus.textContent="Interpreting handwriting and RV context…";}
-     else if(m.type==="analysis_complete"){aiStatus.textContent="Vision AI read complete — verify orange fields.";aiStatus.className="ai-status ready";apply(m.kind,m.result);ds.textContent="Updated from phone";ds.className="status sync";setTimeout(()=>{if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected"}},1200);}
-     else if(m.type==="ai_error"){aiStatus.textContent="Vision AI error: "+m.message;aiStatus.className="ai-status error";}
+     if(m.type==="model_status"){
+       aiStatus.textContent=m.message;aiStatus.className="ai-status";aiProgress.style.width="5%";aiProgressLabel.textContent=m.message;
+       if(conn&&conn.open)conn.send({type:"ai_progress",message:m.message,percent:5});
+     }
+     else if(m.type==="model_progress"){
+       const pct=Math.max(5,Math.min(70,Math.round((m.progress||0)*.65)+5));
+       aiStatus.textContent=`Loading local vision model… ${m.progress}%`;
+       aiProgress.style.width=pct+"%";aiProgressLabel.textContent=`Loading model${m.file?" • "+m.file:""} — ${m.progress}%`;
+       if(conn&&conn.open)conn.send({type:"ai_progress",message:"Loading local vision model…",percent:pct});
+     }
+     else if(m.type==="model_ready"){
+       aiReady=true;aiStatus.textContent="Local vision AI ready.";aiStatus.className="ai-status ready";
+       aiProgress.style.width="72%";aiProgressLabel.textContent="Model ready. Starting image analysis…";
+       if(conn&&conn.open)conn.send({type:"ai_progress",message:"Model ready. Starting image analysis…",percent:72});
+       if(pendingAI){const x=pendingAI;pendingAI=null;aiWorker.postMessage({type:"analyze",kind:x.kind,imageData:x.imageData});}
+     }
+     else if(m.type==="analysis_status"){
+       aiStatus.textContent=m.message;aiStatus.className="ai-status";aiProgress.style.width="78%";aiProgressLabel.textContent=m.message;
+       if(conn&&conn.open)conn.send({type:"ai_progress",message:m.message,percent:78});
+     }
+     else if(m.type==="analysis_stream"){
+       aiStatus.textContent="Interpreting handwriting, rows, RO, labor, parts, and approval marks…";
+       const cur=parseInt(aiProgress.style.width)||78;const pct=Math.min(96,cur+1);aiProgress.style.width=pct+"%";aiProgressLabel.textContent="Interpreting the whole URR sheet…";
+       if(conn&&conn.open)conn.send({type:"ai_progress",message:"Interpreting the whole URR sheet…",percent:pct});
+     }
+     else if(m.type==="analysis_complete"){
+       aiProgress.style.width="100%";aiProgressLabel.textContent="Analysis complete.";
+       aiStatus.textContent="Vision AI read complete — verify orange fields.";aiStatus.className="ai-status ready";
+       apply(m.kind,m.result);ds.textContent="Updated from phone";ds.className="status sync";
+       if(conn&&conn.open)conn.send({type:"analysis_done",ro:(m.result&&m.result.ro)||state.ro||""});
+       setTimeout(()=>{if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected"}},1200);
+     }
+     else if(m.type==="ai_error"){
+       aiProgressLabel.textContent="Analysis stopped.";aiStatus.textContent="Vision AI error: "+m.message;aiStatus.className="ai-status error";
+       if(conn&&conn.open)conn.send({type:"analysis_error",message:m.message});
+     }
    };
    aiWorker.onerror=e=>{aiStatus.textContent="Vision AI worker error. Refresh and retry.";aiStatus.className="ai-status error";console.error(e);};
  }
  function analyzePhoto(kind,imageData){
    if(!aiWorker) makeAIWorker();
    sourceImg.src=imageData;sourceWrap.style.display="block";
-   pendingAI={kind,imageData};
+   pendingAI={kind,imageData};aiProgress.style.width="2%";aiProgressLabel.textContent="Photo received. Preparing local vision AI…";if(conn&&conn.open)conn.send({type:"ai_progress",message:"Photo received. Preparing analysis…",percent:2});
    if(!modelStarted){modelStarted=true;aiWorker.postMessage({type:"load"});}
    else if(aiReady){pendingAI=null;aiWorker.postMessage({type:"analyze",kind,imageData});}
    else{aiStatus.textContent="Vision AI is still loading. The photo is queued automatically.";}
