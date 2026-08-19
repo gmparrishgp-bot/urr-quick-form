@@ -26,65 +26,25 @@ if(isPhone) phoneApp(); else desktopApp();
 
 function phoneApp(){
  const host=params.get('peer'); document.getElementById('app').innerHTML=`<div class="phone"><h1>URR Quick Form</h1><div id="pstatus" class="msg">Connecting to computer…</div><label class="big" for="quote">TAKE QUOTE PHOTO</label><input id="quote" type="file" accept="image/*" capture="environment"><label class="big approval" for="approval">TAKE APPROVAL PHOTO</label><input id="approval" type="file" accept="image/*" capture="environment"><div id="pmsg" class="msg">Scan is linked to the computer session.</div></div>`;
- if(typeof Peer==='undefined'){pstatus.textContent='Phone pairing library blocked';pstatus.className='msg error';return;} const peer=new Peer(); let conn;
- peer.on('open',()=>{conn=peer.connect(host,{reliable:true}); conn.on('open',()=>{pstatus.textContent='Connected to computer';pstatus.className='msg connected'}); conn.on('data',d=>{if(d?.type==='ro') pmsg.textContent=`RO #${d.ro||'not entered yet'}`;});});
- peer.on('error',e=>{pstatus.textContent='Connection failed — rescan QR';pstatus.className='msg error'});
- ['quote','approval'].forEach(kind=>document.getElementById(kind).addEventListener('change',async ev=>{const f=ev.target.files[0];if(!f)return; pmsg.innerHTML='<span class="spinner"></span> Reading photo on this phone…'; try{const data=await compressImage(f,2000,.9); const out=await analyzeImageLocal(data,kind,msg=>{pmsg.innerHTML='<span class="spinner"></span> '+msg}); if(!out.ro){const ro=prompt('RO# was not found. Enter RO# to continue:'); if(!ro) throw new Error('RO# required'); out.ro=ro.trim();} conn&&conn.send({type:'analysis',kind,result:out,sourceImage:data}); pmsg.textContent=`${kind==='quote'?'Quote':'Approval'} sent to computer — RO #${out.ro}`;pmsg.className='msg connected'; }catch(e){pmsg.textContent=e.message||'Could not process photo';pmsg.className='msg error'} finally{ev.target.value='';}}));
-}
-
-async function analyzeImageLocal(imageData,kind,onProgress){
- if(typeof Tesseract==='undefined') throw new Error('Photo reader did not load. Check internet connection and retry.');
- const result=await Tesseract.recognize(imageData,'eng',{logger:m=>{if(m.status==='recognizing text'&&onProgress)onProgress(`Reading handwriting… ${Math.round((m.progress||0)*100)}%`);}});
- const text=(result.data.text||'').replace(/\r/g,'');
- if(!text.trim()) throw new Error('No readable text found. Retake the photo closer and flatter.');
- return kind==='approval'?parseApprovalText(text):parseQuoteText(text);
-}
-function normalizeRVText(t){return String(t||'').replace(/curb\s*side|door\s*side/gi,'DS').replace(/driver\s*side|off\s*door\s*side/gi,'ODS').replace(/wheel\s*bearing\s*pack/gi,'WBP').replace(/\s+/g,' ').trim();}
-function findRO(text){
- const pats=[/\bRO\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i,/\bREPAIR\s+ORDER\s*[:#-]?\s*(\d{4,8})\b/i,/\bWO\s*[:#-]?\s*(\d{4,8})\b/i];
- for(const p of pats){const m=text.match(p);if(m)return m[1].replace(/^\./,'0.');} return '';
-}
-function parseMoney(s){if(s==null)return'';const m=String(s).replace(/,/g,'').match(/\$?\s*(\d+(?:\.\d{1,2})?)/);return m?m[1]:'';}
-function parseHours(line){
- const pats=[/\b(?:LABOR|LAB|HRS?|HOURS?)\s*[:=-]?\s*(\.?\d+(?:\.\d+)?)\b/i,/\b(\d+(?:\.\d+)?)\s*(?:HRS?|HOURS?)\b/i];
- for(const p of pats){const m=line.match(p);if(m)return m[1].replace(/^\./,'0.');}
- const tail=line.match(/(?:^|\s)(\.?\d{1,2}(?:\.\d{1,2})?)\s*(?:\/|\||-)\s*\$?\d/);return tail?tail[1].replace(/^\./,'0.') : '';
-}
-function parseParts(line){
- const pats=[/\b(?:PARTS?|PTS?)\s*[:=-]?\s*\$?\s*(\d+(?:\.\d{1,2})?)/i,/\$\s*(\d+(?:\.\d{1,2})?)/];
- for(const p of pats){const m=line.match(p);if(m)return m[1];}return'';
-}
-function stripAmounts(line){return normalizeRVText(line.replace(/\b(?:LABOR|LAB|HRS?|HOURS?|PARTS?|PTS?)\b\s*[:=-]?\s*\$?\s*\.?\d+(?:\.\d+)?/gi,' ').replace(/\$\s*\d+(?:\.\d+)?/g,' ').replace(/\b\d+(?:\.\d+)?\s*(?:HRS?|HOURS?)\b/gi,' ').replace(/\b(?:HRS?|HOURS?|LABOR|LAB|PARTS?|PTS?)\b/gi,' '));}
-function parseQuoteText(text){
- const lines=text.split('\n').map(x=>x.trim()).filter(Boolean); const jobs=[]; const notes=[]; let pending='';
- for(const raw of lines){
-   let line=normalizeRVText(raw); if(line.length<3)continue;
-   if(/^(RO|REPAIR ORDER|CUSTOMER|VIN|STOCK|DATE|TECH|TECHNICIAN)\b/i.test(line))continue;
-   const numMatch=line.match(/^\s*(\d{1,2})[.)-]?\s+(.+)/); let num='',body=line; if(numMatch){num=numMatch[1];body=numMatch[2];}
-   const h=parseHours(line),p=parseParts(line); const meaningful=/[A-Za-z]{3,}/.test(body);
-   if((h||p)&&meaningful){let title=stripAmounts(body).replace(/^[-:]+|[-:]+$/g,'').trim(); if(pending){title=(pending+' '+title).trim();pending='';} if(title.length<3)title='REVIEW TECH DESCRIPTION'; jobs.push({num:num||jobs.length+1,title,hours:h,parts:p,status:'PENDING',confidence:0.70,comment:'Browser-read result — verify handwriting before copying.'});}
-   else if(num&&meaningful){if(pending) notes.push(pending); pending=body;}
-   else if(meaningful&&line.length>12){pending=pending?pending+' '+line:line;}
+ let conn;
+ const peerId='urr-'+((crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2))).replace(/-/g,'').slice(0,20);
+ const pairUrl=`${location.origin}${location.pathname}?mode=phone&peer=${encodeURIComponent(peerId)}`;
+ const q=document.getElementById('qr');
+ function showPairLink(){q.innerHTML=`<div><div class="error" style="padding:8px;margin-bottom:8px">QR could not render.</div><a class="btn" href="${pairUrl}" target="_blank">Open phone pairing link</a></div>`;}
+ if(typeof QRCode==='undefined'){
+   showPairLink();
+   dstatus.textContent='QR library blocked'; dstatus.className='status error';
+ } else {
+   try{q.innerHTML=''; new QRCode(q,{text:pairUrl,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});}
+   catch(e){console.error(e);showPairLink();dstatus.textContent='QR render error';dstatus.className='status error';}
  }
- if(pending)notes.push(pending);
- if(!jobs.length){lines.filter(x=>/[A-Za-z]{4,}/.test(x)).slice(0,12).forEach((x,i)=>jobs.push({num:i+1,title:stripAmounts(x),hours:parseHours(x),parts:parseParts(x),status:'PENDING',confidence:0.45,comment:'Low-confidence browser read — verify against photo.'}));}
- return {ro:findRO(text),jobs,notes:['Local browser OCR used. Verify any orange/flagged fields before DMS copy.']};
-}
-function parseApprovalText(text){
- const lines=text.split('\n').map(x=>normalizeRVText(x)).filter(Boolean); const jobs=[]; let lastNum='';
- for(const line of lines){const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+/);if(nm)lastNum=nm[1]; let status=''; if(/\b(?:FIX|APPROVE[DS]?|APPROVED|YES)\b/i.test(line))status='APPROVED'; else if(/\b(?:AS\s*IS|DECLINE[DS]?|DECLINED|NO)\b/i.test(line))status='DECLINED'; else if(/\bRECON\b/i.test(line))status='RECON'; else if(/\bNOTE\b/i.test(line))status='NOTE'; if(status)jobs.push({num:lastNum||jobs.length+1,title:stripAmounts(line),status});}
- return {ro:findRO(text),jobs,notes:jobs.length?[]:['Approval marks were not read confidently. Review statuses on the computer.']};
-}
-
-async function compressImage(file,maxDim,quality){return new Promise((resolve,reject)=>{const img=new Image(),r=new FileReader();r.onload=()=>img.src=r.result;r.onerror=reject;img.onload=()=>{let w=img.width,h=img.height;const s=Math.min(1,maxDim/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',quality));};r.readAsDataURL(file);});}
-
-function desktopApp(){
- window.state=loadState(); document.getElementById('app').innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy</div></div><span id="dstatus" class="status waiting">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" style="min-height:220px;display:flex;align-items:center;justify-content:center"></div><p class="muted">Scan this QR with the phone camera. It opens directly into this session.</p><div class="ro-row"><label><b>RO#</b></label><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required before this URR can be completed.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div class="toolbar"><b>Jobs</b><span class="muted">Edit any bad handwriting reads before copying.</span></div><div id="sourceWrap" style="display:none;margin:0 0 14px"><b>Source photo</b><div><img id="sourceImg" alt="URR source photo" style="max-width:100%;max-height:420px;margin-top:8px;border:1px solid #d8dee9;border-radius:8px"></div></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
-if(typeof Peer==='undefined'){dstatus.textContent='Pairing library blocked';dstatus.className='status error';document.getElementById('qr').innerHTML='<div class="error" style="padding:12px">Could not load phone pairing. Refresh once; if this remains, tell Grant.</div>';} else {
- const peer=new Peer(); let conn;
- peer.on('open',id=>{const url=`${location.origin}${location.pathname}?mode=phone&peer=${encodeURIComponent(id)}`; const q=document.getElementById('qr'); q.innerHTML=''; if(typeof QRCode==='undefined'){q.innerHTML='<div class="error" style="padding:12px">QR library did not load.</div>';dstatus.textContent='QR failed to load';dstatus.className='status error';return;} new QRCode(q,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});});
- peer.on('connection',c=>{conn=c; c.on('open',()=>{dstatus.textContent='Phone connected';dstatus.className='status connected'; c.send({type:'ro',ro:state.ro});}); c.on('data',d=>{if(d?.type==='analysis'){if(d.sourceImage){sourceImg.src=d.sourceImage;sourceWrap.style.display='block';}applyAnalysis(d.kind,d.result);}}); c.on('close',()=>{dstatus.textContent='Phone disconnected';dstatus.className='status waiting'});});
- peer.on('error',e=>{dstatus.textContent='Phone pairing error';dstatus.className='status error';console.error(e);});
+ if(typeof Peer==='undefined'){
+   dstatus.textContent='Pairing library blocked'; dstatus.className='status error';
+ } else {
+   const peer=new Peer(peerId);
+   peer.on('open',()=>{if(!dstatus.classList.contains('error')){dstatus.textContent='Waiting for phone';dstatus.className='status waiting';}});
+   peer.on('connection',c=>{conn=c; c.on('open',()=>{dstatus.textContent='Phone connected';dstatus.className='status connected'; c.send({type:'ro',ro:state.ro});}); c.on('data',d=>{if(d?.type==='analysis'){if(d.sourceImage){sourceImg.src=d.sourceImage;sourceWrap.style.display='block';}applyAnalysis(d.kind,d.result);}}); c.on('close',()=>{dstatus.textContent='Phone disconnected';dstatus.className='status waiting'});});
+   peer.on('error',e=>{dstatus.textContent='Phone pairing error';dstatus.className='status error';console.error(e);});
  }
  ro.addEventListener('input',()=>{state.ro=ro.value.trim();roBanner.style.display=state.ro?'none':'block';saveState();conn&&conn.send({type:'ro',ro:state.ro});});
  add.onclick=()=>{state.jobs.push({num:state.jobs.length+1,status:'PENDING',title:'',hours:'',parts:'',confidence:1,comment:''});saveState();renderJobs();};
