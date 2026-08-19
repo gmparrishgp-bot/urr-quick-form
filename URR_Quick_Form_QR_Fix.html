@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>URR Quick Form</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1400px;margin:auto;padding:20px}.top{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#667085}.card{background:#fff;border:1px solid #d8dee9;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.grid{display:grid;grid-template-columns:320px 1fr;gap:16px}.qrbox{text-align:center}.qrbox canvas{max-width:220px!important;width:220px!important;height:220px!important}.status{font-weight:700;padding:6px 10px;border-radius:999px;display:inline-block;background:#eef2f6}.connected{background:#dff7e8;color:#147a3f}.waiting{background:#fff1cc;color:#8a6200}.error{background:#fee4e2;color:#b42318}.ro-row{display:flex;gap:8px;align-items:center;margin:12px 0}.ro-row input{font-size:20px;font-weight:700;padding:10px 12px;width:220px;border:2px solid #98a2b3;border-radius:8px}.banner{padding:10px 12px;border-radius:8px;margin:10px 0;background:#fff4e5;border:1px solid #f7b955;display:none}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;background:#172033;color:#fff}.btn.secondary{background:#eef2f6;color:#172033}.btn.copy{background:#0b6bcb}.btn.small{padding:7px 10px;font-size:12px}.jobs{display:flex;flex-direction:column;gap:10px}.job{display:grid;grid-template-columns:90px 90px minmax(260px,1fr) 100px 110px 110px 230px;gap:8px;align-items:center;border:1px solid #e4e7ec;border-radius:10px;padding:10px;background:#fff}.job.low{border:2px solid #f79009;background:#fffcf5}.job input,.job select{width:100%;padding:8px;border:1px solid #cfd4dc;border-radius:6px;background:#fff}.job .title{font-weight:700}.price{font-weight:800;font-size:18px}.actions{display:flex;gap:6px;align-items:center}.copied{font-size:11px;color:#147a3f;font-weight:700}.comment{grid-column:1/-1;color:#8a6200;font-size:12px}.phone{max-width:520px;margin:0 auto;padding:22px}.phone h1{text-align:center}.phone .big{display:block;width:100%;font-size:22px;padding:22px;margin:18px 0;border:0;border-radius:14px;font-weight:800;color:white;background:#172033}.phone .big.approval{background:#0b6bcb}.phone input[type=file]{display:none}.phone .msg{padding:12px;border-radius:10px;background:#eef2f6;margin-top:12px;text-align:center}.spinner{display:inline-block;width:16px;height:16px;border:2px solid #ddd;border-top-color:#172033;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:900px){.grid{grid-template-columns:1fr}.job{grid-template-columns:70px 70px 1fr 90px 95px}.job .price{grid-column:1/3}.actions{grid-column:3/-1}.comment{grid-column:1/-1}}@media(max-width:620px){.wrap{padding:10px}.top{align-items:flex-start}.brand{font-size:22px}.job{grid-template-columns:60px 60px 1fr}.job .hours,.job .parts,.job .price,.actions{grid-column:auto}.actions{grid-column:1/-1}.job .hours:before{content:'Hrs ';}.job .parts:before{content:'Parts ';}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const LABOR_RATE=199;
+const reconRules=`Likely standard RECON: adjust/fix/resecure blinds; cabinet doors/drawers/guides; heat registers; screens; interior panels/trim touch-up; 12V fuses/light bulbs; resecure cabinet/bed struts; minor plumbing caulk/tightening; spot seal exterior trim or roof membrane; secure loose exterior components/skirting/fender skirts/step molding; adjust compartment doors or replace catches; running light secure/bulb; small awning fabric patch <= golf ball; paint bumper/A-frame/tongue jack/pin box/exterior steps.`;
+function calc(hours,parts){const h=parseFloat(hours),p=parseFloat(parts); if(Number.isNaN(h)&&Number.isNaN(p)) return null; const sub=(Number.isNaN(h)?0:h*LABOR_RATE)+(Number.isNaN(p)?0:p); return Math.ceil(sub/5)*5;}
+function money(v){return v==null?'—':`$${Number(v).toLocaleString('en-US',{maximumFractionDigits:0})}`}
+function jobCopy(j){const s=j.status||'PENDING'; const prefix=s==='APPROVED'?`(APPROVED ${money(calc(j.hours,j.parts))})`:`(${s})`; return `${prefix} ${j.num}. ${String(j.title||'').toUpperCase()}`}
+function saveState(){if(!window.state)return; localStorage.setItem('urr_state',JSON.stringify(state));}
+function loadState(){try{return JSON.parse(localStorage.getItem('urr_state'))||{ro:'',jobs:[],notes:[]}}catch{return{ro:'',jobs:[],notes:[]}}}
+const params=new URLSearchParams(location.search); const isPhone=params.get('mode')==='phone'&&params.get('peer');
+if(isPhone) phoneApp(); else desktopApp();
+
+function phoneApp(){
+ const host=params.get('peer'); document.getElementById('app').innerHTML=`<div class="phone"><h1>URR Quick Form</h1><div id="pstatus" class="msg">Connecting to computer…</div><label class="big" for="quote">TAKE QUOTE PHOTO</label><input id="quote" type="file" accept="image/*" capture="environment"><label class="big approval" for="approval">TAKE APPROVAL PHOTO</label><input id="approval" type="file" accept="image/*" capture="environment"><div id="pmsg" class="msg">Scan is linked to the computer session.</div></div>`;
+ if(typeof Peer==='undefined'){pstatus.textContent='Phone pairing library blocked';pstatus.className='msg error';return;} const peer=new Peer(); let conn;
+ peer.on('open',()=>{conn=peer.connect(host,{reliable:true}); conn.on('open',()=>{pstatus.textContent='Connected to computer';pstatus.className='msg connected'}); conn.on('data',d=>{if(d?.type==='ro') pmsg.textContent=`RO #${d.ro||'not entered yet'}`;});});
+ peer.on('error',e=>{pstatus.textContent='Connection failed — rescan QR';pstatus.className='msg error'});
+ ['quote','approval'].forEach(kind=>document.getElementById(kind).addEventListener('change',async ev=>{const f=ev.target.files[0];if(!f)return; pmsg.innerHTML='<span class="spinner"></span> Reading photo on this phone…'; try{const data=await compressImage(f,2000,.9); const out=await analyzeImageLocal(data,kind,msg=>{pmsg.innerHTML='<span class="spinner"></span> '+msg}); if(!out.ro){const ro=prompt('RO# was not found. Enter RO# to continue:'); if(!ro) throw new Error('RO# required'); out.ro=ro.trim();} conn&&conn.send({type:'analysis',kind,result:out,sourceImage:data}); pmsg.textContent=`${kind==='quote'?'Quote':'Approval'} sent to computer — RO #${out.ro}`;pmsg.className='msg connected'; }catch(e){pmsg.textContent=e.message||'Could not process photo';pmsg.className='msg error'} finally{ev.target.value='';}}));
+}
+
+async function analyzeImageLocal(imageData,kind,onProgress){
+ if(typeof Tesseract==='undefined') throw new Error('Photo reader did not load. Check internet connection and retry.');
+ const result=await Tesseract.recognize(imageData,'eng',{logger:m=>{if(m.status==='recognizing text'&&onProgress)onProgress(`Reading handwriting… ${Math.round((m.progress||0)*100)}%`);}});
+ const text=(result.data.text||'').replace(/\r/g,'');
+ if(!text.trim()) throw new Error('No readable text found. Retake the photo closer and flatter.');
+ return kind==='approval'?parseApprovalText(text):parseQuoteText(text);
+}
+function normalizeRVText(t){return String(t||'').replace(/curb\s*side|door\s*side/gi,'DS').replace(/driver\s*side|off\s*door\s*side/gi,'ODS').replace(/wheel\s*bearing\s*pack/gi,'WBP').replace(/\s+/g,' ').trim();}
+function findRO(text){
+ const pats=[/\bRO\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i,/\bREPAIR\s+ORDER\s*[:#-]?\s*(\d{4,8})\b/i,/\bWO\s*[:#-]?\s*(\d{4,8})\b/i];
+ for(const p of pats){const m=text.match(p);if(m)return m[1].replace(/^\./,'0.');} return '';
+}
+function parseMoney(s){if(s==null)return'';const m=String(s).replace(/,/g,'').match(/\$?\s*(\d+(?:\.\d{1,2})?)/);return m?m[1]:'';}
+function parseHours(line){
+ const pats=[/\b(?:LABOR|LAB|HRS?|HOURS?)\s*[:=-]?\s*(\.?\d+(?:\.\d+)?)\b/i,/\b(\d+(?:\.\d+)?)\s*(?:HRS?|HOURS?)\b/i];
+ for(const p of pats){const m=line.match(p);if(m)return m[1].replace(/^\./,'0.');}
+ const tail=line.match(/(?:^|\s)(\.?\d{1,2}(?:\.\d{1,2})?)\s*(?:\/|\||-)\s*\$?\d/);return tail?tail[1].replace(/^\./,'0.') : '';
+}
+function parseParts(line){
+ const pats=[/\b(?:PARTS?|PTS?)\s*[:=-]?\s*\$?\s*(\d+(?:\.\d{1,2})?)/i,/\$\s*(\d+(?:\.\d{1,2})?)/];
+ for(const p of pats){const m=line.match(p);if(m)return m[1];}return'';
+}
+function stripAmounts(line){return normalizeRVText(line.replace(/\b(?:LABOR|LAB|HRS?|HOURS?|PARTS?|PTS?)\b\s*[:=-]?\s*\$?\s*\.?\d+(?:\.\d+)?/gi,' ').replace(/\$\s*\d+(?:\.\d+)?/g,' ').replace(/\b\d+(?:\.\d+)?\s*(?:HRS?|HOURS?)\b/gi,' ').replace(/\b(?:HRS?|HOURS?|LABOR|LAB|PARTS?|PTS?)\b/gi,' '));}
+function parseQuoteText(text){
+ const lines=text.split('\n').map(x=>x.trim()).filter(Boolean); const jobs=[]; const notes=[]; let pending='';
+ for(const raw of lines){
+   let line=normalizeRVText(raw); if(line.length<3)continue;
+   if(/^(RO|REPAIR ORDER|CUSTOMER|VIN|STOCK|DATE|TECH|TECHNICIAN)\b/i.test(line))continue;
+   const numMatch=line.match(/^\s*(\d{1,2})[.)-]?\s+(.+)/); let num='',body=line; if(numMatch){num=numMatch[1];body=numMatch[2];}
+   const h=parseHours(line),p=parseParts(line); const meaningful=/[A-Za-z]{3,}/.test(body);
+   if((h||p)&&meaningful){let title=stripAmounts(body).replace(/^[-:]+|[-:]+$/g,'').trim(); if(pending){title=(pending+' '+title).trim();pending='';} if(title.length<3)title='REVIEW TECH DESCRIPTION'; jobs.push({num:num||jobs.length+1,title,hours:h,parts:p,status:'PENDING',confidence:0.70,comment:'Browser-read result — verify handwriting before copying.'});}
+   else if(num&&meaningful){if(pending) notes.push(pending); pending=body;}
+   else if(meaningful&&line.length>12){pending=pending?pending+' '+line:line;}
+ }
+ if(pending)notes.push(pending);
+ if(!jobs.length){lines.filter(x=>/[A-Za-z]{4,}/.test(x)).slice(0,12).forEach((x,i)=>jobs.push({num:i+1,title:stripAmounts(x),hours:parseHours(x),parts:parseParts(x),status:'PENDING',confidence:0.45,comment:'Low-confidence browser read — verify against photo.'}));}
+ return {ro:findRO(text),jobs,notes:['Local browser OCR used. Verify any orange/flagged fields before DMS copy.']};
+}
+function parseApprovalText(text){
+ const lines=text.split('\n').map(x=>normalizeRVText(x)).filter(Boolean); const jobs=[]; let lastNum='';
+ for(const line of lines){const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+/);if(nm)lastNum=nm[1]; let status=''; if(/\b(?:FIX|APPROVE[DS]?|APPROVED|YES)\b/i.test(line))status='APPROVED'; else if(/\b(?:AS\s*IS|DECLINE[DS]?|DECLINED|NO)\b/i.test(line))status='DECLINED'; else if(/\bRECON\b/i.test(line))status='RECON'; else if(/\bNOTE\b/i.test(line))status='NOTE'; if(status)jobs.push({num:lastNum||jobs.length+1,title:stripAmounts(line),status});}
+ return {ro:findRO(text),jobs,notes:jobs.length?[]:['Approval marks were not read confidently. Review statuses on the computer.']};
+}
+
+async function compressImage(file,maxDim,quality){return new Promise((resolve,reject)=>{const img=new Image(),r=new FileReader();r.onload=()=>img.src=r.result;r.onerror=reject;img.onload=()=>{let w=img.width,h=img.height;const s=Math.min(1,maxDim/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',quality));};r.readAsDataURL(file);});}
+
+function desktopApp(){
+ window.state=loadState(); document.getElementById('app').innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy</div></div><span id="dstatus" class="status waiting">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" style="min-height:220px;display:flex;align-items:center;justify-content:center"></div><p class="muted">Scan this QR with the phone camera. It opens directly into this session.</p><div class="ro-row"><label><b>RO#</b></label><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required before this URR can be completed.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div class="toolbar"><b>Jobs</b><span class="muted">Edit any bad handwriting reads before copying.</span></div><div id="sourceWrap" style="display:none;margin:0 0 14px"><b>Source photo</b><div><img id="sourceImg" alt="URR source photo" style="max-width:100%;max-height:420px;margin-top:8px;border:1px solid #d8dee9;border-radius:8px"></div></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
+if(typeof Peer==='undefined'){dstatus.textContent='Pairing library blocked';dstatus.className='status error';document.getElementById('qr').innerHTML='<div class="error" style="padding:12px">Could not load phone pairing. Refresh once; if this remains, tell Grant.</div>';} else {
+ const peer=new Peer(); let conn;
+ peer.on('open',id=>{const url=`${location.origin}${location.pathname}?mode=phone&peer=${encodeURIComponent(id)}`; const q=document.getElementById('qr'); q.innerHTML=''; if(typeof QRCode==='undefined'){q.innerHTML='<div class="error" style="padding:12px">QR library did not load.</div>';dstatus.textContent='QR failed to load';dstatus.className='status error';return;} new QRCode(q,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});});
+ peer.on('connection',c=>{conn=c; c.on('open',()=>{dstatus.textContent='Phone connected';dstatus.className='status connected'; c.send({type:'ro',ro:state.ro});}); c.on('data',d=>{if(d?.type==='analysis'){if(d.sourceImage){sourceImg.src=d.sourceImage;sourceWrap.style.display='block';}applyAnalysis(d.kind,d.result);}}); c.on('close',()=>{dstatus.textContent='Phone disconnected';dstatus.className='status waiting'});});
+ peer.on('error',e=>{dstatus.textContent='Phone pairing error';dstatus.className='status error';console.error(e);});
+ }
+ ro.addEventListener('input',()=>{state.ro=ro.value.trim();roBanner.style.display=state.ro?'none':'block';saveState();conn&&conn.send({type:'ro',ro:state.ro});});
+ add.onclick=()=>{state.jobs.push({num:state.jobs.length+1,status:'PENDING',title:'',hours:'',parts:'',confidence:1,comment:''});saveState();renderJobs();};
+ clear.onclick=()=>{if(confirm('Start a new URR and clear this screen?')){state={ro:'',jobs:[],notes:[]};saveState();location.reload();}};
+ renderJobs();
+}
+function applyAnalysis(kind,out){if(out.ro){state.ro=String(out.ro);ro.value=state.ro;roBanner.style.display='none';}
+ if(kind==='quote'){state.jobs=(out.jobs||[]).map((j,i)=>({num:j.num||i+1,status:j.status||'PENDING',title:j.title||j.description||'',hours:j.hours??'',parts:j.parts??'',confidence:j.confidence??1,comment:j.comment||'',raw:j.raw||''}));state.notes=out.notes||[];}
+ else {const aj=out.jobs||[]; aj.forEach((a,i)=>{let j=state.jobs.find(x=>String(x.num)===String(a.num)); if(!j&&a.title) j=state.jobs.find(x=>similar(x.title,a.title)); if(!j&&state.jobs[i]) j=state.jobs[i]; if(j&&a.status) j.status=a.status;}); if(out.notes?.length) state.notes=[...(state.notes||[]),...out.notes];}
+ saveState();renderJobs();}
+function similar(a,b){a=String(a||'').toLowerCase();b=String(b||'').toLowerCase();if(!a||!b)return false;const aw=new Set(a.split(/\W+/).filter(x=>x.length>3));const bw=b.split(/\W+/).filter(x=>x.length>3);return bw.filter(x=>aw.has(x)).length>=2;}
+function renderJobs(){const box=document.getElementById('jobs'); if(!box)return; box.innerHTML=''; state.jobs.forEach((j,idx)=>{const d=document.createElement('div');d.className='job'+((j.confidence??1)<.82?' low':''); const total=calc(j.hours,j.parts); d.innerHTML=`<input class="num" type="number" value="${esc(j.num)}"><select class="status"><option>PENDING</option><option>APPROVED</option><option>DECLINED</option><option>RECON</option><option>NOTE</option></select><input class="title" value="${esc(j.title)}"><input class="hours" inputmode="decimal" placeholder="Hours" value="${esc(j.hours)}"><input class="parts" inputmode="decimal" placeholder="Parts $" value="${esc(j.parts)}"><div class="price">${money(total)}</div><div class="actions"><button class="btn copy small copyJob">Copy Job</button><button class="btn secondary small copyLabor">Copy Labor</button><span class="copied"></span></div>${j.comment?`<div class="comment">${esc(j.comment)}</div>`:''}`; d.querySelector('.status').value=j.status||'PENDING';
+ const fields=['num','status','title','hours','parts']; fields.forEach(f=>d.querySelector('.'+f).addEventListener('input',e=>{j[f]=e.target.value; if(f==='num')j[f]=Number(e.target.value)||''; saveState();renderJobs();}));
+ d.querySelector('.copyJob').onclick=async()=>{if(!state.ro){roBanner.style.display='block';ro.focus();return;}await navigator.clipboard.writeText(jobCopy(j));d.querySelector('.copied').textContent='Copied';};
+ d.querySelector('.copyLabor').onclick=async()=>{if(j.hours===''||j.hours==null)return;await navigator.clipboard.writeText(String(j.hours));d.querySelector('.copied').textContent='Labor copied';}; box.appendChild(d);});
+ const notes=document.getElementById('notes'); if(notes) notes.innerHTML=(state.notes||[]).length?'<b>Comments:</b> '+state.notes.map(esc).join(' • '):'';}
+function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+</script>
+</body>
+</html>
