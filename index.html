@@ -41,7 +41,7 @@ function parseApproval(text){
  for(const line of lines){const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+/);if(nm)last=nm[1];let s="";if(/\b(?:FIX|APPROVE[DS]?|APPROVED|YES)\b/i.test(line))s="APPROVED";else if(/\b(?:AS\s*IS|DECLINE[DS]?|DECLINED|NO)\b/i.test(line))s="DECLINED";else if(/\bRECON\b/i.test(line))s="RECON";else if(/\bNOTE\b/i.test(line))s="NOTE";if(s)jobs.push({num:last||jobs.length+1,status:s,title:strip(line)});}
  return {ro:findRO(text),jobs,notes:jobs.length?[]:["Approval marks were not read confidently. Review statuses."]};
 }
-async function compress(file,max=1280,q=.86){return new Promise((res,rej)=>{const r=new FileReader(),img=new Image();r.onerror=rej;r.onload=()=>img.src=r.result;img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q));};r.readAsDataURL(file);});}
+async function compress(file,max=2200,q=.90){return new Promise((res,rej)=>{const r=new FileReader(),img=new Image();r.onerror=rej;r.onload=()=>img.src=r.result;img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q));};r.readAsDataURL(file);});}
 async function analyze(data,kind,progress){if(typeof Tesseract==="undefined")throw new Error("Photo reader did not load.");const r=await Tesseract.recognize(data,"eng",{logger:m=>{if(m.status==="recognizing text")progress(Math.round((m.progress||0)*100))}});const text=r.data.text||"";if(!text.trim())throw new Error("No readable text found. Retake closer.");return kind==="approval"?parseApproval(text):parseQuote(text);}
 
 function phoneApp(){
@@ -116,11 +116,10 @@ function phoneApp(){
 function desktopApp(){
  let state;try{state=JSON.parse(localStorage.getItem("urr_state"))||{ro:"",jobs:[],notes:[]}}catch{state={ro:"",jobs:[],notes:[]}}
  window.state=state;
- app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 14 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
+ app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 15 • HOSTED VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Hosted vision AI is ready for the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
  const ds=document.getElementById("dstatus"),q=document.getElementById("qr"),ro=document.getElementById("ro"),banner=document.getElementById("roBanner"),sourceWrap=document.getElementById("sourceWrap"),sourceImg=document.getElementById("sourceImg");
  const aiStatus=document.getElementById("aiStatus"),aiProgress=document.getElementById("aiProgress"),aiProgressLabel=document.getElementById("aiProgressLabel");
- let hf=null,processor=null,model=null,aiLoading=null,currentPhoto=null;
-
+ let currentPhoto=null,analysisTimer=null;
  function setAIProgress(percent,message,cls=""){
    const pct=Math.max(0,Math.min(100,Number(percent)||0));
    aiProgress.style.width=pct+"%";
@@ -129,257 +128,39 @@ function desktopApp(){
    aiStatus.className="ai-status"+(cls?" "+cls:"");
    if(conn&&conn.open)conn.send({type:"ai_progress",message:message||"",percent:pct});
  }
-
- async function ensureVisionModel(){
-   if(processor&&model)return;
-   if(aiLoading)return aiLoading;
-   aiLoading=(async()=>{
-     try{
-       setAIProgress(3,"Starting local vision AI…");
-       if(!navigator.gpu)throw new Error("WebGPU is not available in this browser/computer.");
-       setAIProgress(6,"Loading vision AI library…");
-       hf=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm");
-       const {AutoProcessor,AutoModelForVision2Seq}=hf;
-       const MODEL_ID="HuggingFaceTB/SmolVLM-500M-Instruct";
-       const progress=x=>{
-         if(x&&x.status==="progress"&&Number.isFinite(x.progress)){
-           const pct=Math.max(8,Math.min(68,8+Math.round(x.progress*.60)));
-           const name=x.file?` • ${x.file}`:"";
-           setAIProgress(pct,`Loading local vision model… ${Math.round(x.progress)}%${name}`);
-         }
-       };
-       processor=await AutoProcessor.from_pretrained(MODEL_ID,{progress_callback:progress});
-       model=await AutoModelForVision2Seq.from_pretrained(MODEL_ID,{
-         device:"webgpu",
-         dtype:{
-           embed_tokens:"fp32",
-           vision_encoder:"q4",
-           decoder_model_merged:"q4"
-         },
-         progress_callback:progress
-       });
-       setAIProgress(72,"Local vision AI ready.","ready");
-     }catch(e){
-       aiLoading=null;
-       throw e;
-     }
-   })();
-   return aiLoading;
+ function startHostedProgress(){
+   clearInterval(analysisTimer);
+   let pct=8;
+   analysisTimer=setInterval(()=>{
+     pct=Math.min(92,pct+(pct<55?4:pct<78?2:1));
+     const msg=pct<30?"Uploading photo securely…":pct<60?"Reading handwriting and URR rows…":pct<82?"Checking RO, labor and parts…":"Structuring repair list…";
+     setAIProgress(pct,msg);
+   },850);
  }
-
- function promptFor(kind){
-   if(kind==="approval"){
-     return `Read this CROP from a Bish's RV Used Recommended Repairs approval sheet.
-Return ONLY compact JSON: {"jobs":[{"status":"APPROVED","confidence":0.9}]}
-Read rows from TOP TO BOTTOM. Include one object for each visible repair row in this crop.
-FIX/approved/yes/checkmark = APPROVED. AS IS/declined/no = DECLINED. RECON = RECON. NOTE = NOTE.
-Do not explain. Do not invent rows.`;
-   }
-   return `Read this CROP from the repair-row area of a Bish's RV Used Recommended Repairs sheet.
-The columns are repair description, labor hours, and parts dollars.
-Return ONLY compact JSON:
-{"jobs":[{"title":"repair description","hours":"0.5","parts":"115","confidence":0.9}]}
-Read EVERY visible handwritten repair row from TOP TO BOTTOM.
-Use RV context to interpret handwriting. Preserve decimals. Normalize door side=DS, off door side=ODS, wheel bearing pack=WBP.
-Parts must be the handwritten dollar amount only. Do not calculate totals. Do not explain.`;
- }
-
- function headerPrompt(){
-   return `Read ONLY the header of this Bish's RV Used Recommended Repairs form.
-Find the repair order / RO number. Return ONLY compact JSON: {"ro":"105779"}
-If no RO is legible return {"ro":""}.`;
- }
-
- function cropDataURL(src, x0, y0, x1, y1, maxW=1500){
-   return new Promise((resolve,reject)=>{
-     const im=new Image();
-     im.onload=()=>{
-       const sx=Math.max(0,Math.round(im.naturalWidth*x0));
-       const sy=Math.max(0,Math.round(im.naturalHeight*y0));
-       const sw=Math.max(1,Math.round(im.naturalWidth*(x1-x0)));
-       const sh=Math.max(1,Math.round(im.naturalHeight*(y1-y0)));
-       const scale=Math.min(1.8,maxW/sw);
-       const c=document.createElement("canvas");
-       c.width=Math.max(1,Math.round(sw*scale));
-       c.height=Math.max(1,Math.round(sh*scale));
-       const ctx=c.getContext("2d",{alpha:false});
-       ctx.imageSmoothingEnabled=true;
-       ctx.imageSmoothingQuality="high";
-       ctx.drawImage(im,sx,sy,sw,sh,0,0,c.width,c.height);
-       resolve(c.toDataURL("image/jpeg",.93));
-     };
-     im.onerror=()=>reject(new Error("Could not prepare image crop."));
-     im.src=src;
-   });
- }
-
- function normTitle(s){
-   return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
- }
-
- function mergeCropJobs(all, incoming){
-   for(const j of (incoming||[])){
-     if(!j || !String(j.title||"").trim()) continue;
-     const key=normTitle(j.title);
-     const duplicate=all.some(x=>{
-       const k=normTitle(x.title);
-       return key && k && (key===k || (key.length>12 && k.length>12 && (key.includes(k)||k.includes(key))));
-     });
-     if(!duplicate) all.push(j);
-   }
- }
- function cleanJSONText(s){
-   s=String(s||"").trim().replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
-   const first=s.indexOf("{"),last=s.lastIndexOf("}");
-   if(first>=0&&last>first)s=s.slice(first,last+1);
-   return s.replace(/,\s*([}\]])/g,"$1");
- }
-
- function fallbackVisionResult(raw,kind){
-   const t=String(raw||"").replace(/\r/g,"");
-   const ro=(t.match(/\b(?:RO|REPAIR\s*ORDER|WO)\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i)||[])[1]||"";
-   const jobs=[];
-   for(const line of t.split("\n").map(x=>x.trim()).filter(Boolean)){
-     const n=(line.match(/^\s*(\d{1,2})[.)\-:]?\s+/)||[])[1];
-     if(!n)continue;
-     if(kind==="approval"){
-       let status="";
-       if(/\b(APPROVED|APPROVE|FIX|YES)\b/i.test(line))status="APPROVED";
-       else if(/\b(DECLINED|DECLINE|AS\s*IS|NO)\b/i.test(line))status="DECLINED";
-       else if(/\bRECON\b/i.test(line))status="RECON";
-       else if(/\bNOTE\b/i.test(line))status="NOTE";
-       if(status)jobs.push({num:Number(n),status,confidence:.5,comment:"Recovered from plain model output — verify."});
-     }else{
-       const rest=line.replace(/^\s*\d{1,2}[.)\-:]?\s*/,"");
-       if(/[A-Za-z]{3}/.test(rest)){
-         jobs.push({num:Number(n),title:rest,hours:"",parts:"",confidence:.45,comment:"Recovered from plain model output — verify."});
-       }
-     }
-   }
-   return {ro,jobs,notes:["Vision output needed fallback parsing. Verify orange fields."]};
- }
-
- async function runCropVision(imageData,promptText,maxTokens,progressBase,progressSpan,label){
-   const {load_image,TextStreamer}=hf;
-   const image=await load_image(imageData);
-   const messages=[{role:"user",content:[{type:"image",image:imageData},{type:"text",text:promptText}]}];
-   const prompt=processor.apply_chat_template(messages,{add_generation_prompt:true});
-   const inputs=await processor(prompt,[image],{do_image_splitting:false});
-   let streamed="";
-   let pct=progressBase;
-   const started=Date.now();
-   const ticker=setInterval(()=>{
-     const secs=Math.round((Date.now()-started)/1000);
-     pct=Math.min(progressBase+progressSpan-2,pct+.35);
-     setAIProgress(pct,`${label}… ${secs}s`);
-   },1000);
-   const streamer=new TextStreamer(processor.tokenizer,{
-     skip_prompt:true,skip_special_tokens:true,
-     callback_function:chunk=>{
-       streamed+=chunk;
-       pct=Math.min(progressBase+progressSpan-1,pct+.3);
-       setAIProgress(pct,label+"…");
-     }
-   });
-   let output;
-   try{
-     output=await model.generate({
-       ...inputs,
-       do_sample:false,
-       repetition_penalty:1.02,
-       max_new_tokens:maxTokens,
-       streamer,
-       return_dict_in_generate:true
-     });
-   }finally{clearInterval(ticker);}
-   let finalText=String(streamed||"").trim();
-   if(!finalText){
-     try{
-       const decoded=processor.batch_decode(output.sequences,{skip_special_tokens:true});
-       finalText=(decoded&&decoded[0])?decoded[0]:"";
-       const marker=finalText.lastIndexOf("Assistant:");
-       if(marker>=0)finalText=finalText.slice(marker+10).trim();
-     }catch{}
-   }
-   try{return JSON.parse(cleanJSONText(finalText));}
-   catch(e){
-     console.warn("Crop parse failed:",label,finalText);
-     return {};
-   }
- }
-
  async function analyzePhoto(kind,imageData){
    currentPhoto={kind,imageData};
    sourceImg.src=imageData;sourceWrap.style.display="block";
    try{
-     setAIProgress(2,"Photo received. Preparing local vision AI…");
-     await ensureVisionModel();
-
-     // A single whole-sheet pass was making the handwriting too small for the local model.
-     // Read the fixed form in enlarged sections instead.
-     setAIProgress(72,"Splitting the URR sheet into readable sections…");
-     const header=await cropDataURL(imageData,.05,.05,.95,.29,1500);
-
-     const bands=[
-       [.04,.235,.96,.405],
-       [.04,.385,.96,.555],
-       [.04,.535,.96,.705],
-       [.04,.685,.96,.875]
-     ];
-     const crops=[];
-     for(const b of bands)crops.push(await cropDataURL(imageData,...b,1500));
-
-     setAIProgress(74,"Reading RO number…");
-     const h=await runCropVision(header,headerPrompt(),70,74,4,"Reading RO number");
-     const combined={ro:String(h?.ro||"").replace(/\D/g,""),jobs:[],notes:[]};
-
-     for(let i=0;i<crops.length;i++){
-       const base=78+i*5;
-       const result=await runCropVision(
-         crops[i],
-         promptFor(kind),
-         kind==="approval"?180:300,
-         base,5,
-         `Reading repair rows ${i+1} of ${crops.length}`
-       );
-       if(kind==="approval"){
-         for(const j of (result?.jobs||[]))combined.jobs.push(j);
-       }else{
-         mergeCropJobs(combined.jobs,result?.jobs||[]);
-       }
-     }
-
-     if(kind!=="approval"){
-       combined.jobs=combined.jobs.map((j,i)=>({
-         num:i+1,
-         title:String(j.title||"").trim(),
-         hours:String(j.hours??"").trim().replace(/^\./,"0."),
-         parts:String(j.parts??"").replace(/[$,]/g,"").trim(),
-         confidence:Number(j.confidence)||.65,
-         comment:j.comment||""
-       }));
-     }else{
-       combined.jobs=combined.jobs.map((j,i)=>({
-         num:i+1,
-         status:String(j.status||"").toUpperCase(),
-         confidence:Number(j.confidence)||.65,
-         comment:j.comment||""
-       })).filter(j=>["APPROVED","DECLINED","RECON","NOTE"].includes(j.status));
-     }
-
-     const jobCount=combined.jobs.length;
-     if(jobCount){
-       setAIProgress(100,`Analysis complete — ${jobCount} repair row${jobCount===1?"":"s"} read.`,"ready");
-     }else{
-       setAIProgress(100,"Analysis finished, but no repair rows were extracted.","error");
-       combined.notes.push("The local vision model could not read the repair rows from this photo.");
-     }
-
-     apply(kind,combined);
-     if(conn&&conn.open)conn.send({type:"analysis_done",ro:combined.ro||state.ro||""});
+     setAIProgress(3,"Photo received. Starting hosted vision analysis…");
+     startHostedProgress();
+     const res=await fetch("https://urr-quick-form-api-gmparrishgp-2884s-projects.vercel.app/api/analyze",{
+       method:"POST",
+       headers:{"Content-Type":"application/json"},
+       body:JSON.stringify({kind,imageData})
+     });
+     const body=await res.json().catch(()=>({}));
+     clearInterval(analysisTimer);
+     if(!res.ok)throw new Error(body.error||`Server returned ${res.status}`);
+     const result=body.result||{};
+     const count=Array.isArray(result.jobs)?result.jobs.length:0;
+     if(!count)throw new Error("Vision analysis returned no repair rows.");
+     setAIProgress(100,`Analysis complete — ${count} repair row${count===1?"":"s"} read.`,"ready");
+     apply(kind,result);
+     if(conn&&conn.open)conn.send({type:"analysis_done",ro:result.ro||state.ro||""});
      ds.textContent="Updated from phone";ds.className="status sync";
      setTimeout(()=>{if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected";}},1200);
    }catch(e){
+     clearInterval(analysisTimer);
      console.error(e);
      setAIProgress(parseInt(aiProgress.style.width)||5,"Vision AI error: "+(e?.message||String(e)),"error");
      if(conn&&conn.open)conn.send({type:"analysis_error",message:e?.message||String(e)});
