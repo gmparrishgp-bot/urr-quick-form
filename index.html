@@ -41,7 +41,7 @@ function parseApproval(text){
  for(const line of lines){const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+/);if(nm)last=nm[1];let s="";if(/\b(?:FIX|APPROVE[DS]?|APPROVED|YES)\b/i.test(line))s="APPROVED";else if(/\b(?:AS\s*IS|DECLINE[DS]?|DECLINED|NO)\b/i.test(line))s="DECLINED";else if(/\bRECON\b/i.test(line))s="RECON";else if(/\bNOTE\b/i.test(line))s="NOTE";if(s)jobs.push({num:last||jobs.length+1,status:s,title:strip(line)});}
  return {ro:findRO(text),jobs,notes:jobs.length?[]:["Approval marks were not read confidently. Review statuses."]};
 }
-async function compress(file,max=1800,q=.88){return new Promise((res,rej)=>{const r=new FileReader(),img=new Image();r.onerror=rej;r.onload=()=>img.src=r.result;img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q));};r.readAsDataURL(file);});}
+async function compress(file,max=1280,q=.86){return new Promise((res,rej)=>{const r=new FileReader(),img=new Image();r.onerror=rej;r.onload=()=>img.src=r.result;img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q));};r.readAsDataURL(file);});}
 async function analyze(data,kind,progress){if(typeof Tesseract==="undefined")throw new Error("Photo reader did not load.");const r=await Tesseract.recognize(data,"eng",{logger:m=>{if(m.status==="recognizing text")progress(Math.round((m.progress||0)*100))}});const text=r.data.text||"";if(!text.trim())throw new Error("No readable text found. Retake closer.");return kind==="approval"?parseApproval(text):parseQuote(text);}
 
 function phoneApp(){
@@ -101,7 +101,7 @@ function phoneApp(){
       const data=await compress(f,2200,.92);
       conn.send({type:"photo",kind,sourceImage:data,ts:Date.now()});
       conn.send({type:"refresh",reason:kind+"_photo_sent",ts:Date.now()});
-      pm.textContent=`${kind==="quote"?"Quote":"Approval"} photo sent. Computer is analyzing the whole sheet, including the RO.`;
+      pm.textContent=`${kind==="quote"?"Quote":"Approval"} photo sent. Computer is analyzing the whole sheet, including the RO. Keep this page open.`;
       pm.className="msg connected";
     }catch(e){
       pm.textContent=e.message||"Could not send photo";
@@ -116,7 +116,7 @@ function phoneApp(){
 function desktopApp(){
  let state;try{state=JSON.parse(localStorage.getItem("urr_state"))||{ro:"",jobs:[],notes:[]}}catch{state={ro:"",jobs:[],notes:[]}}
  window.state=state;
- app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 11 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
+ app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 12 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
  const ds=document.getElementById("dstatus"),q=document.getElementById("qr"),ro=document.getElementById("ro"),banner=document.getElementById("roBanner"),sourceWrap=document.getElementById("sourceWrap"),sourceImg=document.getElementById("sourceImg");
  const aiStatus=document.getElementById("aiStatus"),aiProgress=document.getElementById("aiProgress"),aiProgressLabel=document.getElementById("aiProgressLabel");
  let hf=null,processor=null,model=null,aiLoading=null,currentPhoto=null;
@@ -199,30 +199,48 @@ Rules: Extract every repair row in order. RO is the repair order number if visib
    try{
      setAIProgress(2,"Photo received. Preparing local vision AI…");
      await ensureVisionModel();
-     setAIProgress(76,"Reading the whole URR sheet…");
+     setAIProgress(74,"Preparing the URR image…");
      const {load_image,TextStreamer}=hf;
      const image=await load_image(imageData);
+     setAIProgress(77,"Reading the whole URR sheet…");
      const messages=[{role:"user",content:[{type:"image",image:imageData},{type:"text",text:promptFor(kind)}]}];
      const prompt=processor.apply_chat_template(messages,{add_generation_prompt:true});
-     const inputs=await processor(prompt,[image],{do_image_splitting:true});
-     let streamed="",streamPct=78;
+
+     // Image splitting dramatically increases WebGPU work on a full phone photo.
+     // One resized 1280px image is enough for this form and is much faster.
+     const inputs=await processor(prompt,[image],{do_image_splitting:false});
+
+     let streamed="",streamPct=80;
+     const started=Date.now();
+     const activity=setInterval(()=>{
+       const secs=Math.round((Date.now()-started)/1000);
+       streamPct=Math.min(94,streamPct+0.5);
+       setAIProgress(streamPct,`Analyzing handwriting and RV rows… ${secs}s`);
+     },1000);
+
      const streamer=new TextStreamer(processor.tokenizer,{
        skip_prompt:true,
        skip_special_tokens:true,
        callback_function:chunk=>{
          streamed+=chunk;
-         streamPct=Math.min(96,streamPct+0.7);
-         setAIProgress(streamPct,"Interpreting handwriting, RO, rows, labor, parts and marks…");
+         streamPct=Math.min(97,streamPct+0.5);
+         setAIProgress(streamPct,"Building the repair list…");
        }
      });
-     const output=await model.generate({
-       ...inputs,
-       do_sample:false,
-       repetition_penalty:1.05,
-       max_new_tokens:900,
-       streamer,
-       return_dict_in_generate:true
-     });
+
+     let output;
+     try{
+       output=await model.generate({
+         ...inputs,
+         do_sample:false,
+         repetition_penalty:1.03,
+         max_new_tokens:520,
+         streamer,
+         return_dict_in_generate:true
+       });
+     } finally {
+       clearInterval(activity);
+     }
      let finalText=streamed;
      try{
        const decoded=processor.batch_decode(output.sequences,{skip_special_tokens:true});
