@@ -116,214 +116,132 @@ function phoneApp(){
 function desktopApp(){
  let state;try{state=JSON.parse(localStorage.getItem("urr_state"))||{ro:"",jobs:[],notes:[]}}catch{state={ro:"",jobs:[],notes:[]}}
  window.state=state;
- app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 10 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
+ app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • BUILD 11 • LOCAL VISION AI • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="add" class="btn secondary">+ Add Job</button><button id="clear" class="btn secondary">New URR</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Verify bad handwriting reads before copying.</span></div><div id="aiStatus" class="ai-status">Vision AI will load automatically on the first photo.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photo</b><br><img id="sourceImg"></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
  const ds=document.getElementById("dstatus"),q=document.getElementById("qr"),ro=document.getElementById("ro"),banner=document.getElementById("roBanner"),sourceWrap=document.getElementById("sourceWrap"),sourceImg=document.getElementById("sourceImg");
  const aiStatus=document.getElementById("aiStatus"),aiProgress=document.getElementById("aiProgress"),aiProgressLabel=document.getElementById("aiProgressLabel");
- let aiWorker=null, aiReady=false, pendingAI=null, modelStarted=false;
- function makeAIWorker(){
-   const workerCode = `
-import {
-  AutoProcessor,
-  AutoModelForVision2Seq,
-  TextStreamer,
-  load_image
-} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
+ let hf=null,processor=null,model=null,aiLoading=null,currentPhoto=null;
 
-const MODEL_ID = "HuggingFaceTB/SmolVLM-256M-Instruct";
-let processor=null, model=null;
+ function setAIProgress(percent,message,cls=""){
+   const pct=Math.max(0,Math.min(100,Number(percent)||0));
+   aiProgress.style.width=pct+"%";
+   aiProgressLabel.textContent=message||"";
+   aiStatus.textContent=message||"";
+   aiStatus.className="ai-status"+(cls?" "+cls:"");
+   if(conn&&conn.open)conn.send({type:"ai_progress",message:message||"",percent:pct});
+ }
 
-async function loadModel(){
-  if(processor && model) return;
-  self.postMessage({type:"model_status",message:"Checking graphics support…"});
-  if(!navigator.gpu) throw new Error("This computer does not support WebGPU in this browser.");
-  self.postMessage({type:"model_status",message:"Loading local vision model. First use may take several minutes…"});
-  processor = await AutoProcessor.from_pretrained(MODEL_ID,{
-    progress_callback:x=>{
-      if(x && x.status==="progress" && Number.isFinite(x.progress)){
-        self.postMessage({type:"model_progress",progress:Math.round(x.progress),file:x.file||""});
-      }
-    }
-  });
-  model = await AutoModelForVision2Seq.from_pretrained(MODEL_ID,{
-    device:"webgpu",
-    dtype:{
-      embed_tokens:"fp32",
-      vision_encoder:"q4",
-      decoder_model_merged:"q4"
-    },
-    progress_callback:x=>{
-      if(x && x.status==="progress" && Number.isFinite(x.progress)){
-        self.postMessage({type:"model_progress",progress:Math.round(x.progress),file:x.file||""});
-      }
-    }
-  });
-  self.postMessage({type:"model_ready"});
-}
+ async function ensureVisionModel(){
+   if(processor&&model)return;
+   if(aiLoading)return aiLoading;
+   aiLoading=(async()=>{
+     try{
+       setAIProgress(3,"Starting local vision AI…");
+       if(!navigator.gpu)throw new Error("WebGPU is not available in this browser/computer.");
+       setAIProgress(6,"Loading vision AI library…");
+       hf=await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1/+esm");
+       const {AutoProcessor,AutoModelForVision2Seq}=hf;
+       const MODEL_ID="HuggingFaceTB/SmolVLM-256M-Instruct";
+       const progress=x=>{
+         if(x&&x.status==="progress"&&Number.isFinite(x.progress)){
+           const pct=Math.max(8,Math.min(68,8+Math.round(x.progress*.60)));
+           const name=x.file?` • ${x.file}`:"";
+           setAIProgress(pct,`Loading local vision model… ${Math.round(x.progress)}%${name}`);
+         }
+       };
+       processor=await AutoProcessor.from_pretrained(MODEL_ID,{progress_callback:progress});
+       model=await AutoModelForVision2Seq.from_pretrained(MODEL_ID,{
+         device:"webgpu",
+         dtype:{
+           embed_tokens:"fp32",
+           vision_encoder:"q4",
+           decoder_model_merged:"q4"
+         },
+         progress_callback:progress
+       });
+       setAIProgress(72,"Local vision AI ready.","ready");
+     }catch(e){
+       aiLoading=null;
+       throw e;
+     }
+   })();
+   return aiLoading;
+ }
 
-function promptFor(kind){
-  if(kind==="approval"){
-    return \`You are visually reviewing a Bish's RV Used Recommended Repairs approval sheet. Read the ENTIRE image, including handwriting, checkmarks, circles, notes, and row numbers. Use RV/service context to resolve handwriting. Your response MUST begin with { and end with }. Return ONLY one JSON object, no markdown, no explanation:
+ function promptFor(kind){
+   if(kind==="approval"){
+     return `Read the entire Bish's RV Used Recommended Repairs approval sheet image like an experienced RV service manager. Interpret handwriting, row numbers, checkmarks, circles and marks in context.
+Return ONLY one JSON object beginning with { and ending with }:
 {"ro":"","jobs":[{"num":1,"status":"APPROVED","confidence":0.95,"comment":""}],"notes":[]}
-Rules:
-- RO is the repair order number if visible.
-- FIX, approved, yes, or an approval mark means APPROVED.
-- AS IS, declined, no, or a clear rejection mark means DECLINED.
-- RECON means RECON.
-- NOTE means NOTE.
-- Match every status to the printed/handwritten job row number.
-- Do not invent rows or statuses.
-- If a mark is ambiguous, use your best contextual read, lower confidence, and explain briefly in comment.
-- Read like an experienced RV service manager, not a character OCR engine.\`;
-  }
-  return \`You are visually reviewing a Bish's RV Used Recommended Repairs technician quote sheet. Read the ENTIRE image and interpret the handwriting using RV service context. Your response MUST begin with { and end with }. Return ONLY one JSON object, no markdown, no explanation:
+Rules: RO is the repair order number if visible. FIX/approved/yes/approval mark = APPROVED. AS IS/declined/no/rejection mark = DECLINED. RECON = RECON. NOTE = NOTE. Match status to the correct job row. Do not invent rows. If uncertain, use best contextual read, confidence below 0.82, and a short comment.`;
+   }
+   return `Read the entire Bish's RV Used Recommended Repairs technician quote sheet image like an experienced RV service manager. Interpret handwriting using RV context, neighboring rows and columns, not simple OCR.
+Return ONLY one JSON object beginning with { and ending with }:
 {"ro":"","jobs":[{"num":1,"title":"","hours":"","parts":"","confidence":0.95,"comment":""}],"notes":[]}
-Rules:
-- Extract every repair row in order.
-- RO is the repair order number if visible.
-- title = concise technician repair description. Preserve technical meaning.
-- Normalize door side to DS, off door side to ODS, and wheel bearing pack to WBP.
-- hours = the handwritten quoted labor time EXACTLY as intended. Pay special attention to decimals such as .2, .3, .5, .75, 1.0, 2.0. Convert ".3" to "0.3".
-- parts = the handwritten parts dollar amount only, no tax/freight/markup.
-- Do NOT calculate totals. The webpage calculates at $199/hr.
-- Do NOT omit a row because it looks like RECON; still extract quoted hours and parts.
-- Use RV knowledge to distinguish words and numbers. Look at neighboring rows/columns and the whole form before deciding.
-- Never invent a number. If uncertain, give the best read, lower confidence below 0.82, and explain what is uncertain in comment.
-- Treat this as visual reasoning over the document, not simple OCR.\`;
-}
-
-function cleanupJSONText(s){
-  s=String(s||"").trim()
-    .replace(new RegExp("\\x60\\x60\\x60json","gi"),"").replace(new RegExp("\\x60\\x60\\x60","g"),"")
-    .replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
-  const first=s.indexOf("{"), last=s.lastIndexOf("}");
-  if(first>=0 && last>first) s=s.slice(first,last+1);
-  s=s.replace(/,\s*([}\]])/g,"$1");
-  return s;
-}
-function looseResult(s,kind){
-  const t=String(s||"").replace(/\r/g,"");
-  const ro=(t.match(/\b(?:RO|REPAIR\s*ORDER|WO)\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i)||[])[1]||"";
-  const jobs=[];
-  const lines=t.split("\n").map(x=>x.trim()).filter(Boolean);
-  for(const line of lines){
-    if(kind==="approval"){
-      const nm=(line.match(/^\s*(\d{1,2})[.)-]?\s+/)||[])[1]||"";
-      let status="";
-      if(/\b(APPROVED|APPROVE|FIX|YES)\b/i.test(line))status="APPROVED";
-      else if(/\b(DECLINED|DECLINE|AS\s*IS|NO)\b/i.test(line))status="DECLINED";
-      else if(/\bRECON\b/i.test(line))status="RECON";
-      else if(/\bNOTE\b/i.test(line))status="NOTE";
-      if(status) jobs.push({num:nm||jobs.length+1,status,confidence:.55,comment:"Recovered from unstructured vision output."});
-    }else{
-      const m=line.match(/^\s*(\d{1,2})[.)-]?\s*(.*?)\s*(?:\||,)\s*(?:HRS?|HOURS?|LABOR)?\s*[:=]?\s*(\.?\d+(?:\.\d+)?)?\s*(?:\||,)\s*(?:PARTS?)?\s*[:=$]?\s*\$?(\d+(?:\.\d+)?)?/i);
-      if(m && /[A-Za-z]{3}/.test(m[2]||"")){
-        jobs.push({num:m[1]||jobs.length+1,title:(m[2]||"").trim(),hours:(m[3]||"").replace(/^\./,"0."),parts:m[4]||"",confidence:.5,comment:"Recovered from unstructured vision output — verify."});
-      }
-    }
-  }
-  return {ro,jobs,notes:["Vision output required fallback parsing. Verify all orange fields."]};
-}
-function extractStructured(s,kind){
-  const cleaned=cleanupJSONText(s);
-  try{
-    const obj=JSON.parse(cleaned);
-    if(obj && typeof obj==="object") return obj;
-  }catch{}
-  return looseResult(s,kind);
-}
-
-async function analyze(imageData,kind){
-  await loadModel();
-  self.postMessage({type:"analysis_status",message:"Reading the whole URR sheet…"});
-  const image=await load_image(imageData);
-  const messages=[{role:"user",content:[{type:"image",image:imageData},{type:"text",text:promptFor(kind)}]}];
-  const prompt=processor.apply_chat_template(messages,{add_generation_prompt:true});
-  const inputs=await processor(prompt,[image],{do_image_splitting:true});
-  let streamed="";
-  const streamer=new TextStreamer(processor.tokenizer,{
-    skip_prompt:true,
-    skip_special_tokens:true,
-    callback_function:chunk=>{streamed+=chunk; self.postMessage({type:"analysis_stream",text:streamed});}
-  });
-  const output=await model.generate({
-    ...inputs,
-    do_sample:false,
-    repetition_penalty:1.05,
-    max_new_tokens:900,
-    streamer,
-    return_dict_in_generate:true
-  });
-  let finalText=streamed;
-  try{
-    const decoded=processor.batch_decode(output.sequences,{skip_special_tokens:true});
-    if(decoded && decoded[0]) finalText=decoded[0];
-  }catch{}
-  const parsed=extractStructured(finalText,kind);
-  self.postMessage({type:"analysis_complete",kind,result:parsed,raw:finalText});
-}
-
-self.onmessage=async e=>{
-  const m=e.data||{};
-  try{
-    if(m.type==="load") await loadModel();
-    if(m.type==="analyze") await analyze(m.imageData,m.kind);
-  }catch(err){
-    self.postMessage({type:"ai_error",message:err?.message||String(err)});
-  }
-};
-`;
-   const url=URL.createObjectURL(new Blob([workerCode],{type:"text/javascript"}));
-   aiWorker=new Worker(url,{type:"module"});
-   aiWorker.onmessage=e=>{
-     const m=e.data||{};
-     if(m.type==="model_status"){
-       aiStatus.textContent=m.message;aiStatus.className="ai-status";aiProgress.style.width="5%";aiProgressLabel.textContent=m.message;
-       if(conn&&conn.open)conn.send({type:"ai_progress",message:m.message,percent:5});
-     }
-     else if(m.type==="model_progress"){
-       const pct=Math.max(5,Math.min(70,Math.round((m.progress||0)*.65)+5));
-       aiStatus.textContent=`Loading local vision model… ${m.progress}%`;
-       aiProgress.style.width=pct+"%";aiProgressLabel.textContent=`Loading model${m.file?" • "+m.file:""} — ${m.progress}%`;
-       if(conn&&conn.open)conn.send({type:"ai_progress",message:"Loading local vision model…",percent:pct});
-     }
-     else if(m.type==="model_ready"){
-       aiReady=true;aiStatus.textContent="Local vision AI ready.";aiStatus.className="ai-status ready";
-       aiProgress.style.width="72%";aiProgressLabel.textContent="Model ready. Starting image analysis…";
-       if(conn&&conn.open)conn.send({type:"ai_progress",message:"Model ready. Starting image analysis…",percent:72});
-       if(pendingAI){const x=pendingAI;pendingAI=null;aiWorker.postMessage({type:"analyze",kind:x.kind,imageData:x.imageData});}
-     }
-     else if(m.type==="analysis_status"){
-       aiStatus.textContent=m.message;aiStatus.className="ai-status";aiProgress.style.width="78%";aiProgressLabel.textContent=m.message;
-       if(conn&&conn.open)conn.send({type:"ai_progress",message:m.message,percent:78});
-     }
-     else if(m.type==="analysis_stream"){
-       aiStatus.textContent="Interpreting handwriting, rows, RO, labor, parts, and approval marks…";
-       const cur=parseInt(aiProgress.style.width)||78;const pct=Math.min(96,cur+1);aiProgress.style.width=pct+"%";aiProgressLabel.textContent="Interpreting the whole URR sheet…";
-       if(conn&&conn.open)conn.send({type:"ai_progress",message:"Interpreting the whole URR sheet…",percent:pct});
-     }
-     else if(m.type==="analysis_complete"){
-       aiProgress.style.width="100%";aiProgressLabel.textContent="Analysis complete.";
-       aiStatus.textContent="Vision AI read complete — verify orange fields.";aiStatus.className="ai-status ready";
-       apply(m.kind,m.result);ds.textContent="Updated from phone";ds.className="status sync";
-       if(conn&&conn.open)conn.send({type:"analysis_done",ro:(m.result&&m.result.ro)||state.ro||""});
-       setTimeout(()=>{if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected"}},1200);
-     }
-     else if(m.type==="ai_error"){
-       aiProgressLabel.textContent="Analysis stopped.";aiStatus.textContent="Vision AI error: "+m.message;aiStatus.className="ai-status error";
-       if(conn&&conn.open)conn.send({type:"analysis_error",message:m.message});
-     }
-   };
-   aiWorker.onerror=e=>{aiStatus.textContent="Vision AI worker error. Refresh and retry.";aiStatus.className="ai-status error";console.error(e);};
+Rules: Extract every repair row in order. RO is the repair order number if visible. Normalize door side=DS, off door side=ODS, wheel bearing pack=WBP. Hours must preserve the intended handwritten decimal exactly (.3 becomes 0.3). Parts is the handwritten dollar amount only. Do not calculate totals. Do not omit RECON-looking rows if labor/parts are quoted. Never invent a number; lower confidence below 0.82 when uncertain and explain briefly.`;
  }
- function analyzePhoto(kind,imageData){
-   if(!aiWorker) makeAIWorker();
+
+ function cleanJSONText(s){
+   s=String(s||"").trim().replace(/[“”]/g,'"').replace(/[‘’]/g,"'");
+   const first=s.indexOf("{"),last=s.lastIndexOf("}");
+   if(first>=0&&last>first)s=s.slice(first,last+1);
+   return s.replace(/,\s*([}\]])/g,"$1");
+ }
+
+ function fallbackVisionResult(raw,kind){
+   const t=String(raw||"").replace(/\r/g,"");
+   const ro=(t.match(/\b(?:RO|REPAIR\s*ORDER|WO)\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i)||[])[1]||"";
+   return {ro,jobs:[],notes:["Vision result could not be structured automatically. Review source photo."]};
+ }
+
+ async function analyzePhoto(kind,imageData){
+   currentPhoto={kind,imageData};
    sourceImg.src=imageData;sourceWrap.style.display="block";
-   pendingAI={kind,imageData};aiProgress.style.width="2%";aiProgressLabel.textContent="Photo received. Preparing local vision AI…";if(conn&&conn.open)conn.send({type:"ai_progress",message:"Photo received. Preparing analysis…",percent:2});
-   if(!modelStarted){modelStarted=true;aiWorker.postMessage({type:"load"});}
-   else if(aiReady){pendingAI=null;aiWorker.postMessage({type:"analyze",kind,imageData});}
-   else{aiStatus.textContent="Vision AI is still loading. The photo is queued automatically.";}
+   try{
+     setAIProgress(2,"Photo received. Preparing local vision AI…");
+     await ensureVisionModel();
+     setAIProgress(76,"Reading the whole URR sheet…");
+     const {load_image,TextStreamer}=hf;
+     const image=await load_image(imageData);
+     const messages=[{role:"user",content:[{type:"image",image:imageData},{type:"text",text:promptFor(kind)}]}];
+     const prompt=processor.apply_chat_template(messages,{add_generation_prompt:true});
+     const inputs=await processor(prompt,[image],{do_image_splitting:true});
+     let streamed="",streamPct=78;
+     const streamer=new TextStreamer(processor.tokenizer,{
+       skip_prompt:true,
+       skip_special_tokens:true,
+       callback_function:chunk=>{
+         streamed+=chunk;
+         streamPct=Math.min(96,streamPct+0.7);
+         setAIProgress(streamPct,"Interpreting handwriting, RO, rows, labor, parts and marks…");
+       }
+     });
+     const output=await model.generate({
+       ...inputs,
+       do_sample:false,
+       repetition_penalty:1.05,
+       max_new_tokens:900,
+       streamer,
+       return_dict_in_generate:true
+     });
+     let finalText=streamed;
+     try{
+       const decoded=processor.batch_decode(output.sequences,{skip_special_tokens:true});
+       if(decoded&&decoded[0])finalText=decoded[0];
+     }catch{}
+     let parsed;
+     try{parsed=JSON.parse(cleanJSONText(finalText));}
+     catch{parsed=fallbackVisionResult(finalText,kind);}
+     setAIProgress(100,"Analysis complete.","ready");
+     apply(kind,parsed);
+     if(conn&&conn.open)conn.send({type:"analysis_done",ro:(parsed&&parsed.ro)||state.ro||""});
+     ds.textContent="Updated from phone";ds.className="status sync";
+     setTimeout(()=>{if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected";}},1200);
+   }catch(e){
+     console.error(e);
+     setAIProgress(parseInt(aiProgress.style.width)||5,"Vision AI error: "+(e?.message||String(e)),"error");
+     if(conn&&conn.open)conn.send({type:"analysis_error",message:e?.message||String(e)});
+   }
  }
-
  const save=()=>localStorage.setItem("urr_state",JSON.stringify(state));
  let conn=null,peer=null;
  q.innerHTML='<span class="spinner"></span> Starting phone pairing…';
