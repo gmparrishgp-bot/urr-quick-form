@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>URR Quick Form</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1400px;margin:auto;padding:20px}.top{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{font-size:28px;font-weight:800}.muted{color:#667085}.card{background:#fff;border:1px solid #d8dee9;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}.grid{display:grid;grid-template-columns:320px 1fr;gap:16px}.qrbox{text-align:center}.qr{width:220px;height:220px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}.qr img,.qr canvas{width:220px!important;height:220px!important}.status{font-weight:700;padding:6px 10px;border-radius:999px;display:inline-block;background:#fff1cc;color:#8a6200}.status.connected{background:#dff7e8;color:#147a3f}.status.error{background:#fee4e2;color:#b42318}.status.sync{background:#e8f1ff;color:#175cd3}.ro-row{display:flex;gap:8px;align-items:center;margin:12px 0}.ro-row input{font-size:20px;font-weight:700;padding:10px 12px;width:220px;border:2px solid #98a2b3;border-radius:8px}.banner{padding:10px 12px;border-radius:8px;margin:10px 0;background:#fff4e5;border:1px solid #f7b955;display:none}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;background:#172033;color:#fff}.btn.secondary{background:#eef2f6;color:#172033}.btn.copy{background:#0b6bcb}.btn.small{padding:7px 10px;font-size:12px}.jobs{display:flex;flex-direction:column;gap:10px}.job{display:grid;grid-template-columns:75px 120px minmax(260px,1fr) 90px 100px 100px 230px;gap:8px;align-items:center;border:1px solid #e4e7ec;border-radius:10px;padding:10px;background:#fff}.job.low{border:2px solid #f79009;background:#fffcf5}.job input,.job select{width:100%;padding:8px;border:1px solid #cfd4dc;border-radius:6px}.job input.field-low{border:2px solid #f79009;background:#fffcf5}.title{font-weight:700}.price{font-weight:800}.actions{display:flex;gap:6px;align-items:center}.copied{font-size:11px;color:#147a3f;font-weight:700}.comment{grid-column:1/-1;color:#8a6200;font-size:12px}.source-gallery{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.source-gallery img{width:170px;max-height:240px;object-fit:contain;border-radius:8px;border:1px solid #d8dee9;background:#fff}.ai-status{padding:10px 12px;border-radius:8px;background:#eef2f6;margin:10px 0;font-weight:700}.ai-status.ready{background:#dff7e8;color:#147a3f}.ai-status.error{background:#fee4e2;color:#b42318}.progress-wrap{height:14px;background:#e4e7ec;border-radius:999px;overflow:hidden;margin:8px 0 4px}.progress-bar{height:100%;width:0%;background:#175cd3;transition:width .25s ease}.progress-label{font-size:12px;color:#667085}.phone{max-width:520px;margin:0 auto;padding:22px}.phone h1{text-align:center}.big{display:block;width:100%;font-size:22px;padding:22px;margin:18px 0;border:0;border-radius:14px;font-weight:800;color:#fff;background:#172033;text-align:center}.big.approval{background:#0b6bcb}.phone input[type=file]{display:none}.msg{padding:12px;border-radius:10px;background:#eef2f6;margin-top:12px;text-align:center}.msg.connected{background:#dff7e8;color:#147a3f}.msg.error{background:#fee4e2;color:#b42318}.retry-link{display:block;margin-top:10px;font-weight:800;text-decoration:underline;cursor:pointer;color:#175cd3}.spinner{display:inline-block;width:16px;height:16px;border:2px solid #ddd;border-top-color:#172033;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:900px){.grid{grid-template-columns:1fr}.job{grid-template-columns:60px 100px 1fr 80px 90px}.price{grid-column:1/3}.actions{grid-column:3/-1}}@media(max-width:620px){.wrap{padding:10px}.brand{font-size:22px}}
+</style>
+</head>
+<body><div id="app"></div>
+<script>
+"use strict";
+const RATE=199;
+const HEADER_COLS={
+  make:{x0:.055,x1:.165},
+  model:{x0:.165,x1:.285},
+  stock:{x0:.285,x1:.395},
+  ro:{x0:.395,x1:.480},
+  date:{x0:.480,x1:.565},
+  tech:{x0:.565,x1:.655},
+  outfitter:{x0:.655,x1:.785}
+};
+const qs=new URLSearchParams(location.search);
+const phoneMode=qs.get("mode")==="phone" && qs.get("peer");
+
+function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
+function calc(h,p){h=parseFloat(h);p=parseFloat(p);if(Number.isNaN(h)&&Number.isNaN(p))return null;return Math.ceil((((Number.isNaN(h)?0:h*RATE)+(Number.isNaN(p)?0:p))/5))*5;}
+function money(v){return v==null?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});}
+function normKey(t){return String(t||"").toUpperCase().replace(/[^A-Z0-9]+/g," ").trim();}
+function tokenSet(t){return new Set(normKey(t).split(/\s+/).filter(x=>x.length>1));}
+function titleSimilarity(a,b){
+ const A=tokenSet(a),B=tokenSet(b);if(!A.size||!B.size)return 0;
+ let same=0;for(const x of A)if(B.has(x))same++;
+ return same/Math.max(A.size,B.size);
+}
+function simpleHash(s){
+ s=String(s||"");let h=2166136261>>>0;
+ for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+ return (h>>>0).toString(36);
+}
+function normalized(t){return String(t||"").replace(/curb\s*side|door\s*side/gi,"DS").replace(/driver\s*side|off\s*door\s*side/gi,"ODS").replace(/wheel\s*bearing\s*pack/gi,"WBP").replace(/\s+/g," ").trim();}
+function findRO(t){for(const p of [/\bRO\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i,/\bREPAIR\s+ORDER\s*[:#-]?\s*(\d{4,8})\b/i,/\bWO\s*[:#-]?\s*(\d{4,8})\b/i]){const m=t.match(p);if(m)return m[1]}return "";}
+function hours(line){for(const p of [/\b(?:LABOR|LAB|HRS?|HOURS?)\s*[:=-]?\s*(\.?\d+(?:\.\d+)?)\b/i,/\b(\d+(?:\.\d+)?)\s*(?:HRS?|HOURS?)\b/i]){const m=line.match(p);if(m)return m[1].replace(/^\./,"0.")}return "";}
+function parts(line){for(const p of [/\b(?:PARTS?|PTS?)\s*[:=-]?\s*\$?\s*(\d+(?:\.\d{1,2})?)/i,/\$\s*(\d+(?:\.\d{1,2})?)/]){const m=line.match(p);if(m)return m[1]}return "";}
+function strip(line){return normalized(line.replace(/\b(?:LABOR|LAB|HRS?|HOURS?|PARTS?|PTS?)\b\s*[:=-]?\s*\$?\s*\.?\d+(?:\.\d+)?/gi," ").replace(/\$\s*\d+(?:\.\d+)?/g," ").replace(/\b\d+(?:\.\d+)?\s*(?:HRS?|HOURS?)\b/gi," "));}
+function parseQuote(text){
+ const lines=text.replace(/\r/g,"").split("\n").map(x=>x.trim()).filter(Boolean),jobs=[];let pending="";
+ for(const raw of lines){let line=normalized(raw);if(line.length<3||/^(RO|REPAIR ORDER|CUSTOMER|VIN|STOCK|DATE|TECH|TECHNICIAN)\b/i.test(line))continue;
+ const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+(.+)/);let num="",body=line;if(nm){num=nm[1];body=nm[2]}
+ const h=hours(line),p=parts(line),meaning=/[A-Za-z]{3,}/.test(body);
+ if((h||p)&&meaning){let title=strip(body).replace(/^[-:]+|[-:]+$/g,"").trim();if(pending){title=(pending+" "+title).trim();pending=""}jobs.push({num:num||jobs.length+1,title:title||"REVIEW TECH DESCRIPTION",hours:h,parts:p,status:"PENDING",confidence:.7,comment:"Browser-read result — verify handwriting."});}
+ else if(num&&meaning){pending=body;} else if(meaning&&line.length>12){pending=pending?pending+" "+line:line;}
+ }
+ if(!jobs.length){lines.filter(x=>/[A-Za-z]{4,}/.test(x)).slice(0,12).forEach((x,i)=>jobs.push({num:i+1,title:strip(x),hours:hours(x),parts:parts(x),status:"PENDING",confidence:.45,comment:"Low-confidence browser read."}));}
+ return {ro:findRO(text),jobs,notes:["Local browser OCR used. Verify flagged fields before DMS copy."]};
+}
+function parseApproval(text){
+ const lines=text.replace(/\r/g,"").split("\n").map(normalized).filter(Boolean),jobs=[];let last="";
+ for(const line of lines){const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+/);if(nm)last=nm[1];let s="";if(/\b(?:FIX|APPROVE[DS]?|APPROVED|YES)\b/i.test(line))s="APPROVED";else if(/\b(?:AS\s*IS|DECLINE[DS]?|DECLINED|NO)\b/i.test(line))s="DECLINED";else if(/\bRECON\b/i.test(line))s="RECON";else if(/\bNOTE\b/i.test(line))s="NOTE";if(s)jobs.push({num:last||jobs.length+1,status:s,title:strip(line)});}
+ return {ro:findRO(text),jobs,notes:jobs.length?[]:["Approval marks were not read confidently. Review statuses."]};
+}
+async function compress(file,max=1280,q=.86){return new Promise((res,rej)=>{const r=new FileReader(),img=new Image();r.onerror=rej;r.onload=()=>img.src=r.result;img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q));};r.readAsDataURL(file);});}
+async function analyze(data,kind,progress){if(typeof Tesseract==="undefined")throw new Error("Photo reader did not load.");const r=await Tesseract.recognize(data,"eng",{logger:m=>{if(m.status==="recognizing text")progress(Math.round((m.progress||0)*100))}});const text=r.data.text||"";if(!text.trim())throw new Error("No readable text found. Retake closer.");return kind==="approval"?parseApproval(text):parseQuote(text);}
+
+function phoneApp(){
+ const host=qs.get("peer");
+ app.innerHTML=`<div class="phone"><h1>URR Quick Form</h1><div id="pstatus" class="msg">Connecting to computer…</div><label id="quoteLabel" class="big" for="quote">TAKE QUOTE PHOTO</label><input id="quote" type="file" accept="image/*" capture="environment"><label class="big approval" for="approval">TAKE APPROVAL PHOTO</label><input id="approval" type="file" accept="image/*" capture="environment"><div id="pmsg" class="msg">Waiting for connection.</div></div>`;
+ const ps=document.getElementById("pstatus"),pm=document.getElementById("pmsg"),quoteLabel=document.getElementById("quoteLabel");
+ function setPhoneConnectionError(message){
+   ps.className="msg error";
+   ps.innerHTML=`${message}<div class="retry-link" style="text-decoration:none;color:inherit;cursor:default">Leave this page open, refresh the computer page, then scan its new QR with the phone camera.</div>`;
+ }
+
+ if(typeof Peer==="undefined"){setPhoneConnectionError("Pairing library did not load.");return;}
+ const peer=new Peer();let conn=null;
+ peer.on("open",()=>{
+   conn=peer.connect(host,{reliable:true});
+   conn.on("open",()=>{
+     ps.textContent="Connected to computer";
+     ps.className="msg connected";
+     pm.textContent="Ready to take a photo.";
+     pm.className="msg connected";
+   });
+   conn.on("data",d=>{
+     if(!d)return;
+     if(d.type==="ro"){pm.textContent=d.ro?`RO #${d.ro}`:"Ready to take a photo.";}
+     else if(d.type==="ai_progress"){
+       const pct=Number.isFinite(d.percent)?` ${d.percent}%`:"";
+       pm.textContent=(d.message||"Computer is reading the photo…")+pct;
+       pm.className="msg";
+     }else if(d.type==="analysis_done"){
+       pm.textContent=d.ro?`Analysis complete — RO #${d.ro}`:"Analysis complete. Review the computer.";
+       pm.className="msg connected";
+     }else if(d.type==="analysis_error"){
+       pm.textContent="Computer could not finish the read. Review the computer.";
+       pm.className="msg error";
+     }else if(d.type==="request_additional_page"){
+       quoteLabel.textContent="TAKE NEXT PAGE PHOTO";
+       pm.textContent="Computer is ready for another URR page.";
+       pm.className="msg connected";
+       quoteLabel.scrollIntoView({behavior:"smooth",block:"center"});
+     }
+   });
+   conn.on("error",e=>{
+     console.error(e);
+     ps.textContent="Phone connection error — refresh the computer and scan its new QR.";
+     ps.className="msg error";
+   });
+   conn.on("close",()=>{
+     ps.textContent="Phone disconnected — refresh the computer and scan its new QR.";
+     ps.className="msg error";
+   });
+ });
+ peer.on("error",e=>{
+   console.error(e);
+   ps.textContent="Could not connect — refresh the computer and scan its new QR.";
+   ps.className="msg error";
+ });
+ for(const kind of ["quote","approval"]){
+  document.getElementById(kind).addEventListener("change",async ev=>{
+    const f=ev.target.files[0];
+    if(!f)return;
+    if(!conn||!conn.open){pm.textContent="Phone is not connected to the computer.";pm.className="msg error";return;}
+    try{
+      pm.innerHTML='<span class="spinner"></span> Sending photo to computer…';
+      const data=await compress(f,2600,.94);
+      conn.send({type:"photo",kind,sourceImage:data,ts:Date.now()});
+      conn.send({type:"refresh",reason:kind+"_photo_sent",ts:Date.now()});
+      pm.textContent=`${kind==="quote"?"URR page":"Approval"} photo sent. Computer is reading it. Keep this page open.`;
+      pm.className="msg connected";
+    }catch(e){
+      pm.textContent=e.message||"Could not send photo";
+      pm.className="msg error";
+    }finally{
+      ev.target.value="";
+    }
+  });
+}
+}
+
+function desktopApp(){
+ let state={ro:"",jobs:[],notes:[],sheetCount:0};
+ window.state=state;
+ app.innerHTML=`<div class="wrap"><div class="top"><div><div class="brand">URR Quick Form</div><div class="muted">Phone capture → computer review → DMS copy • FINAL R5 • FIXED HEADER MAP • LIVE SYNC</div></div><span id="dstatus" class="status">Waiting for phone</span></div><div class="grid"><div class="card qrbox"><h3>Pair Phone</h3><div id="qr" class="qr">Creating QR…</div><div id="pairFallback" style="display:none"></div><p class="muted">Scan this QR with the phone camera.</p><div class="ro-row"><b>RO#</b><input id="ro" placeholder="Required" value="${esc(state.ro)}"></div><div id="roBanner" class="banner">RO# is required.</div><div class="toolbar"><button id="morePages" class="btn secondary">+ Add Additional Page</button></div></div><div class="card"><div><b>Jobs</b> <span class="muted">Review orange fields before copying.</span></div><div id="aiStatus" class="ai-status">Take the first URR photo from the phone. Use “Add Additional Page” on the computer when the URR has more sheets. Existing pages stay visible and the next sheet is appended.</div><div class="progress-wrap"><div id="aiProgress" class="progress-bar"></div></div><div id="aiProgressLabel" class="progress-label">Waiting for photo.</div><div id="sourceWrap" class="source" style="display:none;margin:12px 0"><b>Source photos</b><div id="sourceGallery" class="source-gallery"></div></div><div id="jobs" class="jobs"></div><div id="notes" class="muted" style="margin-top:12px"></div></div></div></div>`;
+ const ds=document.getElementById("dstatus"),q=document.getElementById("qr"),ro=document.getElementById("ro"),banner=document.getElementById("roBanner"),sourceWrap=document.getElementById("sourceWrap"),sourceGallery=document.getElementById("sourceGallery");
+ const aiStatus=document.getElementById("aiStatus"),aiProgress=document.getElementById("aiProgress"),aiProgressLabel=document.getElementById("aiProgressLabel");
+ let paddleModule=null,ocr=null,aiLoading=null,currentPhoto=null;
+
+ let conn=null,peer=null;
+
+ function setAIProgress(percent,message,cls=""){
+   const pct=Math.max(0,Math.min(100,Number(percent)||0));
+   aiProgress.style.width=pct+"%";
+   aiProgressLabel.textContent=message||"";
+   aiStatus.textContent=message||"";
+   aiStatus.className="ai-status"+(cls?" "+cls:"");
+   if(conn&&conn.open)conn.send({type:"ai_progress",message:message||"",percent:pct});
+ }
+
+ async function ensureHandwritingModel(){
+   if(ocr)return;
+   if(aiLoading)return aiLoading;
+   aiLoading=(async()=>{
+     setAIProgress(3,"Loading PP-OCRv5 handwriting reader…");
+     paddleModule=await import("https://cdn.jsdelivr.net/npm/@paddleocr/paddleocr-js/+esm");
+     const {PaddleOCR}=paddleModule;
+     if(!PaddleOCR)throw new Error("PaddleOCR browser SDK did not load.");
+     let sec=0;
+     const timer=setInterval(()=>{sec++;setAIProgress(Math.min(38,4+sec),`Loading PP-OCRv5 models… ${sec}s`);},1000);
+     try{
+       // Use the exact construction style documented by the official PaddleOCR.js SDK.
+       // Let the SDK choose/configure its own compatible ONNX Runtime rather than
+       // mixing it with an independently versioned onnxruntime-web CDN.
+       ocr=await PaddleOCR.create({
+         textDetectionModelName:"PP-OCRv5_mobile_det",
+         textRecognitionModelName:"PP-OCRv5_mobile_rec",
+         textDetectionBatchSize:1,
+         textRecognitionBatchSize:8,
+         ortOptions:{backend:"auto"}
+       });
+       if(typeof ocr.getInitializationSummary==="function"){
+         console.log("PaddleOCR initialization:",ocr.getInitializationSummary());
+       }
+     } finally {clearInterval(timer);}
+     setAIProgress(40,"PP-OCRv5 handwriting reader ready.","ready");
+   })().catch(e=>{aiLoading=null;throw e;});
+   return aiLoading;
+ }
+
+ function loadImg(src){
+   return new Promise((resolve,reject)=>{
+     const im=new Image();
+     im.onload=()=>resolve(im);
+     im.onerror=()=>reject(new Error("Could not open the URR photo."));
+     im.src=src;
+   });
+ }
+
+ function detectPaperRect(img){
+   const max=600,s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+   const c=document.createElement("canvas");
+   c.width=Math.max(1,Math.round(img.naturalWidth*s));c.height=Math.max(1,Math.round(img.naturalHeight*s));
+   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(img,0,0,c.width,c.height);
+   const d=ctx.getImageData(0,0,c.width,c.height).data,xs=[],ys=[];
+   for(let y=0;y<c.height;y+=2)for(let x=0;x<c.width;x+=2){
+     const i=(y*c.width+x)*4,r=d[i],g=d[i+1],b=d[i+2],lum=(r+g+b)/3,spread=Math.max(r,g,b)-Math.min(r,g,b);
+     if(lum>138&&spread<90){xs.push(x);ys.push(y);}
+   }
+   if(xs.length<500)return{x:0,y:0,w:img.naturalWidth,h:img.naturalHeight};
+   xs.sort((a,b)=>a-b);ys.sort((a,b)=>a-b);const q=(a,p)=>a[Math.max(0,Math.min(a.length-1,Math.floor(a.length*p)))];
+   let x0=q(xs,.012)/s,x1=q(xs,.988)/s,y0=q(ys,.008)/s,y1=q(ys,.994)/s;
+   if(x1-x0<img.naturalWidth*.48||y1-y0<img.naturalHeight*.58)return{x:0,y:0,w:img.naturalWidth,h:img.naturalHeight};
+   const px=(x1-x0)*.012,py=(y1-y0)*.01;
+   return{x:Math.max(0,x0-px),y:Math.max(0,y0-py),w:Math.min(img.naturalWidth-x0+px,x1-x0+2*px),h:Math.min(img.naturalHeight-y0+py,y1-y0+2*py)};
+ }
+
+ function normalizePaperCanvas(img,paper){
+   const c=document.createElement("canvas");c.width=1200;c.height=1680;
+   const ctx=c.getContext("2d",{willReadFrequently:true,alpha:false});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
+   ctx.drawImage(img,paper.x,paper.y,paper.w,paper.h,0,0,c.width,c.height);return c;
+ }
+
+ function polyBox(item,w,h){
+   const p=item?.poly||item?.polygon||[];let pts=[];
+   if(Array.isArray(p)){
+     for(const q of p){
+       if(Array.isArray(q)&&q.length>=2)pts.push([Number(q[0]),Number(q[1])]);
+       else if(q&&typeof q==="object")pts.push([Number(q.x??q[0]),Number(q.y??q[1])]);
+     }
+     if(!pts.length&&p.length>=8&&typeof p[0]==="number")for(let i=0;i+1<p.length;i+=2)pts.push([Number(p[i]),Number(p[i+1])]);
+   }
+   if(!pts.length)return{x0:0,y0:0,x1:w,y1:h,cx:w/2,cy:h/2,bw:w,bh:h};
+   const xs=pts.map(x=>x[0]),ys=pts.map(x=>x[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+   return{x0,y0,x1,y1,cx:(x0+x1)/2,cy:(y0+y1)/2,bw:x1-x0,bh:y1-y0};
+ }
+
+ function cleanText(s){return String(s||"").replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/\s+/g," ").trim();}
+ function normalizeRV(s){
+   s=cleanText(s);
+   const reps=[[/\boff\s*door\s*side\b/ig,"ODS"],[/\bdoor\s*side\b/ig,"DS"],[/\bwheel\s*bearing\s*pack\b/ig,"WBP"],[/\bdriver\s*side\b/ig,"ODS"],[/\bcurb\s*side\b/ig,"DS"]];
+   for(const [a,b] of reps)s=s.replace(a,b);return s;
+ }
+ function parseHoursText(s){
+   s=String(s||"").replace(/,/g,".").replace(/[Oo](?=\d|\.)/g,"0");
+   let m=s.match(/(?:^|\s)(\d*\.\d+|\d+(?:\.\d+)?)\s*(?:hrs?|hours?|hr\b)/i);
+   if(!m)m=s.match(/(?:^|\s)(\.\d+)(?:\s|$)/);
+   if(!m)return"";let v=Number(m[1]);return Number.isFinite(v)&&v>=0&&v<=30?String(v):"";
+ }
+ function parsePartsText(s){
+   s=String(s||"").replace(/,/g,"");let m=s.match(/\$\s*(\d+(?:\.\d{1,2})?)/);if(!m)return"";
+   const v=Number(m[1]);return Number.isFinite(v)?String(v):"";
+ }
+ function bareNumber(s){
+   s=String(s||"").replace(/[Oo]/g,"0").replace(/,/g,".").trim();
+   const m=s.match(/^\$?\s*(\d+(?:\.\d+)?)\s*(?:hrs?|hours?|hr)?$/i);return m?m[1]:"";
+ }
+ function lineParts(line){
+   let p=parsePartsText(line.text);if(p)return p;
+   for(const it of line.items||[]){
+     if(it.nx>=.37&&it.nx<=.56){const n=bareNumber(it.text);if(n&&Number(n)>=10&&Number(n)<=99999)return String(Number(n));}
+   }
+   return"";
+ }
+ function lineHours(line){
+   let h=parseHoursText(line.text);if(h)return h;
+   for(const it of line.items||[]){
+     if(it.nx>=.49&&it.nx<=.69){
+       let t=String(it.text||"").replace(/,/g,".").replace(/[Oo]/g,"0").trim();
+       if(/\$/.test(t))continue;
+       let m=t.match(/^(\.\d+|\d+\.\d+)\s*(?:hrs?|hours?|hr)?$/i);
+       if(!m)m=t.match(/^(\d+)\s*(?:hrs?|hours?|hr)$/i);
+       if(m){
+         const v=Number(m[1]);
+         if(Number.isFinite(v)&&v>=0&&v<=20)return String(v);
+       }
+     }
+   }
+   return"";
+ }
+
+ function stripRepairNumbers(s){
+   return normalizeRV(String(s||"")
+     .replace(/^\s*\d{1,3}\s*[.)\-:]\s*/," ")
+     .replace(/\$\s*\d+(?:[.,]\d{1,2})?/g," ")
+     .replace(/\b\d*\.\d+\s*(?:hrs?|hours?|hr)?\b/ig," ")
+     .replace(/\b\d+(?:\.\d+)?\s*(?:hrs?|hours?|hr)\b/ig," ")
+     .replace(/\b(?:recon|note)\b/ig," ")
+     .replace(/^[\s\-–—:;,.]+|[\s\-–—:;,.]+$/g," "));
+ }
+ function isPrintedNoise(s){
+   s=String(s||"").toLowerCase();
+   return /^(?:make|model|stock#?|ro#?|date|tech|outfitter|required y\/?n|problem found|repair needed|total cost|of repair|fix|authed|as is|not authed|sm\/?gm|signature|total dollars approved)$/.test(s)||
+     /bish.?s rv used|recommended repairs/.test(s);
+ }
+ function plausibleDescription(s){
+   s=stripRepairNumbers(s);if(s.length<3)return false;
+   if(/^(?:[a-z]\s+){4,}[a-z]$/i.test(s)||/^(?:1\s*){4,}/.test(s))return false;
+   return /[a-z]{2,}/i.test(s);
+ }
+ const RV_WORDS=`rear front left right side ds ods exterior interior trim reseal seal sealed loose slide slideout awning roof transition rotten docking light lights chassis battery batteries safety equipment expired replace water heater pressure relief valve tanks fabric upholstery detail carpet furnace detector detectors smoke lp propane window blind broken fender skirt bedroom bathroom toilet leaking remote panel holes spot wbp wheel bearing pack door handrail shower corner gutter spout missing fridge refrigerator drain tube bracket bent remove walls bowed compartment latch lock handle vent flapper tabs fascia outside kitchen cabinets touch up ceiling regulator flow main entry screen canvas motor jack steps clearance marker decal couch table strut floor lino linoleum cabinet drawer shade pump faucet sink converter inverter solar breaker fuse outlet gfci gfi leak cracked damaged secure adjust patch membrane skylight shroud bumper frame tongue pin box fresh gravity fill city connection coupler hitch receiver sway suspension spring equalizer stabilizer leveling thermostat generator shore cord plug socket wire wiring harness sensor hose filter`.split(/\s+/);
+ function editDistance(a,b){
+   a=a.toLowerCase();b=b.toLowerCase();const m=a.length,n=b.length,dp=new Array(n+1);for(let j=0;j<=n;j++)dp[j]=j;
+   for(let i=1;i<=m;i++){let prev=dp[0];dp[0]=i;for(let j=1;j<=n;j++){const old=dp[j];dp[j]=Math.min(dp[j]+1,dp[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=old;}}return dp[n];
+ }
+ function correctRVText(s){
+   return String(s||"").split(/(\s+|[^A-Za-z0-9/.-]+)/).map(tok=>{
+     if(!/^[A-Za-z]{4,}$/.test(tok))return tok;const low=tok.toLowerCase();if(RV_WORDS.includes(low))return tok;
+     let best=low,bd=99;for(const w of RV_WORDS){if(Math.abs(w.length-low.length)>2)continue;const d=editDistance(low,w);if(d<bd){bd=d;best=w;}}
+     const limit=low.length>=8?2:1;return bd<=limit?best:tok;
+   }).join("").replace(/\s+/g," ").trim();
+ }
+
+
+ function groupProjection(proj,startY,gap,minTotal){
+   const ys=[];for(let y=0;y<proj.length;y++)if(proj[y]>2)ys.push(y);const groups=[];
+   for(const y of ys){if(!groups.length||y-groups[groups.length-1][groups[groups.length-1].length-1]>gap)groups.push([y]);else groups[groups.length-1].push(y);}
+   const out=[];for(const g of groups){let total=0,weighted=0;for(let y=g[0];y<=g[g.length-1];y++){total+=proj[y];weighted+=proj[y]*y;}if(total>=minTotal)out.push(startY+Math.round(weighted/Math.max(1,total)));}return out;
+ }
+ function rgbToLabB(r,g,b){let R=r/255,G=g/255,B=b/255;R=R<=.04045?R/12.92:Math.pow((R+.055)/1.055,2.4);G=G<=.04045?G/12.92:Math.pow((G+.055)/1.055,2.4);B=B<=.04045?B/12.92:Math.pow((B+.055)/1.055,2.4);let Y=.2126*R+.7152*G+.0722*B,Z=(.0193*R+.1192*G+.9505*B)/1.08883;const f=t=>t>.008856?Math.cbrt(t):(7.787*t+16/116);return 200*(f(Y)-f(Z))+128;}
+ function detectColorSignals(canvas){
+   const c=document.createElement("canvas");c.width=600;c.height=840;
+   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(canvas,0,0,c.width,c.height);
+   const d=ctx.getImageData(0,0,c.width,c.height).data,W=c.width,H=c.height;
+   const redP=new Array(H).fill(0),blueP=new Array(H).fill(0),greenFix=new Array(H).fill(0),greenAsIs=new Array(H).fill(0);
+
+   for(let y=Math.round(.18*H);y<H;y++){
+     for(let x=Math.round(.12*W);x<Math.round(.72*W);x++){
+       const i=(y*W+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+       if(r>70&&r-g>12&&r-b>8&&r>g*1.08&&r>b*1.04&&r<245)redP[y]++;
+     }
+     for(let x=Math.round(.53*W);x<Math.round(.75*W);x++){
+       const i=(y*W+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+       if(rgbToLabB(r,g,b)<120&&Math.max(r,g,b)<238&&Math.max(r,g,b)-Math.min(r,g,b)>8)blueP[y]++;
+     }
+     for(let x=Math.round(.68*W);x<Math.round(.88*W);x++){
+       const i=(y*W+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+       const green=g>55&&g-r>10&&g-b>6&&g>r*1.08&&g>b*1.04;
+       if(green){if(x<.78*W)greenFix[y]++;else greenAsIs[y]++;}
+     }
+   }
+
+   const norm=arr=>groupProjection(arr,0,4,8).map(y=>y/H);
+   const red=norm(redP),blue=norm(blueP),fix=norm(greenFix),asis=norm(greenAsIs);
+
+   // Repair anchors are the colored quote/RECON/total marks used on the actual URR sheets.
+   // This detector was tuned against the uploaded URR photo set. It does not assume a
+   // printed row count, so multiline repairs and writing below the table remain possible.
+   const pts=[
+     ...red.map(y=>({y,type:"r"})),
+     ...blue.map(y=>({y,type:"b"}))
+   ].sort((a,b)=>a.y-b.y);
+
+   const clusters=[];
+   for(const p of pts){
+     const last=clusters[clusters.length-1];
+     if(last && p.y-last.y<.022){
+       last.ys.push(p.y);last.types.add(p.type);
+       last.y=last.ys.reduce((a,v)=>a+v,0)/last.ys.length;
+     }else{
+       clusters.push({y:p.y,ys:[p.y],types:new Set([p.type])});
+     }
+   }
+
+   // Blue-only marks below the form are usually the handwritten approval total/signature.
+   // A red mark below the form is retained because technicians use red RECON/NOTE dashes
+   // for legitimate repairs written beneath the printed table.
+   const anchors=clusters
+     .filter(c=>c.y<.90||c.types.has("r"))
+     .map(c=>({y:c.y,red:c.types.has("r"),blue:c.types.has("b")}));
+
+   return{red,blue,fix,asis,anchors};
+ }
+ function nearestSignal(y,signals,tol=.022){let best=Infinity;for(const s of signals)best=Math.min(best,Math.abs(y-s));return best<=tol;}
+
+ function makePageCrop(canvas,x0,y0,x1,y1,targetW=1100){
+   const sx=Math.max(0,Math.floor(x0*canvas.width)),sy=Math.max(0,Math.floor(y0*canvas.height));
+   const sw=Math.max(1,Math.floor((x1-x0)*canvas.width)),sh=Math.max(1,Math.floor((y1-y0)*canvas.height));
+   const scale=targetW/sw;
+   const c=document.createElement("canvas");
+   c.width=targetW;c.height=Math.max(80,Math.round(sh*scale));
+   const ctx=c.getContext("2d",{alpha:false});
+   ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
+   ctx.drawImage(canvas,sx,sy,sw,sh,0,0,c.width,c.height);
+   return{canvas:c,x0,y0,x1,y1};
+ }
+
+ function remapCropItems(result,meta){
+   const W=Number(result?.image?.width)||meta.canvas.width;
+   const H=Number(result?.image?.height)||meta.canvas.height;
+   return (result?.items||[]).map(it=>{
+     const b=polyBox(it,W,H);
+     const lx=b.cx/W,ly=b.cy/H;
+     const nx=meta.x0+lx*(meta.x1-meta.x0);
+     const ny=meta.y0+ly*(meta.y1-meta.y0);
+     return{
+       text:cleanText(it.text||""),score:Number(it.score??0),
+       ...b,nx,ny,nx0:meta.x0+(b.x0/W)*(meta.x1-meta.x0),
+       nx1:meta.x0+(b.x1/W)*(meta.x1-meta.x0),
+       nh:(b.bh/H)*(meta.y1-meta.y0)
+     };
+   }).filter(x=>x.text&&x.score>=.12);
+ }
+
+ function linesFromMappedItems(items){
+   items=items.slice().sort((a,b)=>a.ny-b.ny||a.nx-b.nx);
+   const lines=[];
+   for(const it of items){
+     let line=lines[lines.length-1];
+     const tol=Math.max(.006,Math.min(.018,(it.nh||.012)*.8));
+     if(!line||Math.abs(it.ny-line.ny)>tol){
+       line={items:[it],ny:it.ny};lines.push(line);
+     }else{
+       line.items.push(it);
+       line.ny=line.items.reduce((a,x)=>a+x.ny,0)/line.items.length;
+     }
+   }
+   for(const l of lines){
+     l.items.sort((a,b)=>a.nx-b.nx);
+     l.text=cleanText(l.items.map(x=>x.text).join(" "));
+     l.nx0=Math.min(...l.items.map(x=>x.nx0));
+     l.nx1=Math.max(...l.items.map(x=>x.nx1));
+     l.score=l.items.reduce((a,x)=>a+x.score,0)/l.items.length;
+   }
+   return lines;
+ }
+
+ function repairFromCrop(result,meta,anchor,signals,num){
+   const items=remapCropItems(result,meta).filter(x=>!isPrintedNoise(x.text));
+   const lines=linesFromMappedItems(items)
+     .filter(l=>!/^(?:signature|total dollars|date)\b/i.test(l.text));
+
+   let hours="",parts="",status="PENDING";
+   const titlePieces=[],scores=[];
+
+   for(const l of lines){
+     scores.push(Number(l.score)||0);
+     if(!hours)hours=lineHours(l);
+     if(!parts)parts=lineParts(l);
+     if(/\brecon\b/i.test(l.text))status="RECON";
+     else if(/\bnote\b/i.test(l.text)&&status==="PENDING")status="NOTE";
+
+     const piece=(l.items||[])
+       .filter(it=>it.nx<.58)
+       .sort((a,b)=>a.nx-b.nx)
+       .map(it=>it.text).join(" ");
+     if(/[a-z]{2,}/i.test(piece)&&!isPrintedNoise(piece))titlePieces.push(piece);
+   }
+
+   let title=correctRVText(stripRepairNumbers(titlePieces.join(" ")));
+   if(!plausibleDescription(title)){
+     title=correctRVText(stripRepairNumbers(lines.map(l=>l.text).join(" ")));
+   }
+
+   const avg=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:.25;
+   const titleLow=!plausibleDescription(title)||avg<.46;
+   if(!plausibleDescription(title))title="[HANDWRITING NEEDS REVIEW]";
+
+   const f=nearestSignal(anchor.y,signals.fix,.035);
+   const a=nearestSignal(anchor.y,signals.asis,.035);
+   if(f&&!a)status="APPROVED";
+   else if(a&&!f)status="DECLINED";
+
+   const issues=[];
+   if(titleLow)issues.push("description");
+   const hoursLow=!hours && items.some(it=>it.nx>.49&&it.nx<.64);
+   const partsLow=!parts && items.some(it=>it.nx>.36&&it.nx<.57);
+   if(hoursLow)issues.push("labor if quoted");
+   if(partsLow)issues.push("parts if quoted");
+
+   return{
+     num,status,title,hours,parts,
+     confidence:Math.max(.25,Math.min(.98,avg||.45)),
+     titleLow,hoursLow,partsLow,
+     comment:issues.length?`Verify ${issues.join(", ")} against photo.`:""
+   };
+ }
+
+
+ function groupOcrLines(result){
+   const W=Number(result?.image?.width)||1200,H=Number(result?.image?.height)||1680;
+   let raw=(result?.items||[]).map(it=>{const b=polyBox(it,W,H);return{text:cleanText(it.text||""),score:Number(it.score??0),...b,nx:b.cx/W,ny:b.cy/H,nx0:b.x0/W,nx1:b.x1/W,nh:b.bh/H};})
+     .filter(x=>x.text&&x.score>=.18&&x.ny>.08&&x.ny<.985&&!isPrintedNoise(x.text));
+   raw.sort((a,b)=>a.cy-b.cy||a.cx-b.cx);
+   const lines=[];
+   for(const it of raw){
+     let line=lines[lines.length-1];const tol=Math.max(.008,Math.min(.018,(it.nh||.012)*.72));
+     if(!line||Math.abs(it.ny-line.ny)>tol){line={items:[it],ny:it.ny};lines.push(line);}else{line.items.push(it);line.ny=line.items.reduce((a,x)=>a+x.ny,0)/line.items.length;}
+   }
+   for(const l of lines){l.items.sort((a,b)=>a.cx-b.cx);l.text=cleanText(l.items.map(x=>x.text).join(" "));l.nx0=Math.min(...l.items.map(x=>x.nx0));l.nx1=Math.max(...l.items.map(x=>x.nx1));l.score=l.items.reduce((a,x)=>a+x.score,0)/l.items.length;}
+   return lines;
+ }
+
+ function buildRepairsFromOcr(result,signals){
+   const lines=groupOcrLines(result)
+     .filter(l=>l.ny>.16&&l.ny<.995&&l.nx0<.78)
+     .filter(l=>!isPrintedNoise(l.text)&&!/^(?:signature|total dollars|date)\b/i.test(l.text));
+
+   const anchors=(signals.anchors||[]).slice().sort((a,b)=>a.y-b.y);
+
+   // Fallback only when the sheet has no usable colored quote/status marks.
+   if(!anchors.length){
+     const fallback=[];
+     for(const l of lines){
+       const title=correctRVText(stripRepairNumbers(l.text));
+       if(!plausibleDescription(title))continue;
+       const h=lineHours(l),p=lineParts(l);
+       if(h||p||/\brecon\b|\bnote\b/i.test(l.text)){
+         fallback.push({
+           num:fallback.length+1,
+           status:/\brecon\b/i.test(l.text)?"RECON":/\bnote\b/i.test(l.text)?"NOTE":"PENDING",
+           title,hours:h,parts:p,confidence:Math.max(.35,Math.min(.90,l.score||.55)),
+           titleLow:(l.score||0)<.58,hoursLow:false,partsLow:false,
+           comment:(l.score||0)<.58?"Verify description against photo.":""
+         });
+       }
+     }
+     return fallback;
+   }
+
+   // Each colored anchor marks the end/value line of one repair. Everything since the
+   // previous anchor belongs to this repair, allowing descriptions to use multiple lines.
+   const repairs=[];
+   let prevBoundary=.18;
+
+   for(let ai=0;ai<anchors.length;ai++){
+     const a=anchors[ai];
+     const next=anchors[ai+1]?.y;
+     const medGap=ai?Math.max(.018,Math.min(.06,a.y-anchors[ai-1].y)):.034;
+     const bottom=Math.min(.995,a.y+Math.min(.018,medGap*.42));
+
+     let block=lines.filter(l=>l.ny>prevBoundary&&l.ny<=bottom);
+
+     // If OCR missed the exact colored line, permit a small search around the anchor.
+     if(!block.length){
+       block=lines.filter(l=>Math.abs(l.ny-a.y)<.035);
+     }
+
+     const descItems=[];
+     let hours="",parts="",status="PENDING",scoreVals=[];
+
+     for(const l of block){
+       scoreVals.push(Number(l.score)||0);
+       if(!hours)hours=lineHours(l);
+       if(!parts)parts=lineParts(l);
+       if(/\brecon\b/i.test(l.text))status="RECON";
+       else if(/\bnote\b/i.test(l.text)&&status==="PENDING")status="NOTE";
+
+       // Description column is left of Total Cost. Keep technician wording, then strip
+       // price/labor/status fragments from the resulting text.
+       const leftText=(l.items||[])
+         .filter(it=>it.nx<.58)
+         .sort((x,y)=>x.cx-y.cx)
+         .map(it=>it.text)
+         .join(" ");
+       if(/[a-z]{2,}/i.test(leftText)&&!isPrintedNoise(leftText))descItems.push(leftText);
+     }
+
+     let raw=cleanText(descItems.join(" "));
+     let title=correctRVText(stripRepairNumbers(raw));
+
+     // If the column split removed too much, use the block's complete OCR text.
+     if(!plausibleDescription(title)){
+       title=correctRVText(stripRepairNumbers(block.map(l=>l.text).join(" ")));
+     }
+
+     const avg=scoreVals.length?scoreVals.reduce((x,y)=>x+y,0)/scoreVals.length:.35;
+     const titleLow=!plausibleDescription(title)||avg<.48;
+     if(!plausibleDescription(title))title="[HANDWRITING NEEDS REVIEW]";
+
+     // Blue-only anchor text is often RECON/NOTE. Read it from the same block.
+     const joined=block.map(l=>l.text).join(" ");
+     if(/\brecon\b/i.test(joined))status="RECON";
+     else if(/\bnote\b/i.test(joined)&&status==="PENDING")status="NOTE";
+
+     const y=a.y;
+     const f=nearestSignal(y,signals.fix,.035),as=nearestSignal(y,signals.asis,.035);
+     if(f&&!as)status="APPROVED";
+     else if(as&&!f)status="DECLINED";
+
+     const issues=[];
+     if(titleLow)issues.push("description");
+     const hoursLow=!hours && block.some(l=>l.nx1>.50);
+     const partsLow=!parts && block.some(l=>l.nx1>.38&&l.nx1<.60);
+     if(hoursLow)issues.push("labor if quoted");
+     if(partsLow)issues.push("parts if quoted");
+
+     repairs.push({
+       num:repairs.length+1,status,title,hours,parts,
+       confidence:Math.max(.30,Math.min(.96,avg||.50)),
+       titleLow,hoursLow,partsLow,
+       comment:issues.length?`Verify ${issues.join(", ")} against photo.`:""
+     });
+
+     prevBoundary=bottom-.002;
+   }
+
+   return repairs;
+ }
+
+
+ function withTimeout(promise,ms,label){
+   let timer;
+   const timeout=new Promise((_,reject)=>{
+     timer=setTimeout(()=>reject(new Error(`${label} timed out after ${Math.round(ms/1000)} seconds.`)),ms);
+   });
+   return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));
+ }
+
+
+ async function analyzePage(kind,img,paper){
+   setAIProgress(2,"Preparing URR image…");
+   const canvas=normalizePaperCanvas(img,paper);
+   const signals=detectColorSignals(canvas);
+   await ensureHandwritingModel();
+
+   const anchors=(signals.anchors||[]).slice().sort((a,b)=>a.y-b.y);
+
+   // Header crop for RO plus one enlarged crop per detected repair. Cropping before OCR
+   // gives the handwriting model much larger letters than a full-page recognition pass.
+   const metas=[];
+   metas.push(makePageCrop(canvas,HEADER_COLS.ro.x0,.105,HEADER_COLS.ro.x1,.235,620));
+
+   let prev=.18;
+   for(let i=0;i<anchors.length;i++){
+     const y=anchors[i].y;
+     const gap=i?Math.max(.018,Math.min(.08,y-anchors[i-1].y)):.034;
+     const bottom=Math.min(.998,y+Math.min(.020,gap*.46));
+     metas.push(makePageCrop(canvas,.055,Math.max(.14,prev),.755,bottom,1150));
+     prev=bottom-.002;
+   }
+
+   // No color anchors: use the full sheet as a guarded fallback.
+   if(!anchors.length){
+     metas.length=1;
+     metas.push(makePageCrop(canvas,.05,.18,.78,.98,1300));
+   }
+
+   let sec=0;
+   const timer=setInterval(()=>{
+     sec++;
+     setAIProgress(Math.min(94,42+sec*.7),`Reading handwriting… ${sec}s`);
+   },1000);
+
+   let results;
+   try{
+     results=await withTimeout(
+       ocr.predict(metas.map(x=>x.canvas),{
+         textDetLimitSideLen:1280,
+         textDetLimitType:"max",
+         textDetThresh:.22,
+         textDetBoxThresh:.28,
+         textDetUnclipRatio:1.75,
+         textRecScoreThresh:.10
+       }),
+       120000,
+       "Handwriting read"
+     );
+   }finally{clearInterval(timer);}
+
+   if(!Array.isArray(results)||!results.length)throw new Error("Handwriting reader did not return a result.");
+
+   // RO — read only the RO# column. The Stock# column immediately to the left
+   // can also contain long numbers, so never accept a header number outside this zone.
+   let ro="";
+   const headerItems=remapCropItems(results[0],metas[0])
+     .filter(x=>x.nx>=HEADER_COLS.ro.x0&&x.nx<=HEADER_COLS.ro.x1);
+
+   // Fixed form invariant: Make | Model | Stock# | RO# | Date | Tech | Outfitter.
+   // Stock# is the column immediately left of RO#. Do not search outside HEADER_COLS.ro.
+   const ht=headerItems.map(x=>x.text).join(" ");
+   const labeled=ht.match(/\bRO\s*#?\s*[:#-]?\s*(\d{4,8})\b/i);
+   if(labeled)ro=labeled[1];
+
+   if(!ro){
+     // On this form the written RO value sits below the printed RO# header, centered
+     // in a much narrower slice than Stock#. Accept only a plausible value from there.
+     const candidates=[];
+     for(const x of headerItems){
+       if(x.nx<HEADER_COLS.ro.x0+.010||x.nx>HEADER_COLS.ro.x1-.008||x.ny<.145||x.ny>.225)continue;
+       const digits=String(x.text||"").replace(/[^0-9]/g,"");
+       if(/^\d{4,8}$/.test(digits))candidates.push({digits,score:Number(x.score)||0,nx:x.nx});
+     }
+     const roCenter=(HEADER_COLS.ro.x0+HEADER_COLS.ro.x1)/2;
+     candidates.sort((a,b)=>b.score-a.score||Math.abs(a.nx-roCenter)-Math.abs(b.nx-roCenter));
+     if(candidates.length)ro=candidates[0].digits;
+   }
+
+   let jobs=[];
+   if(anchors.length){
+     for(let i=0;i<anchors.length;i++){
+       const result=results[i+1];
+       if(!result)continue;
+       jobs.push(repairFromCrop(result,metas[i+1],anchors[i],signals,i+1));
+     }
+   }else{
+     // Fallback full-sheet reconstruction only if the color anchor detector has no signal.
+     const fallbackResult=results[1];
+     if(fallbackResult)jobs=buildRepairsFromOcr(fallbackResult,signals);
+   }
+
+   if(!jobs.length)throw new Error("No repair descriptions were recognized.");
+
+   const totalMs=(results[0]?.metrics?.totalMs)||0;
+   return{
+     ro,jobs,
+     notes:[
+       `${anchors.length?anchors.length:jobs.length} repair${(anchors.length?anchors.length:jobs.length)===1?"":"s"} detected from this sheet.`,
+       anchors.length?"Repair count came from quote/RECON marks, not printed rows.":"Color anchors were unavailable; OCR fallback was used.",
+       totalMs?`OCR ${Math.round(totalMs)} ms.`:""
+     ].filter(Boolean)
+   };
+ }
+
+ function ensureRO(out){
+   const scanned=String(out?.ro||"").trim();
+   const current=String(state.ro||"").trim();
+   if(scanned && current && scanned!==current){
+     const entered=prompt(`RO mismatch. Current field is ${current}; photo reads ${scanned}. Enter the correct RO#:`, current);
+     if(!entered||!String(entered).trim())throw new Error("RO# mismatch needs verification. Nothing was added.");
+     state.ro=String(entered).trim();ro.value=state.ro;
+   }
+   if(scanned && !current){
+     if(scanned.length>6){
+       const entered=prompt(`RO# read as ${scanned}, which may be Stock#. Enter the correct RO#:`);
+       if(!entered||!String(entered).trim())throw new Error("RO# needs verification. Nothing was added.");
+       state.ro=String(entered).trim();
+     }else{
+       state.ro=scanned;
+     }
+     ro.value=state.ro;banner.style.display="none";
+     if(conn&&conn.open)conn.send({type:"ro",ro:state.ro});
+     return;
+   }
+   if(!scanned && !current){
+     const entered=prompt("RO# was not read confidently. Enter the RO#:");
+     if(!entered||!String(entered).trim())throw new Error("RO# is required. Nothing was added.");
+     state.ro=String(entered).trim();ro.value=state.ro;banner.style.display="none";
+     if(conn&&conn.open)conn.send({type:"ro",ro:state.ro});
+   }
+ }
+
+ function reconcileApproval(incoming){
+   const existing=Array.isArray(state.jobs)?state.jobs:[];
+   if(!existing.length)return false;
+
+   // Same URR form: anchor order is the strongest relationship between quote and approval.
+   if(incoming.length===existing.length){
+     let changed=0;
+     for(let i=0;i<existing.length;i++){
+       const s=String(incoming[i]?.status||"PENDING").toUpperCase();
+       if(["APPROVED","DECLINED","RECON","NOTE"].includes(s)){
+         existing[i].status=s;changed++;
+       }
+       if(Number(incoming[i]?.confidence)<Number(existing[i]?.confidence??1)){
+         existing[i].confidence=Number(incoming[i].confidence);
+         if(incoming[i]?.comment)existing[i].comment=incoming[i].comment;
+       }
+     }
+     if(changed)return true;
+   }
+
+   // Count changed or OCR missed an anchor: fall back to title + position matching.
+   const used=new Set();let matched=0;
+   for(let ai=0;ai<incoming.length;ai++){
+     const a=incoming[ai];let best=-1,bestScore=0;
+     for(let i=0;i<existing.length;i++){
+       if(used.has(i))continue;
+       let score=titleSimilarity(a?.title,existing[i]?.title);
+       if(ai===i)score+=.25;
+       if(String(a?.hours||"")&&String(a.hours)===String(existing[i]?.hours||""))score+=.08;
+       if(String(a?.parts||"")&&String(a.parts)===String(existing[i]?.parts||""))score+=.08;
+       if(score>bestScore){bestScore=score;best=i;}
+     }
+     if(best>=0&&bestScore>=.30){
+       const j=existing[best];used.add(best);matched++;
+       const s=String(a?.status||"PENDING").toUpperCase();
+       if(["APPROVED","DECLINED","RECON","NOTE"].includes(s))j.status=s;
+     }
+   }
+   if(!matched)throw new Error("Approval photo did not line up with the loaded quote. Nothing was changed.");
+   return true;
+ }
+
+ const id="urr-"+(crypto.randomUUID?crypto.randomUUID().replace(/-/g,"").slice(0,20):(Date.now()+Math.random().toString(16).slice(2)));
+ const pairUrl=`${location.origin}${location.pathname}?mode=phone&peer=${encodeURIComponent(id)}&v=urrfinal2&cb=${Date.now()}`;
+ if(typeof QRCode!=="undefined"){
+   try{
+     q.innerHTML="";
+     new QRCode(q,{text:pairUrl,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+   }catch(e){console.error(e);}
+ }
+ if(!q.querySelector("img")&&!q.querySelector("canvas")){
+   q.innerHTML="QR failed to render";
+   const fb=document.getElementById("pairFallback");
+   fb.style.display="block";
+   fb.innerHTML=`<a href="${pairUrl}" target="_blank">Open phone pairing link</a>`;
+ }
+ if(typeof Peer==="undefined"){
+   ds.textContent="Pairing library blocked";
+   ds.className="status error";
+ }else{
+   peer=new Peer(id);
+   peer.on("open",()=>{
+     ds.textContent="Waiting for phone";
+   });
+   peer.on("connection",c=>{
+     conn=c;
+     c.on("open",()=>{
+       ds.textContent="Phone connected";
+       ds.className="status connected";
+       conn.send({type:"ro",ro:state.ro});
+     });
+     c.on("data",d=>{
+       if(!d)return;
+       if(d.type==="photo"){
+         analyzePhoto(d.kind,d.sourceImage);
+         ds.textContent="Photo received — reading handwriting";
+         ds.className="status sync";
+       }
+     });
+     c.on("close",()=>{
+       ds.textContent="Phone disconnected";
+       ds.className="status";
+     });
+     c.on("error",e=>{
+       console.error(e);
+       ds.textContent="Phone connection error";
+       ds.className="status error";
+     });
+   });
+   peer.on("error",e=>{
+     console.error(e);
+     ds.textContent=`Pairing error${e?.type?": "+e.type:""}`;
+     ds.className="status error";
+   });
+ }
+ function apply(kind,out){
+   ensureRO(out);
+
+   if(kind==="quote"){
+     const incoming=Array.isArray(out?.jobs)?out.jobs:[];
+     if(!incoming.length)throw new Error("No repair jobs were read from the quote photo.");
+     const startNum=Array.isArray(state.jobs)?state.jobs.length:0;
+     const mapped=incoming.map((j,i)=>({
+       num:startNum+i+1,
+       // Quote dollars/labor do NOT make something RECON. Only an explicit read does.
+       status:["RECON","NOTE"].includes(String(j?.status||"").toUpperCase())?String(j.status).toUpperCase():"PENDING",
+       title:String(j?.title||""),
+       hours:j?.hours==null?"":String(j.hours),
+       parts:j?.parts==null?"":String(j.parts),
+       confidence:Number.isFinite(Number(j?.confidence))?Number(j.confidence):0.55,
+       titleLow:!!j?.titleLow,hoursLow:!!j?.hoursLow,partsLow:!!j?.partsLow,
+       comment:String(j?.comment||"")
+     }));
+     state.jobs=[...(Array.isArray(state.jobs)?state.jobs:[]),...mapped];
+     state.sheetCount=(Number(state.sheetCount)||0)+1;
+     state.notes=[...(state.notes||[]),`Quote sheet ${state.sheetCount}: ${(out?.notes||[]).join(" ")}`];
+   }else{
+     const incoming=Array.isArray(out?.jobs)?out.jobs:[];
+     if(!incoming.length)throw new Error("No repair jobs were read from the approval photo.");
+
+     if(!Array.isArray(state.jobs)||!state.jobs.length){
+       // Approval-only workflow: the approval sheet becomes the source document.
+       // This is valid when the original quote was never scanned.
+       state.jobs=incoming.map((j,i)=>({
+         num:Number(j?.num)||i+1,
+         status:["APPROVED","DECLINED","RECON","NOTE","PENDING"].includes(String(j?.status||"").toUpperCase())
+           ?String(j.status).toUpperCase()
+           :"PENDING",
+         title:String(j?.title||""),
+         hours:j?.hours==null?"":String(j.hours),
+         parts:j?.parts==null?"":String(j.parts),
+         confidence:Number.isFinite(Number(j?.confidence))?Number(j.confidence):0.55,
+         titleLow:!!j?.titleLow,
+         hoursLow:!!j?.hoursLow,
+         partsLow:!!j?.partsLow,
+         comment:String(j?.comment||"")
+       }));
+       state.sheetCount=1;
+       state.notes=[
+         "Approval-only workflow: no quote photo was loaded; jobs were created directly from the approval sheet.",
+         ...(Array.isArray(out?.notes)?out.notes.map(String):[])
+       ];
+     }else{
+       reconcileApproval(incoming);
+       state.notes=[...(state.notes||[]),...(Array.isArray(out?.notes)?out.notes.map(String):[])];
+     }
+   }
+
+   render();
+ }
+
+ async function analyzePhoto(kind,imageData){
+   currentPhoto={kind,imageData};
+   sourceWrap.style.display="block";
+   const thumb=document.createElement("img");
+   thumb.src=imageData;
+   thumb.alt=kind==="approval"?"Approval sheet":"URR sheet";
+   sourceGallery.appendChild(thumb);
+   try{
+     const img=await loadImg(imageData),paper=detectPaperRect(img);
+     const result=await analyzePage(kind,img,paper);
+     const count=result.jobs.length;
+     apply(kind,result);
+     const rendered=document.querySelectorAll("#jobs .job").length;
+     setAIProgress(100,
+       kind==="quote"
+         ?`Quote sheet ${state.sheetCount}: ${count} repair${count===1?"":"s"} added. ${rendered} total loaded.`
+         :`${state.sheetCount===1&&state.notes?.[0]?.startsWith("Approval-only workflow") ? "Approval sheet loaded" : "Approval reconciled"}. ${rendered} repair${rendered===1?"":"s"} loaded.`,
+       "ready"
+     );
+     if(conn&&conn.open)conn.send({type:"analysis_done",ro:state.ro||""});
+     ds.textContent="Updated from phone";ds.className="status sync";
+     setTimeout(()=>{if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected";}},1200);
+   }catch(e){
+     console.error(e);
+     setAIProgress(parseInt(aiProgress.style.width)||5,"URR read stopped: "+(e?.message||String(e)),"error");
+     if(conn&&conn.open)conn.send({type:"analysis_error",message:e?.message||String(e)});
+   }
+ }
+
+ function copyText(t,el){navigator.clipboard.writeText(t).then(()=>el.textContent="Copied");}
+ function render(){
+   const box=document.getElementById("jobs");
+   box.innerHTML="";
+   const list=Array.isArray(state.jobs)?state.jobs:[];
+   list.forEach((j,idx)=>{
+     try{
+       const d=document.createElement("div");d.className="job"+((j.confidence??1)<.82?" low":"");d.innerHTML=`<input class="num" type="number" value="${esc(j.num)}"><select class="status"><option>PENDING</option><option>APPROVED</option><option>DECLINED</option><option>RECON</option><option>NOTE</option></select><input class="title${j.titleLow?" field-low":""}" value="${esc(j.title)}"><input class="hours${j.hoursLow?" field-low":""}" placeholder="Hours" value="${esc(j.hours)}"><input class="parts${j.partsLow?" field-low":""}" placeholder="Parts $" value="${esc(j.parts)}"><div class="price">${money(calc(j.hours,j.parts))}</div><div class="actions"><button class="btn copy small cj">Copy Job</button><button class="btn secondary small cl">Copy Labor</button><span class="copied"></span></div>${j.comment?`<div class="comment">${esc(j.comment)}</div>`:""}`;
+       d.querySelector(".status").value=j.status||"PENDING";
+       for(const f of ["num","status","title","hours","parts"]){
+         d.querySelector("."+f).addEventListener("change",e=>{
+           j[f]=e.target.value;if(f==="num")j[f]=Number(e.target.value)||"";
+           if(f==="title")j.titleLow=false;if(f==="hours")j.hoursLow=false;if(f==="parts")j.partsLow=false;
+           render();
+         });
+       }
+       d.querySelector(".cj").onclick=()=>{
+         const marker=d.querySelector(".copied");
+         if(!state.ro){banner.style.display="block";ro.focus();marker.textContent="RO required";return;}
+         const s=j.status||"PENDING";
+         if(s==="PENDING"){marker.textContent="Set status first";return;}
+         const total=calc(j.hours,j.parts);
+         if(s==="APPROVED"&&total==null){marker.textContent="Price missing";return;}
+         const pre=s==="APPROVED"?`(APPROVED ${money(total)})`:`(${s})`;
+         copyText(`${pre} ${j.num}. ${String(j.title||"").toUpperCase()}`,marker);
+       };
+       d.querySelector(".cl").onclick=()=>{
+         const marker=d.querySelector(".copied");
+         if(j.status!=="APPROVED"){marker.textContent="Not approved";return;}
+         if(String(j.hours??"")===""){marker.textContent="No labor";return;}
+         copyText(String(j.hours),marker);
+       };
+       box.appendChild(d);
+     }catch(e){
+       console.error("Could not render OCR row",idx+1,e,j);
+       const err=document.createElement("div");
+       err.className="banner";
+       err.style.display="block";
+       err.textContent=`Row ${idx+1} was read but could not be displayed: ${e.message||e}`;
+       box.appendChild(err);
+     }
+   });
+   document.getElementById("notes").textContent=(state.notes||[]).join(" • ");
+ }
+ ro.addEventListener("input",()=>{state.ro=ro.value.trim();banner.style.display=state.ro?"none":"block";if(conn&&conn.open)conn.send({type:"ro",ro:state.ro})});
+ document.getElementById("morePages").onclick=()=>{
+   if(!conn||!conn.open){
+     aiStatus.textContent="Phone is not connected. Scan the QR before adding another page.";
+     aiStatus.className="ai-status error";
+     return;
+   }
+   conn.send({type:"request_additional_page",ts:Date.now()});
+   aiStatus.textContent="Phone is ready for the next URR page. Existing pages and extracted jobs are being kept.";
+   aiStatus.className="ai-status ready";
+   aiProgressLabel.textContent="Waiting for next page photo.";
+ };
+ render();
+}
+if(phoneMode)phoneApp();else desktopApp();
+</script></body></html>
