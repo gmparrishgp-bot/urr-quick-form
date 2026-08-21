@@ -20,7 +20,7 @@ function variant(img,kind){
 try {
   const ocr=await PaddleOCR.create({textDetectionModelName:'PP-OCRv5_mobile_det',textRecognitionModelName:'PP-OCRv5_mobile_rec',textDetectionBatchSize:1,textRecognitionBatchSize:8,ortOptions:{backend:'wasm',wasmPaths:'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/',numThreads:1,simd:true}});
   const variants=['original','contrast','soft','threshold'];
-  const fixtures=['01','02'];
+  const fixtures=['01','02','07','16'];
   const results=[];
   for(const fixture of fixtures){
     const img=await loadImg('/tests/'+fixture+'.jpg');
