@@ -1,0 +1,169 @@
+ const RV_WORDS=`rear front left right side ds ods exterior interior trim reseal seal sealed loose slide slideout awning roof transition rotten docking light lights chassis battery batteries safety equipment expired replace water heater pressure relief valve tanks fabric upholstery detail carpet furnace detector detectors smoke lp propane window blind broken fender skirt bedroom bathroom toilet leaking remote panel holes spot wbp wheel bearing pack door handrail shower corner gutter spout missing fridge refrigerator drain tube bracket bent remove walls bowed compartment latch lock handle vent flapper tabs fascia outside kitchen cabinets touch up ceiling regulator flow main entry screen canvas motor jack steps clearance marker decal couch table strut floor lino linoleum cabinet drawer shade pump faucet sink converter inverter solar breaker fuse outlet gfci gfi leak cracked damaged secure adjust patch membrane skylight shroud bumper frame tongue pin box fresh gravity fill city connection coupler hitch receiver sway suspension spring equalizer stabilizer leveling thermostat generator shore cord plug socket wire wiring harness sensor hose filter spot reseal exterior entry tear shower out date expired safety equipment rivet riveted thermostat faceplate range vent curtain tank switch seals skirting compartment handrail chassis upholstery detail pressure relief fabric awning missing solid steps rear bedroom cabinets touch smoke ceiling bathroom toilet leaking holes remote working control `.split(/\s+/);
+ function editDistance(a,b){
+   a=a.toLowerCase();b=b.toLowerCase();const m=a.length,n=b.length,dp=new Array(n+1);for(let j=0;j<=n;j++)dp[j]=j;
+   for(let i=1;i<=m;i++){let prev=dp[0];dp[0]=i;for(let j=1;j<=n;j++){const old=dp[j];dp[j]=Math.min(dp[j]+1,dp[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=old;}}return dp[n];
+ }
+ function correctRVText(s){
+   return String(s||"").split(/(\s+|[^A-Za-z0-9/.-]+)/).map(tok=>{
+     if(!/^[A-Za-z]{4,}$/.test(tok))return tok;const low=tok.toLowerCase();if(RV_WORDS.includes(low))return tok;
+     let best=low,bd=99;for(const w of RV_WORDS){if(Math.abs(w.length-low.length)>2)continue;const d=editDistance(low,w);if(d<bd){bd=d;best=w;}}
+     const limit=low.length>=8?2:1;return bd<=limit?best:tok;
+   }).join("").replace(/\s+/g," ").trim();
+ }
+
+
+ function groupProjection(proj,startY,gap,minTotal){
+   const ys=[];for(let y=0;y<proj.length;y++)if(proj[y]>2)ys.push(y);const groups=[];
+   for(const y of ys){if(!groups.length||y-groups[groups.length-1][groups[groups.length-1].length-1]>gap)groups.push([y]);else groups[groups.length-1].push(y);}
+   const out=[];for(const g of groups){let total=0,weighted=0;for(let y=g[0];y<=g[g.length-1];y++){total+=proj[y];weighted+=proj[y]*y;}if(total>=minTotal)out.push(startY+Math.round(weighted/Math.max(1,total)));}return out;
+ }
+ function rgbToLabB(r,g,b){let R=r/255,G=g/255,B=b/255;R=R<=.04045?R/12.92:Math.pow((R+.055)/1.055,2.4);G=G<=.04045?G/12.92:Math.pow((G+.055)/1.055,2.4);B=B<=.04045?B/12.92:Math.pow((B+.055)/1.055,2.4);let Y=.2126*R+.7152*G+.0722*B,Z=(.0193*R+.1192*G+.9505*B)/1.08883;const f=t=>t>.008856?Math.cbrt(t):(7.787*t+16/116);return 200*(f(Y)-f(Z))+128;}
+
+ function detectHeaderColumns(canvas){
+   // The printed header is invariant:
+   // Make | Model | Stock# | RO# | Date | Tech | Outfitter.
+   // We snap the known boundaries to the actual photographed grid lines so perspective
+   // does not shift Stock# into RO#.
+   const expected=[.050,.195,.313,.431,.550,.672,.795,.925];
+   const ctx=canvas.getContext("2d",{willReadFrequently:true});
+   const W=canvas.width,H=canvas.height;
+   const y0=Math.floor(.105*H),y1=Math.floor(.225*H);
+   const data=ctx.getImageData(0,y0,W,Math.max(1,y1-y0)).data;
+   const score=new Array(W).fill(0);
+   const rh=y1-y0;
+   for(let y=0;y<rh;y++){
+     for(let x=0;x<W;x++){
+       const k=(y*W+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+       const lum=.299*r+.587*g+.114*b;
+       if(lum<145)score[x]++;
+     }
+   }
+   const bounds=[];
+   for(const ex of expected){
+     const center=Math.round(ex*W),radius=Math.round(.042*W);
+     let bx=center,bs=-1;
+     for(let x=Math.max(0,center-radius);x<=Math.min(W-1,center+radius);x++){
+       if(score[x]>bs){bs=score[x];bx=x;}
+     }
+     // Require a meaningful vertical line; otherwise use the invariant position.
+     bounds.push(bs>rh*.20?bx/W:ex);
+   }
+   for(let k=1;k<bounds.length;k++){
+     if(bounds[k]<=bounds[k-1]+.055)bounds[k]=expected[k];
+   }
+   return{
+     make:{x0:bounds[0],x1:bounds[1]},
+     model:{x0:bounds[1],x1:bounds[2]},
+     stock:{x0:bounds[2],x1:bounds[3]},
+     ro:{x0:bounds[3],x1:bounds[4]},
+     date:{x0:bounds[4],x1:bounds[5]},
+     tech:{x0:bounds[5],x1:bounds[6]},
+     outfitter:{x0:bounds[6],x1:bounds[7]}
+   };
+ }
+
+ function groupProjectionScored(proj,gap=4,minTotal=100){
+   const ys=[];
+   for(let y=0;y<proj.length;y++)if(proj[y]>2)ys.push(y);
+   const groups=[];
+   for(const y of ys){
+     if(!groups.length||y-groups[groups.length-1][groups[groups.length-1].length-1]>gap)groups.push([y]);
+     else groups[groups.length-1].push(y);
+   }
+   const out=[];
+   for(const g of groups){
+     let total=0,weighted=0;
+     for(let y=g[0];y<=g[g.length-1];y++){total+=proj[y];weighted+=proj[y]*y;}
+     if(total>=minTotal)out.push({y:(weighted/Math.max(1,total))/proj.length,total});
+   }
+   return out;
+ }
+
+
+ function detectGridGap(canvas){
+   const c=document.createElement("canvas");c.width=600;c.height=840;
+   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(canvas,0,0,c.width,c.height);
+   const d=ctx.getImageData(0,0,c.width,c.height).data,W=c.width,H=c.height;
+   const x0=Math.round(.03*W),x1=Math.round(.96*W),scores=[];
+   for(let y=Math.round(.18*H);y<Math.round(.86*H);y++){
+     const dark=new Uint8Array(x1-x0);
+     for(let x=x0;x<x1;x++){
+       let hit=false;
+       for(let yy=Math.max(0,y-1);yy<=Math.min(H-1,y+1);yy++){
+         const k=(yy*W+x)*4,r=d[k],g=d[k+1],b=d[k+2],lum=.299*r+.587*g+.114*b;
+         if(lum<145){hit=true;break;}
+       }
+       if(hit)dark[x-x0]=1;
+     }
+     let count=0;
+     for(let i=0;i<dark.length;i++){
+       let on=false;
+       for(let j=Math.max(0,i-3);j<=Math.min(dark.length-1,i+3);j++){if(dark[j]){on=true;break;}}
+       if(on)count++;
+     }
+     if(count>W*.35)scores.push(y);
+   }
+   const groups=[];
+   for(const y of scores){if(!groups.length||y-groups[groups.length-1][groups[groups.length-1].length-1]>4)groups.push([y]);else groups[groups.length-1].push(y);}
+   const centers=groups.map(g=>g.reduce((a,b)=>a+b,0)/g.length/H);
+   const gaps=[];for(let i=1;i<centers.length;i++){const v=centers[i]-centers[i-1];if(v>.020&&v<.055)gaps.push(v);}
+   gaps.sort((a,b)=>a-b);return gaps.length?gaps[Math.floor(gaps.length/2)]:0;
+ }
+
+
+ function detectGridTop(canvas){
+   const c=document.createElement("canvas");c.width=600;c.height=840;
+   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(canvas,0,0,c.width,c.height);
+   const d=ctx.getImageData(0,0,c.width,c.height).data,W=c.width,H=c.height;
+   let bestY=Math.round(.228*H),best=-1;
+   for(let y=Math.round(.205*H);y<=Math.round(.255*H);y++){
+     let hits=0;
+     for(let x=Math.round(.03*W);x<Math.round(.96*W);x++){
+       let dark=false;
+       for(let yy=Math.max(0,y-1);yy<=Math.min(H-1,y+1);yy++){
+         const k=(yy*W+x)*4,r=d[k],g=d[k+1],b=d[k+2],lum=.299*r+.587*g+.114*b;
+         if(lum<145){dark=true;break;}
+       }
+       if(dark)hits++;
+     }
+     if(hits>best){best=hits;bestY=y;}
+   }
+   return best>W*.34?bestY/H:.228;
+ }
+
+ function redInkDensity(canvas,x0,y0,x1,y1){
+   const W=canvas.width,H=canvas.height,ctx=canvas.getContext("2d",{willReadFrequently:true});
+   const sx=Math.max(0,Math.floor(x0*W)),sy=Math.max(0,Math.floor(y0*H));
+   const sw=Math.max(1,Math.floor((x1-x0)*W)),sh=Math.max(1,Math.floor((y1-y0)*H));
+   const d=ctx.getImageData(sx,sy,Math.min(sw,W-sx),Math.min(sh,H-sy)).data;
+   let hit=0,total=0;
+   for(let i=0;i<d.length;i+=4){
+     const r=d[i],g=d[i+1],b=d[i+2];
+     if(r>55&&r-g>7&&r-b>4&&r>g*1.035&&r>b*1.015&&r<250)hit++;
+     total++;
+   }
+   return hit/Math.max(1,total);
+ }
+
+
+ function detectBelowRed(canvas,yMin){
+   const c=document.createElement("canvas");c.width=600;c.height=840;
+   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(canvas,0,0,c.width,c.height);
+   const d=ctx.getImageData(0,0,c.width,c.height).data,W=c.width,H=c.height;
+   const proj=new Array(H).fill(0);
+   for(let y=Math.max(0,Math.round(yMin*H));y<Math.round(.992*H);y++){
+     let hits=0;
+     for(let x=Math.round(.25*W);x<Math.round(.75*W);x++){
+       const k=(y*W+x)*4,r=d[k],g=d[k+1],b=d[k+2];
+       if(r>55&&r-g>7&&r-b>4&&r>g*1.035&&r>b*1.015&&r<250)hits++;
+     }
+     proj[y]=hits;
+   }
+   return groupProjectionScored(proj,3,22)
+     .filter(x=>x.y>yMin&&x.y<.992)
+     .map(x=>({y:x.y,total:x.total}));
+ }
+
+ function buildPhysicalRows(canvas,rowGap){
+   const top=detectGridTop(canvas);
+   const rows=[];
