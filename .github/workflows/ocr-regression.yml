@@ -1,0 +1,20 @@
+name: URR OCR Regression
+
+on:
+  push:
+    branches: [urr-ocr-test2]
+  workflow_dispatch:
+
+jobs:
+  trocr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install OCR runtime
+        run: npm install --no-save @huggingface/transformers@3.8.1 sharp
+      - name: Run handwriting regression
+        run: node tests/ocr-test.mjs
