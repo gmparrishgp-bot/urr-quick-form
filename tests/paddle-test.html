@@ -18,25 +18,19 @@ function variant(img,kind){
   x.putImageData(im,0,0);return c;
 }
 try {
-  out.textContent='loading';
-  const ocr=await PaddleOCR.create({
-    textDetectionModelName:'PP-OCRv5_mobile_det',textRecognitionModelName:'PP-OCRv5_mobile_rec',
-    textDetectionBatchSize:1,textRecognitionBatchSize:8,
-    ortOptions:{backend:'wasm',wasmPaths:'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/',numThreads:1,simd:true}
-  });
-  const img=await loadImg('/tests/01.jpg');
+  const ocr=await PaddleOCR.create({textDetectionModelName:'PP-OCRv5_mobile_det',textRecognitionModelName:'PP-OCRv5_mobile_rec',textDetectionBatchSize:1,textRecognitionBatchSize:8,ortOptions:{backend:'wasm',wasmPaths:'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/',numThreads:1,simd:true}});
   const variants=['original','contrast','soft','threshold'];
+  const fixtures=['01','02'];
   const results=[];
-  for(const kind of variants){
-    const [result]=await ocr.predict(variant(img,kind),{
-      textDetLimitSideLen:1600,textDetLimitType:'max',textDetThresh:.12,textDetBoxThresh:.12,textDetUnclipRatio:1.8,textRecScoreThresh:.03
-    });
-    const text=(result?.items||[]).map(x=>x.text).join(' ').trim();
-    results.push({kind,text,items:result?.items||[],metrics:result?.metrics||{}});
-    out.textContent=results.map(r=>r.kind+': '+r.text).join('\n');
+  for(const fixture of fixtures){
+    const img=await loadImg('/tests/'+fixture+'.jpg');
+    for(const kind of variants){
+      const [result]=await ocr.predict(variant(img,kind),{textDetLimitSideLen:1600,textDetLimitType:'max',textDetThresh:.12,textDetBoxThresh:.12,textDetUnclipRatio:1.8,textRecScoreThresh:.03});
+      const text=(result?.items||[]).map(x=>x.text).join(' ').trim();
+      results.push({fixture,kind,text,items:result?.items||[],metrics:result?.metrics||{}});
+      out.textContent=results.map(r=>r.fixture+' '+r.kind+': '+r.text).join('\n');
+    }
   }
   window.__ocr={done:true,results};
-} catch(e) {
-  out.textContent='ERROR '+(e?.stack||e);window.__ocr={done:true,error:String(e?.stack||e)};
-}
+}catch(e){out.textContent='ERROR '+(e?.stack||e);window.__ocr={done:true,error:String(e?.stack||e)}}
 </script>
