@@ -8,7 +8,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  trocr:
+  trocr-baseline:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install TrOCR runtime
+        run: npm install --no-save @huggingface/transformers@3.8.1 sharp
+      - name: Run TrOCR baseline
+        run: node tests/ocr-test.mjs
+
+  paddle-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -16,7 +30,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install OCR runtime
-        run: npm install --no-save @huggingface/transformers@3.8.1 sharp
-      - name: Run handwriting regression
-        run: node tests/ocr-test.mjs
+      - name: Install browser runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local test server
+        run: python3 -m http.server 8000 >/tmp/urr-http.log 2>&1 &
+      - name: Run PaddleOCR browser regression
+        run: node tests/paddle-browser-test.mjs
