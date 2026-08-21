@@ -1,0 +1,217 @@
+   return Number.isFinite(v)&&v>=0&&v<=99999?String(v):"";
+ }
+
+ function parseTrocrHours(s){
+   s=String(s||"").replace(/[Oo]/g,"0").replace(/,/g,".").trim();
+
+   let m=s.match(/=\s*(\.\d+|\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hour|hours)?\b/i);
+   if(!m)m=s.match(/(\.\d+|\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hour|hours)\b/i);
+
+   if(!m){
+     const vals=[...s.matchAll(/(?:^|\s)(\.\d+|\d+\.\d+)(?=\s|$)/g)]
+       .map(x=>Number(x[1])).filter(v=>Number.isFinite(v)&&v>=0&&v<=20);
+     if(vals.length)m=[null,String(vals[vals.length-1])];
+   }
+
+   if(!m)return"";
+   const v=Number(m[1]);
+   return Number.isFinite(v)&&v>=0&&v<=20?String(v):"";
+ }
+
+ function parseTrocrTotal(s){
+   s=String(s||"").replace(/[Oo]/g,"0").replace(/,/g,".").trim();
+   if(/\brecon\b/i.test(s))return{kind:"RECON",value:null};
+   if(/\bnote\b/i.test(s))return{kind:"NOTE",value:null};
+
+   const dollar=s.match(/\$\s*(\d{2,6}(?:\.\d{1,2})?)/);
+   if(dollar)return{kind:"PRICE",value:Number(dollar[1])};
+
+   const nums=[...s.matchAll(/\b(\d{2,6}(?:\.\d{1,2})?)\b/g)]
+     .map(m=>Number(m[1])).filter(v=>Number.isFinite(v)&&v>=5&&v<=999999);
+   if(nums.length===1)return{kind:"PRICE",value:nums[0]};
+   return{kind:"",value:null};
+ }
+
+ function inferHoursFromTotal(total,parts){
+   total=Number(total);parts=Number(parts||0);
+   if(!Number.isFinite(total)||!Number.isFinite(parts))return"";
+   let best=null,bestErr=Infinity;
+   const raw=Math.max(0,(total-parts)/RATE);
+   // Technicians use values such as .2, .5, 1.48, 2.60, 3.79. Search hundredths.
+   for(let n=0;n<=2000;n++){
+     const h=n/100;
+     if(calc(h,parts)!==total)continue;
+     const err=Math.abs(h-raw);
+     if(err<bestErr){bestErr=err;best=h;}
+   }
+   return best==null?"":String(Number(best.toFixed(2)));
+ }
+
+ function inferPartsFromTotal(total,hours){
+   total=Number(total);hours=Number(hours);
+   if(!Number.isFinite(total)||!Number.isFinite(hours))return"";
+   let best=null,bestErr=Infinity;
+   const raw=Math.max(0,total-hours*RATE);
+   // Parts are entered as dollar amounts. Search nearby whole-dollar values and
+   // retain only values that reproduce the technician total under our pricing rule.
+   const lo=Math.max(0,Math.floor(raw)-8),hi=Math.ceil(raw)+8;
+   for(let p=lo;p<=hi;p++){
+     if(calc(hours,p)!==total)continue;
+     const err=Math.abs(p-raw);
+     if(err<bestErr){bestErr=err;best=p;}
+   }
+   return best==null?"":String(best);
+ }
+
+ function cellInkDensity(canvas,x0,y0,x1,y1){
+   const sx=Math.floor(x0*canvas.width),sy=Math.floor(y0*canvas.height);
+   const sw=Math.max(1,Math.floor((x1-x0)*canvas.width)),sh=Math.max(1,Math.floor((y1-y0)*canvas.height));
+   const c=document.createElement("canvas");c.width=sw;c.height=sh;
+   const ctx=c.getContext("2d",{willReadFrequently:true});
+   ctx.drawImage(canvas,sx,sy,sw,sh,0,0,sw,sh);
+   const d=ctx.getImageData(0,0,sw,sh).data;
+   let ink=0,total=0;
+   for(let y=Math.floor(sh*.18);y<Math.ceil(sh*.82);y++){
+     for(let x=Math.floor(sw*.12);x<Math.ceil(sw*.88);x++){
+       const i=(y*sw+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+       const lum=.299*r+.587*g+.114*b,spread=Math.max(r,g,b)-Math.min(r,g,b);
+       // Ignore colored quote/total ink; approval marks are usually black/dark pen.
+       if(lum<135&&spread<70)ink++;
+       total++;
+     }
+   }
+   return ink/Math.max(1,total);
+ }
+
+ function rvPlausibility(s){
+   s=cleanText(s);
+   if(!/[A-Za-z]{2}/.test(s))return 0;
+   const words=(s.toLowerCase().match(/[a-z]+/g)||[]);
+   let score=0;
+   for(const w of words){
+     if(RV_WORDS.includes(w))score+=3;
+     else if(w.length>=3)score+=.35;
+   }
+   if(/\b(?:roof|trim|door|screen|slide|detector|window|battery|ceiling|kitchen|bedroom|cabinet|wbr|wbp|seal|reseal|broken|loose|recon|replace|touch|blind|shower)\b/i.test(s))score+=4;
+   if(/(?:[0-9]{5,}|[A-Z0-9]{10,})/.test(s))score-=10;
+   if(/\b(?:stock|model|make|outfitter|problem found|repair needed)\b/i.test(s))score-=8;
+   return score;
+ }
+ function remapCropItems(result,meta){
+   const W=Number(result?.image?.width)||meta.canvas.width;
+   const H=Number(result?.image?.height)||meta.canvas.height;
+   return (result?.items||[]).map(it=>{
+     const b=polyBox(it,W,H);
+     const lx=b.cx/W,ly=b.cy/H;
+     const nx=meta.x0+lx*(meta.x1-meta.x0);
+     const ny=meta.y0+ly*(meta.y1-meta.y0);
+     return{
+       text:cleanText(it.text||""),score:Number(it.score??0),
+       ...b,nx,ny,nx0:meta.x0+(b.x0/W)*(meta.x1-meta.x0),
+       nx1:meta.x0+(b.x1/W)*(meta.x1-meta.x0),
+       nh:(b.bh/H)*(meta.y1-meta.y0)
+     };
+   }).filter(x=>x.text&&x.score>=.12);
+ }
+
+ function withTimeout(promise,ms,label){
+   let timer;
+   const timeout=new Promise((_,reject)=>{
+     timer=setTimeout(()=>reject(new Error(`${label} timed out after ${Math.round(ms/1000)} seconds.`)),ms);
+   });
+   return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));
+ }
+
+
+ async function analyzePage(kind,img,paper){
+   setAIProgress(2,"Preparing URR image…");
+   const canvas=normalizePaperCanvas(img,paper);
+   const cols=detectHeaderColumns(canvas);
+   await ensureHandwritingModel();
+
+   let rowGap=detectGridGap(canvas);
+   if(!(rowGap>.022&&rowGap<.050))rowGap=.0355;
+   const geometry=buildPhysicalRows(canvas,rowGap);
+   const rows=geometry.rows;
+
+   // RO is always the fourth fixed header field: Make | Model | Stock# | RO# | Date | Tech | Outfitter.
+   const roMeta=makePageCrop(canvas,cols.ro.x0,.112,cols.ro.x1,.225,700);
+   const roArr=await withTimeout(
+     ocr.predict(roMeta.canvas,{textDetLimitSideLen:900,textDetLimitType:"max",textRecScoreThresh:.12}),
+     45000,"RO read"
+   );
+   let ro="";
+   const roResult=roArr?.[0];
+   if(roResult?.items){
+     const items=remapCropItems(roResult,roMeta);
+     const txt=items.map(x=>x.text).join(" ");
+     const labeled=txt.match(/\bRO\s*#?\s*[:#-]?\s*(\d{4,8})\b/i);
+     if(labeled)ro=labeled[1];
+     if(!ro){
+       const nums=items.map(x=>String(x.text||"").replace(/\D/g,"")).filter(x=>/^\d{4,6}$/.test(x));
+       if(nums.length===1)ro=nums[0];
+     }
+   }
+
+   const descStart=cols.make.x0+.018;
+   const descEnd=cols.ro.x1-.040;
+   const partX0=cols.ro.x1-.145,partX1=cols.ro.x1-.058;
+   const hourX0=cols.ro.x1-.073,hourX1=cols.ro.x1-.003;
+   const totalX0=cols.date.x0,totalX1=cols.date.x1;
+   const fixX0=cols.tech.x0,fixX1=(cols.tech.x0+cols.tech.x1)/2;
+   const asisX0=fixX1,asisX1=cols.tech.x1;
+
+   // Read every physical form row. Repair count is NOT assumed from row count:
+   // rows are later merged when the technician continues a repair onto the next line.
+   const descC=[],desc2C=[],partC=[],hourC=[],totalC=[];
+   for(const r of rows){
+     descC.push(makeTrocrCrop(canvas,descStart,r.top,descEnd,r.bottom,"description",1180));
+     desc2C.push(makeTrocrCrop(canvas,descStart,r.top,cols.ro.x1-.010,r.bottom,"descriptionSoft",1180));
+     partC.push(makeTrocrCrop(canvas,partX0,r.top,partX1,r.bottom,"parts",430));
+     hourC.push(makeTrocrCrop(canvas,hourX0,r.top,hourX1,r.bottom,"hours",390));
+     totalC.push(makeTrocrCrop(canvas,totalX0,r.top,totalX1,r.bottom,"total",480));
+   }
+
+   const d1=await trocrBatch(descC,"Reading handwritten form rows",56,70,74);
+   const d2=await trocrBatch(desc2C,"Verifying handwritten form rows",70,78,74);
+   const pRead=await trocrBatch(partC,"Reading parts amounts",78,84,24);
+   const hRead=await trocrBatch(hourC,"Reading labor hours",84,89,24);
+   const tRead=await trocrBatch(totalC,"Reading totals / RECON",89,94,30);
+
+   const rowData=[];
+   for(let i=0;i<rows.length;i++){
+     const a=correctRVText(stripRepairNumbers(d1[i]||""));
+     const b=correctRVText(stripRepairNumbers(d2[i]||""));
+     const sa=rvPlausibility(a),sb=rvPlausibility(b);
+     const title=sb>sa?b:a;
+     const titleScore=Math.max(sa,sb);
+     let parts=parseTrocrParts(pRead[i]);
+     let hours=parseTrocrHours(hRead[i]);
+     const totalInfo=parseTrocrTotal(tRead[i]);
+
+     if(parts&&Number(parts)<0)parts="";
+     if(hours&&Number(hours)>20)hours="";
+
+     const red=redInkDensity(canvas,partX0-.025,rows[i].top,hourX1+.015,rows[i].bottom);
+     const descInk=Math.max(descC[i].density,desc2C[i].density);
+
+     let fixInk=0,asisInk=0;
+     if(kind==="approval"){
+       fixInk=cellInkDensity(canvas,fixX0,rows[i].top,fixX1,rows[i].bottom);
+       asisInk=cellInkDensity(canvas,asisX0,rows[i].top,asisX1,rows[i].bottom);
+     }
+
+     const hasDesc=titleScore>.65||descInk>.0017;
+     const approvalEvidence=kind==="approval"&&(fixInk>.12||asisInk>.12);
+     const endEvidence=!!parts||!!hours||!!totalInfo.kind||red>.0025||approvalEvidence;
+
+     rowData.push({row:rows[i],title,titleScore,parts,hours,totalInfo,red,descInk,fixInk,asisInk,hasDesc,endEvidence});
+   }
+
+   // Reconstruct repairs. A description line without pricing/status evidence is held
+   // open so the following physical row can continue the same repair.
+   const jobs=[];
+   let pending=null;
+   function finishPending(forceReview=false){
+     if(!pending)return;
+     const title=cleanText(pending.pieces.filter(Boolean).join(" "));
