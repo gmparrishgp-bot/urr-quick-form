@@ -1,9 +1,11 @@
 import { chromium } from 'playwright';
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage();
-page.on('console',m=>console.log('BROWSER:',m.text()));
+page.on('console',m=>console.log('BROWSER:',m.type(),m.text()));
+page.on('pageerror',e=>console.log('PAGEERROR:',e.stack||e.message));
+page.on('requestfailed',r=>console.log('REQUESTFAILED:',r.url(),r.failure()?.errorText));
 await page.goto('http://127.0.0.1:8000/tests/paddle-test.html',{waitUntil:'domcontentloaded',timeout:30000});
-await page.waitForFunction(()=>window.__ocr?.done===true,{timeout:180000});
+await page.waitForFunction(()=>window.__ocr?.done===true,null,{timeout:180000});
 const result=await page.evaluate(()=>window.__ocr);
 console.log('PADDLE_RESULT='+JSON.stringify(result));
 await browser.close();
