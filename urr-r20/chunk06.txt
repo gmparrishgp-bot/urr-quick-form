@@ -1,0 +1,162 @@
+       const fb=document.getElementById("pairFallback");fb.style.display="block";fb.innerHTML=`<a href="${pairUrl}" target="_blank">Open phone pairing link</a>`;
+     }
+   });
+   peer.on("connection",c=>{conn=c;c.on("open",()=>{ds.textContent="Phone connected";ds.className="status connected";conn.send({type:"ro",ro:state.ro})});c.on("data",d=>{
+     if(!d)return;
+     if(d.type==="photo"){
+       analyzePhoto(d.kind,d.sourceImage);
+       ds.textContent="Photo received — Handwriting reader reading";ds.className="status sync";
+     } else if(d.type==="refresh"){
+       render();
+     } else if(d.type==="heartbeat"){
+       if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected";}
+     }
+   });c.on("close",()=>{ds.textContent="Phone disconnected";ds.className="status"});});
+   peer.on("error",e=>{console.error(e);ds.textContent="Pairing error";ds.className="status error";});
+ }
+ function apply(kind,out){
+   ensureRO(out);
+
+   if(kind==="quote"){
+     const incoming=Array.isArray(out?.jobs)?out.jobs:[];
+     if(!incoming.length)throw new Error("No repair jobs were read from the quote photo.");
+     const startNum=Array.isArray(state.jobs)?state.jobs.length:0;
+     const mapped=incoming.map((j,i)=>({
+       num:startNum+i+1,
+       // Quote dollars/labor do NOT make something RECON. Only an explicit read does.
+       status:["RECON","NOTE"].includes(String(j?.status||"").toUpperCase())?String(j.status).toUpperCase():"PENDING",
+       title:String(j?.title||""),
+       hours:j?.hours==null?"":String(j.hours),
+       parts:j?.parts==null?"":String(j.parts),
+       confidence:Number.isFinite(Number(j?.confidence))?Number(j.confidence):0.55,
+       titleLow:!!j?.titleLow,hoursLow:!!j?.hoursLow,partsLow:!!j?.partsLow,
+       comment:String(j?.comment||"")
+     }));
+     state.jobs=[...(Array.isArray(state.jobs)?state.jobs:[]),...mapped];
+     state.sheetCount=(Number(state.sheetCount)||0)+1;
+     state.notes=[...(state.notes||[]),`Quote sheet ${state.sheetCount}: ${(out?.notes||[]).join(" ")}`];
+   }else{
+     const incoming=Array.isArray(out?.jobs)?out.jobs:[];
+     if(!incoming.length)throw new Error("No repair jobs were read from the approval photo.");
+
+     if(!Array.isArray(state.jobs)||!state.jobs.length){
+       // Approval-only workflow: the approval sheet becomes the source document.
+       // This is valid when the original quote was never scanned.
+       state.jobs=incoming.map((j,i)=>({
+         num:Number(j?.num)||i+1,
+         status:["APPROVED","DECLINED","RECON","NOTE","PENDING"].includes(String(j?.status||"").toUpperCase())
+           ?String(j.status).toUpperCase()
+           :"PENDING",
+         title:String(j?.title||""),
+         hours:j?.hours==null?"":String(j.hours),
+         parts:j?.parts==null?"":String(j.parts),
+         confidence:Number.isFinite(Number(j?.confidence))?Number(j.confidence):0.55,
+         titleLow:!!j?.titleLow,
+         hoursLow:!!j?.hoursLow,
+         partsLow:!!j?.partsLow,
+         comment:String(j?.comment||"")
+       }));
+       state.sheetCount=1;
+       state.notes=[
+         "Approval-only workflow: no quote photo was loaded; jobs were created directly from the approval sheet.",
+         ...(Array.isArray(out?.notes)?out.notes.map(String):[])
+       ];
+     }else{
+       reconcileApproval(incoming);
+       state.notes=[...(state.notes||[]),...(Array.isArray(out?.notes)?out.notes.map(String):[])];
+     }
+   }
+
+   render();
+ }
+
+ async function analyzePhoto(kind,imageData){
+   currentPhoto={kind,imageData};
+   sourceWrap.style.display="block";
+   const thumb=document.createElement("img");
+   thumb.src=imageData;
+   thumb.alt=kind==="approval"?"Approval sheet":"URR sheet";
+   sourceGallery.appendChild(thumb);
+   try{
+     const img=await loadImg(imageData),paper=detectPaperRect(img);
+     const result=await analyzePage(kind,img,paper);
+     const count=result.jobs.length;
+     apply(kind,result);
+     const rendered=document.querySelectorAll("#jobs .job").length;
+     setAIProgress(100,
+       kind==="quote"
+         ?`Quote sheet ${state.sheetCount}: ${count} repair${count===1?"":"s"} added. ${rendered} total loaded.`
+         :`${state.sheetCount===1&&state.notes?.[0]?.startsWith("Approval-only workflow") ? "Approval sheet loaded" : "Approval reconciled"}. ${rendered} repair${rendered===1?"":"s"} loaded.`,
+       "ready"
+     );
+     if(conn&&conn.open)conn.send({type:"analysis_done",ro:state.ro||""});
+     ds.textContent="Updated from phone";ds.className="status sync";
+     setTimeout(()=>{if(conn&&conn.open){ds.textContent="Phone connected";ds.className="status connected";}},1200);
+   }catch(e){
+     console.error(e);
+     setAIProgress(parseInt(aiProgress.style.width)||5,"URR read stopped: "+(e?.message||String(e)),"error");
+     if(conn&&conn.open)conn.send({type:"analysis_error",message:e?.message||String(e)});
+   }
+ }
+
+ function copyText(t,el){navigator.clipboard.writeText(t).then(()=>el.textContent="Copied");}
+ function render(){
+   const box=document.getElementById("jobs");
+   box.innerHTML="";
+   const list=Array.isArray(state.jobs)?state.jobs:[];
+   list.forEach((j,idx)=>{
+     try{
+       const d=document.createElement("div");d.className="job"+((j.confidence??1)<.82?" low":"");d.innerHTML=`<input class="num" type="number" value="${esc(j.num)}"><select class="status"><option>PENDING</option><option>APPROVED</option><option>DECLINED</option><option>RECON</option><option>NOTE</option></select><input class="title${j.titleLow?" field-low":""}" value="${esc(j.title)}"><input class="hours${j.hoursLow?" field-low":""}" placeholder="Hours" value="${esc(j.hours)}"><input class="parts${j.partsLow?" field-low":""}" placeholder="Parts $" value="${esc(j.parts)}"><div class="price">${money(calc(j.hours,j.parts))}</div><div class="actions"><button class="btn copy small cj">Copy Job</button><button class="btn secondary small cl">Copy Labor</button><span class="copied"></span></div>${j.comment?`<div class="comment">${esc(j.comment)}</div>`:""}`;
+       d.querySelector(".status").value=j.status||"PENDING";
+       for(const f of ["num","status","title","hours","parts"]){
+         d.querySelector("."+f).addEventListener("change",e=>{
+           j[f]=e.target.value;if(f==="num")j[f]=Number(e.target.value)||"";
+           if(f==="title")j.titleLow=false;if(f==="hours")j.hoursLow=false;if(f==="parts")j.partsLow=false;
+           render();
+         });
+       }
+       d.querySelector(".cj").onclick=()=>{
+         const marker=d.querySelector(".copied");
+         if(!state.ro){banner.style.display="block";ro.focus();marker.textContent="RO required";return;}
+         const s=j.status||"PENDING";
+         if(s==="PENDING"){marker.textContent="Set status first";return;}
+         if(j.titleLow||j.hoursLow||j.partsLow){marker.textContent="Review orange fields";return;}
+         const total=calc(j.hours,j.parts);
+         if(s==="APPROVED"&&total==null){marker.textContent="Price missing";return;}
+         const pre=s==="APPROVED"?`(APPROVED ${money(total)})`:`(${s})`;
+         copyText(`${pre} ${j.num}. ${String(j.title||"").toUpperCase()}`,marker);
+       };
+       d.querySelector(".cl").onclick=()=>{
+         const marker=d.querySelector(".copied");
+         if(j.status!=="APPROVED"){marker.textContent="Not approved";return;}
+         if(j.hoursLow){marker.textContent="Review labor";return;}
+         if(String(j.hours??"")===""){marker.textContent="No labor";return;}
+         copyText(String(j.hours),marker);
+       };
+       box.appendChild(d);
+     }catch(e){
+       console.error("Could not render OCR row",idx+1,e,j);
+       const err=document.createElement("div");
+       err.className="banner";
+       err.style.display="block";
+       err.textContent=`Row ${idx+1} was read but could not be displayed: ${e.message||e}`;
+       box.appendChild(err);
+     }
+   });
+   document.getElementById("notes").textContent=(state.notes||[]).join(" • ");
+ }
+ ro.addEventListener("input",()=>{state.ro=ro.value.trim();banner.style.display=state.ro?"none":"block";if(conn&&conn.open)conn.send({type:"ro",ro:state.ro})});
+ document.getElementById("morePages").onclick=()=>{
+   if(!conn||!conn.open){
+     aiStatus.textContent="Phone is not connected. Scan the QR before adding another page.";
+     aiStatus.className="ai-status error";
+     return;
+   }
+   conn.send({type:"request_additional_page",ts:Date.now()});
+   aiStatus.textContent="Phone is ready for the next URR page. Existing pages and extracted jobs are being kept.";
+   aiStatus.className="ai-status ready";
+   aiProgressLabel.textContent="Waiting for next page photo.";
+ };
+ render();
+}
+if(phoneMode)phoneApp();else desktopApp();
