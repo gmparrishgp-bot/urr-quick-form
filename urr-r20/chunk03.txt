@@ -1,0 +1,200 @@
+   for(let y=top+rowGap/2;y<.815;y+=rowGap){
+     rows.push({y,top:Math.max(.17,y-rowGap*.46),bottom:Math.min(.825,y+rowGap*.46),below:false});
+   }
+   return{top,rows,tableBottom:rows.length?rows[rows.length-1].bottom:Math.min(.825,top+rowGap*16)};
+ }
+
+ function descriptionInkDensity(canvas,y,rowGap,x0=.055,x1=.62){
+   const W=canvas.width,H=canvas.height,ctx=canvas.getContext("2d",{willReadFrequently:true});
+   const sx=Math.floor(x0*W),sw=Math.max(1,Math.floor((x1-x0)*W));
+   const sy=Math.max(0,Math.floor((y-rowGap*.25)*H)),sh=Math.max(1,Math.floor(rowGap*.50*H));
+   const d=ctx.getImageData(sx,sy,sw,Math.min(sh,H-sy)).data;let ink=0,total=0;
+   for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2],lum=.299*r+.587*g+.114*b,spread=Math.max(r,g,b)-Math.min(r,g,b);if(lum<145&&spread<75)ink++;total++;}
+   return ink/Math.max(1,total);
+ }
+
+ function missingRepairCandidates(anchors,rowGap){
+   const ys=anchors.filter(a=>a.y<.86).map(a=>a.y).sort((a,b)=>a-b),out=[];
+   for(let i=1;i<ys.length;i++){
+     const a=ys[i-1],b=ys[i],gap=b-a;
+     if(gap<=rowGap*1.52)continue;
+     const n=Math.max(2,Math.round(gap/rowGap));
+     for(let k=1;k<n;k++)out.push(a+gap*k/n);
+   }
+   return out.filter(y=>!ys.some(a=>Math.abs(a-y)<rowGap*.35));
+ }
+
+ function medianRowGap(anchors){
+   const gaps=[];
+   for(let i=1;i<anchors.length;i++){
+     const g=anchors[i].y-anchors[i-1].y;
+     if(g>.018&&g<.065)gaps.push(g);
+   }
+   gaps.sort((a,b)=>a-b);
+   return gaps.length?gaps[Math.floor(gaps.length/2)]:.035;
+ }
+
+ function missingLaborCandidates(anchors,rowGap){
+   if(!anchors.length)return[];
+   const out=[];
+   // A labor-only repair may have no red parts amount or RECON dash.
+   // Search only positions that fit the form's row rhythm.
+   let y=anchors[0].y-rowGap;
+   for(let n=0;n<2&&y>.175;n++,y-=rowGap)out.push(y);
+
+   for(let i=1;i<anchors.length;i++){
+     const a=anchors[i-1].y,b=anchors[i].y,g=b-a;
+     if(g>rowGap*1.58){
+       for(let yy=a+rowGap;yy<b-rowGap*.52;yy+=rowGap)out.push(yy);
+     }
+   }
+
+   // Search remaining printed-table rows after the last anchor, but not deep into
+   // the signature area. Below-table repairs with red dashes are already anchors.
+   for(let yy=anchors[anchors.length-1].y+rowGap;yy<.845;yy+=rowGap)out.push(yy);
+
+   return out.filter(y=>!anchors.some(a=>Math.abs(a.y-y)<rowGap*.45));
+ }
+ function detectColorSignals(canvas){
+   const c=document.createElement("canvas");c.width=600;c.height=840;
+   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(canvas,0,0,c.width,c.height);
+   const d=ctx.getImageData(0,0,c.width,c.height).data,W=c.width,H=c.height;
+   const redP=new Array(H).fill(0),blueP=new Array(H).fill(0),lowRedP=new Array(H).fill(0);
+   for(let y=Math.round(.17*H);y<H;y++){
+     for(let x=Math.round(.25*W);x<Math.round(.75*W);x++){
+       const k=(y*W+x)*4,r=d[k],g=d[k+1],b=d[k+2];
+       if(r>70&&r-g>12&&r-b>8&&r>g*1.08&&r>b*1.04&&r<245)redP[y]++;
+       if(y>.84*H&&r>55&&r-g>7&&r-b>4&&r>g*1.035&&r>b*1.015&&r<250)lowRedP[y]++;
+     }
+     for(let x=Math.round(.54*W);x<Math.round(.72*W);x++){
+       const k=(y*W+x)*4,r=d[k],g=d[k+1],b=d[k+2];
+       if(rgbToLabB(r,g,b)<120&&Math.max(r,g,b)<238&&Math.max(r,g,b)-Math.min(r,g,b)>8)blueP[y]++;
+     }
+   }
+   const red=groupProjectionScored(redP,4,100).filter(x=>x.y>.175&&x.y<.86);
+   const blue=groupProjectionScored(blueP,4,40).map(x=>x.y).filter(y=>y>.175&&y<.86);
+   const anchors=red.map(x=>({y:x.y,red:true,blue:nearestSignal(x.y,blue,.018),strength:x.total}));
+   for(const y of blue){if(!nearestSignal(y,anchors.map(a=>a.y),.018))anchors.push({y,red:false,blue:true,strength:50});}
+   anchors.sort((a,b)=>a.y-b.y);
+   const ded=[];for(const a of anchors){const last=ded[ded.length-1];if(last&&a.y-last.y<.008){if(a.strength>last.strength)Object.assign(last,a);else{last.red=last.red||a.red;last.blue=last.blue||a.blue;}}else ded.push({...a});}
+   const belowRed=groupProjectionScored(lowRedP,3,25).filter(x=>x.y>.86&&x.y<.990);
+   return{red:red.map(x=>x.y),blue,anchors:ded,belowRed};
+ }
+ function nearestSignal(y,signals,tol=.022){let best=Infinity;for(const s of signals)best=Math.min(best,Math.abs(y-s));return best<=tol;}
+
+ function makePageCrop(canvas,x0,y0,x1,y1,targetW=1100){
+   const sx=Math.max(0,Math.floor(x0*canvas.width)),sy=Math.max(0,Math.floor(y0*canvas.height));
+   const sw=Math.max(1,Math.floor((x1-x0)*canvas.width)),sh=Math.max(1,Math.floor((y1-y0)*canvas.height));
+   const scale=targetW/sw;
+   const c=document.createElement("canvas");
+   c.width=targetW;c.height=Math.max(80,Math.round(sh*scale));
+   const ctx=c.getContext("2d",{alpha:false});
+   ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
+   ctx.drawImage(canvas,sx,sy,sw,sh,0,0,c.width,c.height);
+   return{canvas:c,x0,y0,x1,y1};
+ }
+
+
+ function makeTrocrCrop(canvas,x0,y0,x1,y1,mode="description",targetW=1100){
+   const sx=Math.max(0,Math.floor(x0*canvas.width));
+   const sy=Math.max(0,Math.floor(y0*canvas.height));
+   const sw=Math.max(1,Math.floor((x1-x0)*canvas.width));
+   const sh=Math.max(1,Math.floor((y1-y0)*canvas.height));
+   const scale=Math.min(5,targetW/sw);
+   const c=document.createElement("canvas");
+   c.width=Math.max(160,Math.round(sw*scale));
+   c.height=Math.max(72,Math.round(sh*scale*1.55));
+   const ctx=c.getContext("2d",{willReadFrequently:true,alpha:false});
+   ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
+   const dy=Math.round(c.height*.10),dh=Math.round(c.height*.80);
+   ctx.drawImage(canvas,sx,sy,sw,sh,0,dy,c.width,dh);
+
+   const im=ctx.getImageData(0,0,c.width,c.height),d=im.data;
+   let ink=0;
+   for(let i=0;i<d.length;i+=4){
+     const r=d[i],g=d[i+1],b=d[i+2];
+     const lum=.299*r+.587*g+.114*b;
+     const spread=Math.max(r,g,b)-Math.min(r,g,b);
+     let keep=true;
+     if(mode==="description"){
+       // Keep black/gray handwriting, suppress red quote amounts and purple totals.
+       keep=lum<220 && spread<58;
+     }else if(mode==="descriptionSoft"){
+       // Second description pass: retain faint pencil/black handwriting without allowing
+       // red parts prices or purple Total Cost writing back into the description.
+       const redLike=r>70&&r>g*1.07&&r>b*1.03&&(r-g)>8;
+       const purpleLike=b>r*1.04&&b>g*1.02&&(b-r)>6;
+       keep=lum<232 && !redLike && !purpleLike;
+     }else if(mode==="parts"){
+       keep=r>70 && r>g*1.10 && r>b*1.05 && (r-g)>10;
+     }else if(mode==="hours"){
+       keep=lum<215 && spread<62;
+     }else if(mode==="total"){
+       keep=lum<225;
+     }
+     let v=255;
+     if(keep){
+       v=Math.max(0,Math.min(255,(lum-45)*1.50));
+       if(v<205)ink++;
+     }
+     d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;
+   }
+   ctx.putImageData(im,0,0);
+
+   // Remove long horizontal/vertical grid-line remnants without erasing handwriting.
+   const w=c.width,h=c.height;
+   const id=ctx.getImageData(0,0,w,h),px=id.data;
+   const rowInk=new Array(h).fill(0),colInk=new Array(w).fill(0);
+   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+     if(px[(y*w+x)*4]<115){rowInk[y]++;colInk[x]++;}
+   }
+   for(let y=0;y<h;y++){
+     if(rowInk[y]>w*.72){
+       for(let yy=Math.max(0,y-1);yy<=Math.min(h-1,y+1);yy++)
+         for(let x=0;x<w;x++){const k=(yy*w+x)*4;px[k]=px[k+1]=px[k+2]=255;}
+     }
+   }
+   for(let x=0;x<w;x++){
+     if(colInk[x]>h*.70){
+       for(let xx=Math.max(0,x-1);xx<=Math.min(w-1,x+1);xx++)
+         for(let y=0;y<h;y++){const k=(y*w+xx)*4;px[k]=px[k+1]=px[k+2]=255;}
+     }
+   }
+   ctx.putImageData(id,0,0);
+   return{url:c.toDataURL("image/png"),density:ink/Math.max(1,w*h)};
+ }
+
+ async function trocrBatch(crops,label,p0,p1,maxTokens=70){
+   const out=new Array(crops.length).fill("");
+   const active=crops.map((c,i)=>({c,i})).filter(x=>x.c.density>.0007);
+   const total=Math.max(1,active.length);
+   for(let k=0;k<active.length;k+=4){
+     const batch=active.slice(k,k+4);
+     setAIProgress(p0+(p1-p0)*(k/total),`${label} ${Math.min(k+1,total)}–${Math.min(k+batch.length,total)} of ${total}…`);
+     let r=await trocr(batch.map(x=>x.c.url),{max_new_tokens:maxTokens});
+     if(!Array.isArray(r))r=[r];
+     r=r.map(v=>Array.isArray(v)?v[0]:v);
+     batch.forEach((x,j)=>out[x.i]=cleanText(r[j]?.generated_text||""));
+     await new Promise(res=>setTimeout(res,0));
+   }
+   return out;
+ }
+
+ function parseTrocrParts(s){
+   s=String(s||"").replace(/[Oo]/g,"0").replace(/,/g,".").trim();
+   const dollar=[...s.matchAll(/\$\s*(\d+(?:\.\d{1,2})?)/g)]
+     .map(m=>Number(m[1])).filter(v=>Number.isFinite(v)&&v>=0&&v<=99999);
+   if(dollar.length){
+     // A repair can list more than one part amount (e.g. chassis + coach battery).
+     return String(dollar.reduce((a,b)=>a+b,0));
+   }
+
+   const partWord=s.match(/\bparts?\b[^0-9]{0,12}(\d+(?:\.\d{1,2})?)/i);
+   if(partWord){
+     const v=Number(partWord[1]);
+     if(Number.isFinite(v)&&v>=0&&v<=99999)return String(v);
+   }
+
+   const exact=s.match(/^\s*(\d{1,5}(?:\.\d{1,2})?)\s*$/);
+   if(!exact)return"";
+   const v=Number(exact[1]);
