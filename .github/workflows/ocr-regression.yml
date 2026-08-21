@@ -3,6 +3,8 @@ name: URR OCR Regression
 on:
   push:
     branches: [urr-ocr-test2]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
