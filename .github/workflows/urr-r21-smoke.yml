@@ -7,6 +7,13 @@ on:
       - 'urr-r21/**'
       - 'staging-r21.html'
       - '.github/workflows/urr-r21-smoke.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'urr-r20/**'
+      - 'urr-r21/**'
+      - 'staging-r21.html'
+      - '.github/workflows/urr-r21-smoke.yml'
 jobs:
   smoke:
     runs-on: ubuntu-latest
