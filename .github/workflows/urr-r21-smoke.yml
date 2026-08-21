@@ -1,0 +1,26 @@
+name: URR R21 browser smoke
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'urr-r20/**'
+      - 'urr-r21/**'
+      - 'staging-r21.html'
+      - '.github/workflows/urr-r21-smoke.yml'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser driver
+        run: npm install --no-save puppeteer-core@24
+      - name: Start local site
+        run: |
+          python3 -m http.server 8000 > /tmp/urr-http.log 2>&1 &
+          sleep 2
+      - name: Run real browser pairing, math, and OCR-model smoke test
+        run: node urr-r21/smoke.mjs
