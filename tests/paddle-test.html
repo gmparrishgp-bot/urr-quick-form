@@ -6,7 +6,14 @@ try {
   const ocr=await PaddleOCR.create({
     textDetectionModelName:'PP-OCRv5_mobile_det',
     textRecognitionModelName:'PP-OCRv5_mobile_rec',
-    ortOptions:{backend:'wasm'}
+    textDetectionBatchSize:1,
+    textRecognitionBatchSize:8,
+    ortOptions:{
+      backend:'wasm',
+      wasmPaths:'https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/',
+      numThreads:1,
+      simd:true
+    }
   });
   out.textContent='loaded';
   const blob=await (await fetch('/tests/01.jpg')).blob();
