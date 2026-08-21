@@ -1,0 +1,198 @@
+     const titleLow=forceReview||!title||pending.score<2.3;
+     const issues=[];
+     if(titleLow)issues.push("description");
+     if(pending.hoursLow)issues.push("labor");
+     if(pending.partsLow)issues.push("parts");
+     jobs.push({
+       num:jobs.length+1,
+       status:pending.status||"PENDING",
+       title:titleLow?"[HANDWRITING NEEDS REVIEW]":title,
+       hours:pending.hours||"",
+       parts:pending.parts||"",
+       confidence:titleLow?.42:.88,
+       titleLow,
+       hoursLow:!!pending.hoursLow,
+       partsLow:!!pending.partsLow,
+       comment:[
+         issues.length?`Verify ${[...new Set(issues)].join(", ")} against photo.`:"",
+         ...(pending.notes||[])
+       ].filter(Boolean).join(" ")
+     });
+     pending=null;
+   }
+
+   for(let i=0;i<rowData.length;i++){
+     const r=rowData[i];
+     if(!r.hasDesc&&!r.endEvidence){
+       if(pending)finishPending(true);
+       continue;
+     }
+     if(!pending)pending={pieces:[],score:0,hours:"",parts:"",status:"PENDING",hoursLow:false,partsLow:false,notes:[]};
+
+     if(r.hasDesc&&r.title&&r.titleScore>.25){
+       pending.pieces.push(r.title);
+       pending.score+=Math.max(0,r.titleScore);
+     }
+
+     if(r.parts)pending.parts=r.parts;
+     if(r.hours)pending.hours=r.hours;
+
+     if(r.totalInfo.kind==="RECON"||/\brecon\b/i.test(r.title||""))pending.status="RECON";
+     else if(r.totalInfo.kind==="NOTE"||/\bnote\b/i.test(r.title||""))pending.status="NOTE";
+
+     // Total Cost can recover exactly one missed numeric field, but recovered values
+     // remain review-gated instead of being silently trusted.
+     if(r.totalInfo.kind==="PRICE"&&Number.isFinite(r.totalInfo.value)){
+       if(!pending.hours&&pending.parts){
+         const x=inferHoursFromTotal(r.totalInfo.value,pending.parts);
+         if(x){pending.hours=x;pending.hoursLow=true;pending.notes.push("Labor recovered from written Total Cost; verify handwritten hours.");}
+       }else if(pending.hours&&!pending.parts){
+         const x=inferPartsFromTotal(r.totalInfo.value,pending.hours);
+         if(x){pending.parts=x;pending.partsLow=true;pending.notes.push("Parts recovered from written Total Cost; verify handwritten parts.");}
+       }
+       if(pending.hours!==""&&pending.parts!==""){
+         const computed=calc(pending.hours,pending.parts);
+         if(computed!==r.totalInfo.value){
+           pending.hoursLow=true;pending.partsLow=true;
+           pending.notes.push(`Calculated ${money(computed)} does not match sheet total ${money(r.totalInfo.value)}.`);
+         }
+       }
+     }
+
+     if(kind==="approval"){
+       if(r.fixInk>r.asisInk*1.35&&r.fixInk>.12)pending.status="APPROVED";
+       else if(r.asisInk>r.fixInk*1.35&&r.asisInk>.12)pending.status="DECLINED";
+     }
+
+     if(r.endEvidence)finishPending(false);
+   }
+   if(pending)finishPending(true);
+
+   // Free-form repairs below the printed table. These do not belong to any fixed row.
+   const belowSignals=detectBelowRed(canvas,geometry.tableBottom+.004);
+   for(const sig of belowSignals){
+     const y=sig.y;
+     if(y<geometry.tableBottom+.006||y>.985)continue;
+     if(descriptionInkDensity(canvas,y,rowGap,.035,.72)<.010)continue;
+     const top=Math.max(geometry.tableBottom,y-rowGap*.58),bottom=Math.min(.992,y+rowGap*.52);
+     const dc=makeTrocrCrop(canvas,.035,top,.72,bottom,"description",1350);
+     const dsc=makeTrocrCrop(canvas,.035,top,.78,bottom,"descriptionSoft",1350);
+     const pc=makeTrocrCrop(canvas,.36,top,.62,bottom,"parts",520);
+     const hc=makeTrocrCrop(canvas,.48,top,.73,bottom,"hours",520);
+     const tc=makeTrocrCrop(canvas,.48,top,.80,bottom,"total",560);
+     const rr1=await trocrBatch([dc],"Reading repair below form",94,95,70);
+     const rr2=await trocrBatch([dsc],"Verifying repair below form",95,96,70);
+     const rp=await trocrBatch([pc],"Reading below-form parts",96,96.5,24);
+     const rh=await trocrBatch([hc],"Reading below-form labor",96.5,97,24);
+     const rt=await trocrBatch([tc],"Reading below-form status",97,97.5,30);
+
+     const t1=correctRVText(stripRepairNumbers(rr1[0]||"")),t2=correctRVText(stripRepairNumbers(rr2[0]||""));
+     const s1=rvPlausibility(t1),s2=rvPlausibility(t2);
+     const title=s2>s1?t2:t1;
+     const low=Math.max(s1,s2)<2.0;
+     const ti=parseTrocrTotal(rt[0]);
+     jobs.push({
+       num:jobs.length+1,
+       status:ti.kind==="RECON"?"RECON":ti.kind==="NOTE"?"NOTE":"PENDING",
+       title:low?"[HANDWRITING NEEDS REVIEW]":title,
+       hours:parseTrocrHours(rh[0]),
+       parts:parseTrocrParts(rp[0]),
+       confidence:low?.42:.86,
+       titleLow:low,hoursLow:false,partsLow:false,
+       comment:low?"Verify description against photo.":""
+     });
+   }
+
+   if(!jobs.length)throw new Error("No repair jobs were recognized.");
+
+   return{
+     ro,jobs,
+     notes:[
+       `${jobs.length} repair${jobs.length===1?"":"s"} reconstructed from the actual form rows.`,
+       `Physical rows are detected from the grid and merged when handwriting continues onto the next line.`,
+       `RO is restricted to the fixed RO# header column.`
+     ]
+   };
+ }
+
+ function ensureRO(out){
+   const scanned=String(out?.ro||"").trim();
+   const current=String(state.ro||"").trim();
+   if(scanned && current && scanned!==current){
+     const entered=prompt(`RO mismatch. Current field is ${current}; photo reads ${scanned}. Enter the correct RO#:`, current);
+     if(!entered||!String(entered).trim())throw new Error("RO# mismatch needs verification. Nothing was added.");
+     state.ro=String(entered).trim();ro.value=state.ro;
+   }
+   if(scanned && !current){
+     if(scanned.length>6){
+       const entered=prompt(`RO# read as ${scanned}, which may be Stock#. Enter the correct RO#:`);
+       if(!entered||!String(entered).trim())throw new Error("RO# needs verification. Nothing was added.");
+       state.ro=String(entered).trim();
+     }else{
+       state.ro=scanned;
+     }
+     ro.value=state.ro;banner.style.display="none";
+     if(conn&&conn.open)conn.send({type:"ro",ro:state.ro});
+     return;
+   }
+   if(!scanned && !current){
+     const entered=prompt("RO# was not read confidently. Enter the RO#:");
+     if(!entered||!String(entered).trim())throw new Error("RO# is required. Nothing was added.");
+     state.ro=String(entered).trim();ro.value=state.ro;banner.style.display="none";
+     if(conn&&conn.open)conn.send({type:"ro",ro:state.ro});
+   }
+ }
+
+ function reconcileApproval(incoming){
+   const existing=Array.isArray(state.jobs)?state.jobs:[];
+   if(!existing.length)return false;
+
+   // Same URR form: anchor order is the strongest relationship between quote and approval.
+   if(incoming.length===existing.length){
+     let changed=0;
+     for(let i=0;i<existing.length;i++){
+       const s=String(incoming[i]?.status||"PENDING").toUpperCase();
+       if(["APPROVED","DECLINED","RECON","NOTE"].includes(s)){
+         existing[i].status=s;changed++;
+       }
+       if(Number(incoming[i]?.confidence)<Number(existing[i]?.confidence??1)){
+         existing[i].confidence=Number(incoming[i].confidence);
+         if(incoming[i]?.comment)existing[i].comment=incoming[i].comment;
+       }
+     }
+     if(changed)return true;
+   }
+
+   // Count changed or OCR missed an anchor: fall back to title + position matching.
+   const used=new Set();let matched=0;
+   for(let ai=0;ai<incoming.length;ai++){
+     const a=incoming[ai];let best=-1,bestScore=0;
+     for(let i=0;i<existing.length;i++){
+       if(used.has(i))continue;
+       let score=titleSimilarity(a?.title,existing[i]?.title);
+       if(ai===i)score+=.25;
+       if(String(a?.hours||"")&&String(a.hours)===String(existing[i]?.hours||""))score+=.08;
+       if(String(a?.parts||"")&&String(a.parts)===String(existing[i]?.parts||""))score+=.08;
+       if(score>bestScore){bestScore=score;best=i;}
+     }
+     if(best>=0&&bestScore>=.30){
+       const j=existing[best];used.add(best);matched++;
+       const s=String(a?.status||"PENDING").toUpperCase();
+       if(["APPROVED","DECLINED","RECON","NOTE"].includes(s))j.status=s;
+     }
+   }
+   if(!matched)throw new Error("Approval photo did not line up with the loaded quote. Nothing was changed.");
+   return true;
+ }
+
+ q.innerHTML='<span class="spinner"></span> Starting phone pairing…';
+ if(typeof Peer==="undefined"){ds.textContent="Pairing library blocked";ds.className="status error";q.innerHTML="Pairing library did not load.";}else{
+   peer=new Peer();
+   peer.on("open",id=>{
+     ds.textContent="Pairing online — waiting for phone";
+     const pairUrl=`${location.origin}${location.pathname}?mode=phone&peer=${encodeURIComponent(id)}&v=urr-r20&cb=${Date.now()}`;
+     if(typeof QRCode!=="undefined"){
+       try{q.innerHTML="";new QRCode(q,{text:pairUrl,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});}
+       catch(e){console.error(e);q.innerHTML="QR failed to render";}
+     }
+     if(!q.querySelector("img")&&!q.querySelector("canvas")){
