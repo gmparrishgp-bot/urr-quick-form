@@ -1,0 +1,26 @@
+ function makePaddleVariant(canvas,x0,y0,x1,y1,kind="contrast",targetW=1500){
+   const sx=Math.max(0,Math.floor(x0*canvas.width)),sy=Math.max(0,Math.floor(y0*canvas.height));
+   const sw=Math.max(1,Math.floor((x1-x0)*canvas.width)),sh=Math.max(1,Math.floor((y1-y0)*canvas.height));
+   const scale=Math.min(4,targetW/sw);
+   const c=document.createElement("canvas");c.width=Math.max(180,Math.round(sw*scale));c.height=Math.max(70,Math.round(sh*scale));
+   const x=c.getContext("2d",{willReadFrequently:true,alpha:false});x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.imageSmoothingEnabled=true;x.imageSmoothingQuality="high";x.drawImage(canvas,sx,sy,sw,sh,0,0,c.width,c.height);
+   if(kind!=="original"){
+     const im=x.getImageData(0,0,c.width,c.height),d=im.data;
+     for(let k=0;k<d.length;k+=4){let y=.299*d[k]+.587*d[k+1]+.114*d[k+2];if(kind==="contrast")y=Math.max(0,Math.min(255,(y-128)*1.65+128));else if(kind==="threshold")y=y<185?0:255;else if(kind==="soft")y=Math.max(0,Math.min(255,(y-70)*1.3));d[k]=d[k+1]=d[k+2]=y;d[k+3]=255;}x.putImageData(im,0,0);
+   }
+   return{canvas:c,x0,y0,x1,y1,kind};
+ }
+ async function paddleBatch(metas,label,p0,p1){
+   const out=new Array(metas.length).fill(null),opts={textDetLimitSideLen:1600,textDetLimitType:"max",textDetThresh:.12,textDetBoxThresh:.12,textDetUnclipRatio:1.8,textRecScoreThresh:.03},batchSize=6;
+   for(let i=0;i<metas.length;i+=batchSize){const batch=metas.slice(i,i+batchSize);setAIProgress(p0+(p1-p0)*(i/Math.max(1,metas.length)),`${label} ${i+1}–${Math.min(i+batch.length,metas.length)} of ${metas.length}…`);let rr=await withTimeout(ocr.predict(batch.map(m=>m.canvas),opts),90000,label);if(!Array.isArray(rr))rr=[rr];for(let j=0;j<batch.length;j++)out[i+j]={meta:batch[j],result:rr[j]||null,items:rr[j]?remapCropItems(rr[j],batch[j]):[]};await new Promise(r=>setTimeout(r,0));}return out;
+ }
+ function orderedItemsText(items){return (items||[]).slice().sort((a,b)=>a.nx-b.nx||a.ny-b.ny).map(x=>x.text).join(" ").replace(/\s+/g," ").trim();}
+ function paddleDescNormalize(s){s=String(s||"").replace(/\b(?:RCOF|WROOF|R00F|RO0F)\b/ig,"ROOF").replace(/\b(?:SPU|SPA|SP0|SPT)\b/ig,"SPOT").replace(/\bSEA\b/ig,"SEAL").replace(/\b0DS\b/ig,"ODS").replace(/\bD5\b/ig,"DS");return correctRVText(stripRepairNumbers(s).replace(/[#\$]?\s*\d+(?:\.\d+)?\s*\d*(?:\.\d+)?\s*H(?:R|E|C)?\b/ig," "));}
+ function bestDescription(candidates){let best="",score=-999;for(const raw of candidates){const t=paddleDescNormalize(raw),s=rvPlausibility(t);if(s>score){best=t;score=s;}}return{text:best,score};}
+ function normalizeQuoteText(s){return String(s||"").replace(/[Oo]/g,"0").replace(/#/g,"$").replace(/\bH(?:E|C)\b/ig,"HR").replace(/,/g,".").replace(/\s+/g," ").trim();}
+ function quoteCandidatesFromText(s){
+   s=normalizeQuoteText(s);const out=[],pm=s.match(/\$\s*(\d{1,5}(?:\.\d{1,2})?)/),hm=s.match(/(\.\d+|\d+(?:\.\d+)?)\s*(?:HR|HRS|HOUR|HOURS)\b/i);if(pm||hm)out.push({parts:pm?String(Number(pm[1])):"",hours:hm?String(Number(hm[1])):""});const dec=[...s.matchAll(/(?:^|\s)(\.\d+|\d+\.\d+)(?=\s|$)/g)].map(m=>Number(m[1])).filter(v=>v>=0&&v<=20);if(pm&&!hm&&dec.length)out.push({parts:String(Number(pm[1])),hours:String(dec[dec.length-1])});let compact=s.replace(/\s+/g,"").replace(/\$/g,""),mm=compact.match(/(\d{3,6})HR/i);if(mm){let digits=mm[1];if(digits.length>=4&&digits[0]==="8")digits=digits.slice(1);for(let split=1;split<digits.length;split++){const p=Number(digits.slice(0,split)),h=Number(digits.slice(split));if(p>=1&&p<=99999&&h>0&&h<=20)out.push({parts:String(p),hours:String(h)});}}return out;
+ }
+ function totalCandidatesFromText(s){s=normalizeQuoteText(s);if(/\brecon\b/i.test(s))return[{kind:"RECON",value:null}];if(/\bnote\b/i.test(s))return[{kind:"NOTE",value:null}];const out=[];for(const m of s.matchAll(/\$?\s*(\d{2,6}(?:\.\d{1,2})?)/g)){let v=Number(m[1]);if(Number.isFinite(v)&&v>=5&&v<=999999)out.push({kind:"PRICE",value:v});if(!m[0].includes('$')&&/^8\d{3,5}$/.test(m[1])){v=Number(m[1].slice(1));if(v>=5)out.push({kind:"PRICE",value:v});}}return out;}
+ function chooseQuote(variantTexts,totalCandidates){const qs=variantTexts.flatMap(quoteCandidatesFromText);if(!qs.length)return{parts:"",hours:""};const totals=(totalCandidates||[]).filter(t=>t.kind==="PRICE").map(t=>t.value);let best=null,bestScore=-1e9;for(const q of qs){let score=0;const p=Number(q.parts||0),h=Number(q.hours||0);if(q.parts)score+=2;if(q.hours)score+=2;if(p%5===0)score+=.5;if(h<=5)score+=.4;for(const t of totals)if(q.parts&&q.hours&&calc(q.hours,q.parts)===t)score+=10;if(score>bestScore){bestScore=score;best=q;}}return best||{parts:"",hours:""};}
+ function chooseTotal(variantTexts,quote){const all=variantTexts.flatMap(totalCandidatesFromText),word=all.find(x=>x.kind==="RECON"||x.kind==="NOTE");if(word)return word;if(quote?.parts!==""&&quote?.hours!==""){const c=calc(quote.hours,quote.parts),m=all.find(x=>x.kind==="PRICE"&&x.value===c);if(m)return m;}const prices=all.filter(x=>x.kind==="PRICE");return prices[0]||{kind:"",value:null};}
