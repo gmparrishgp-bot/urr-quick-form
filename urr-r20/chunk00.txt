@@ -1,0 +1,110 @@
+"use strict";
+const RATE=199;
+const HEADER_COLS={
+  make:{x0:.045,x1:.180},
+  model:{x0:.180,x1:.310},
+  stock:{x0:.310,x1:.430},
+  ro:{x0:.430,x1:.550},
+  date:{x0:.550,x1:.680},
+  tech:{x0:.680,x1:.800},
+  outfitter:{x0:.800,x1:.955}
+};
+const qs=new URLSearchParams(location.search);
+const phoneMode=qs.get("mode")==="phone" && qs.get("peer");
+
+function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
+function calc(h,p){h=parseFloat(h);p=parseFloat(p);if(Number.isNaN(h)&&Number.isNaN(p))return null;return Math.ceil((((Number.isNaN(h)?0:h*RATE)+(Number.isNaN(p)?0:p))/5))*5;}
+function money(v){return v==null?"—":"$"+Number(v).toLocaleString("en-US",{maximumFractionDigits:0});}
+function normKey(t){return String(t||"").toUpperCase().replace(/[^A-Z0-9]+/g," ").trim();}
+function tokenSet(t){return new Set(normKey(t).split(/\s+/).filter(x=>x.length>1));}
+function titleSimilarity(a,b){
+ const A=tokenSet(a),B=tokenSet(b);if(!A.size||!B.size)return 0;
+ let same=0;for(const x of A)if(B.has(x))same++;
+ return same/Math.max(A.size,B.size);
+}
+function simpleHash(s){
+ s=String(s||"");let h=2166136261>>>0;
+ for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+ return (h>>>0).toString(36);
+}
+function normalized(t){return String(t||"").replace(/curb\s*side|door\s*side/gi,"DS").replace(/driver\s*side|off\s*door\s*side/gi,"ODS").replace(/wheel\s*bearing\s*pack/gi,"WBP").replace(/\s+/g," ").trim();}
+function findRO(t){for(const p of [/\bRO\s*(?:#|NO\.?|NUMBER)?\s*[:#-]?\s*(\d{4,8})\b/i,/\bREPAIR\s+ORDER\s*[:#-]?\s*(\d{4,8})\b/i,/\bWO\s*[:#-]?\s*(\d{4,8})\b/i]){const m=t.match(p);if(m)return m[1]}return "";}
+function hours(line){for(const p of [/\b(?:LABOR|LAB|HRS?|HOURS?)\s*[:=-]?\s*(\.?\d+(?:\.\d+)?)\b/i,/\b(\d+(?:\.\d+)?)\s*(?:HRS?|HOURS?)\b/i]){const m=line.match(p);if(m)return m[1].replace(/^\./,"0.")}return "";}
+function parts(line){for(const p of [/\b(?:PARTS?|PTS?)\s*[:=-]?\s*\$?\s*(\d+(?:\.\d{1,2})?)/i,/\$\s*(\d+(?:\.\d{1,2})?)/]){const m=line.match(p);if(m)return m[1]}return "";}
+function strip(line){return normalized(line.replace(/\b(?:LABOR|LAB|HRS?|HOURS?|PARTS?|PTS?)\b\s*[:=-]?\s*\$?\s*\.?\d+(?:\.\d+)?/gi," ").replace(/\$\s*\d+(?:\.\d+)?/g," ").replace(/\b\d+(?:\.\d+)?\s*(?:HRS?|HOURS?)\b/gi," "));}
+function parseQuote(text){
+ const lines=text.replace(/\r/g,"").split("\n").map(x=>x.trim()).filter(Boolean),jobs=[];let pending="";
+ for(const raw of lines){let line=normalized(raw);if(line.length<3||/^(RO|REPAIR ORDER|CUSTOMER|VIN|STOCK|DATE|TECH|TECHNICIAN)\b/i.test(line))continue;
+ const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+(.+)/);let num="",body=line;if(nm){num=nm[1];body=nm[2]}
+ const h=hours(line),p=parts(line),meaning=/[A-Za-z]{3,}/.test(body);
+ if((h||p)&&meaning){let title=strip(body).replace(/^[-:]+|[-:]+$/g,"").trim();if(pending){title=(pending+" "+title).trim();pending=""}jobs.push({num:num||jobs.length+1,title:title||"REVIEW TECH DESCRIPTION",hours:h,parts:p,status:"PENDING",confidence:.7,comment:"Browser-read result — verify handwriting."});}
+ else if(num&&meaning){pending=body;} else if(meaning&&line.length>12){pending=pending?pending+" "+line:line;}
+ }
+ if(!jobs.length){lines.filter(x=>/[A-Za-z]{4,}/.test(x)).slice(0,12).forEach((x,i)=>jobs.push({num:i+1,title:strip(x),hours:hours(x),parts:parts(x),status:"PENDING",confidence:.45,comment:"Low-confidence browser read."}));}
+ return {ro:findRO(text),jobs,notes:["Local browser OCR used. Verify flagged fields before DMS copy."]};
+}
+function parseApproval(text){
+ const lines=text.replace(/\r/g,"").split("\n").map(normalized).filter(Boolean),jobs=[];let last="";
+ for(const line of lines){const nm=line.match(/^\s*(\d{1,2})[.)-]?\s+/);if(nm)last=nm[1];let s="";if(/\b(?:FIX|APPROVE[DS]?|APPROVED|YES)\b/i.test(line))s="APPROVED";else if(/\b(?:AS\s*IS|DECLINE[DS]?|DECLINED|NO)\b/i.test(line))s="DECLINED";else if(/\bRECON\b/i.test(line))s="RECON";else if(/\bNOTE\b/i.test(line))s="NOTE";if(s)jobs.push({num:last||jobs.length+1,status:s,title:strip(line)});}
+ return {ro:findRO(text),jobs,notes:jobs.length?[]:["Approval marks were not read confidently. Review statuses."]};
+}
+async function compress(file,max=1280,q=.86){return new Promise((res,rej)=>{const r=new FileReader(),img=new Image();r.onerror=rej;r.onload=()=>img.src=r.result;img.onload=()=>{let w=img.width,h=img.height,s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);res(c.toDataURL("image/jpeg",q));};r.readAsDataURL(file);});}
+async function analyze(data,kind,progress){if(typeof Tesseract==="undefined")throw new Error("Photo reader did not load.");const r=await Tesseract.recognize(data,"eng",{logger:m=>{if(m.status==="recognizing text")progress(Math.round((m.progress||0)*100))}});const text=r.data.text||"";if(!text.trim())throw new Error("No readable text found. Retake closer.");return kind==="approval"?parseApproval(text):parseQuote(text);}
+
+function phoneApp(){
+ const host=qs.get("peer");
+ app.innerHTML=`<div class="phone"><h1>URR Quick Form</h1><div id="pstatus" class="msg">Connecting to computer…</div><label id="quoteLabel" class="big" for="quote">TAKE QUOTE PHOTO</label><input id="quote" type="file" accept="image/*" capture="environment"><label class="big approval" for="approval">TAKE APPROVAL PHOTO</label><input id="approval" type="file" accept="image/*" capture="environment"><div id="pmsg" class="msg">Waiting for connection.</div></div>`;
+ const ps=document.getElementById("pstatus"),pm=document.getElementById("pmsg"),quoteLabel=document.getElementById("quoteLabel");
+ function setPhoneConnectionError(message){
+   ps.className="msg error";
+   ps.innerHTML=`${message}<div class="retry-link" style="text-decoration:none;color:inherit;cursor:default">Leave this page open, refresh the computer page, then scan its new QR with the phone camera.</div>`;
+ }
+
+ if(typeof Peer==="undefined"){setPhoneConnectionError("Pairing library did not load.");return;}
+ const peer=new Peer();let conn=null,attempts=0,retryTimer=null;
+ function connectToComputer(){
+   if(conn&&conn.open)return;
+   attempts++;
+   ps.textContent=attempts===1?"Connecting to computer…":`Connecting to computer… attempt ${attempts}`;
+   conn=peer.connect(host,{reliable:true});
+   let opened=false;
+   conn.on("open",()=>{opened=true;if(retryTimer)clearTimeout(retryTimer);ps.textContent="Connected to computer";ps.className="msg connected";pm.textContent="Ready to take a photo.";conn.send({type:"refresh",reason:"phone_connected",ts:Date.now()});setInterval(()=>{if(conn&&conn.open)conn.send({type:"heartbeat",ts:Date.now()});},5000);});
+   conn.on("data",d=>{
+     if(!d)return;
+     if(d.type==="ro"){pm.textContent=d.ro?`RO #${d.ro}`:"Ready to take a photo.";}
+     else if(d.type==="ai_progress"){
+       const pct=Number.isFinite(d.percent)?` ${d.percent}%`:"";
+       pm.textContent=(d.message||"Computer is analyzing the photo…")+pct;
+       pm.className="msg";
+     }else if(d.type==="analysis_done"){
+       pm.textContent=d.ro?`Analysis complete — RO #${d.ro}`:"Analysis complete. RO was not read confidently; review it on the computer.";
+       pm.className="msg connected";
+     }else if(d.type==="analysis_error"){
+       pm.textContent="Computer could not finish the read. Review the message on the computer.";
+       pm.className="msg error";
+     }else if(d.type==="request_additional_page"){
+       if(typeof quoteLabel!=="undefined"&&quoteLabel)quoteLabel.textContent="TAKE NEXT PAGE PHOTO";
+       pm.textContent="Computer is ready for another URR page.";
+       pm.className="msg connected";
+     }
+   });
+   conn.on("error",e=>{console.error(e);});
+   conn.on("close",()=>{if(!opened&&attempts<15)retryTimer=setTimeout(connectToComputer,2000);});
+   retryTimer=setTimeout(()=>{if(!opened&&attempts<15){try{conn.close()}catch{}connectToComputer()}else if(!opened){setPhoneConnectionError("Could not connect to computer.");}},2500);
+ }
+ peer.on("open",connectToComputer);
+ peer.on("error",e=>{console.error(e);if(attempts>=15){setPhoneConnectionError("Could not connect to computer.");}});
+ for(const kind of ["quote","approval"]){
+  document.getElementById(kind).addEventListener("change",async ev=>{
+    const f=ev.target.files[0];
+    if(!f)return;
+    if(!conn||!conn.open){pm.textContent="Phone is not connected to the computer.";pm.className="msg error";return;}
+    try{
+      pm.innerHTML='<span class="spinner"></span> Sending photo to computer…';
+      const data=await compress(f,2600,.94);
+      conn.send({type:"photo",kind,sourceImage:data,ts:Date.now()});
+      conn.send({type:"refresh",reason:kind+"_photo_sent",ts:Date.now()});
+      pm.textContent=`${kind==="quote"?"URR page":"Approval"} photo sent. Computer is reading it. Keep this page open.`;
+      pm.className="msg connected";
+    }catch(e){
+      pm.textContent=e.message||"Could not send photo";
