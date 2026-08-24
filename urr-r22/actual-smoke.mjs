@@ -1,0 +1,28 @@
+import puppeteer from 'puppeteer-core';
+import {execSync} from 'node:child_process';
+import fs from 'node:fs';
+const result={time:new Date().toISOString(),success:false,checks:{},output:null,error:null};let browser;
+try{
+ const chrome=execSync('which google-chrome || which chromium || which chromium-browser',{encoding:'utf8'}).trim().split('\n')[0];
+ browser=await puppeteer.launch({headless:true,executablePath:chrome,args:['--no-sandbox','--disable-dev-shm-usage']});
+ const page=await browser.newPage();page.setDefaultTimeout(300000);const errs=[];page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+ await page.goto('http://127.0.0.1:8000/staging-r22.html',{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.__urrTest?.analyzeData&&window.URR_R21_DOMAIN_TEST,{timeout:90000});
+ const domain=await page.evaluate(()=>window.URR_R21_DOMAIN_TEST);result.checks.domain=`${domain.pass}/${domain.total}`;
+ const b64=fs.readFileSync('validation/actual-sheet-105470.jpg.b64','utf8').trim();
+ const data='data:image/jpeg;base64,'+b64;
+ const out=await page.evaluate(async d=>window.__urrTest.analyzeData(d,'quote'),data);result.output=out;
+ result.checks.ro=out.ro;result.checks.jobCount=out.jobs?.length||0;
+ const titles=(out.jobs||[]).map(j=>String(j.title||'').toLowerCase());result.checks.titles=titles;
+ const concepts=['roof','exterior trim','entry door','shower','slide','detector','bunk','smoke','kitchen','bedroom','cabinet','wbp'];
+ result.checks.concepts=Object.fromEntries(concepts.map(c=>[c,titles.some(t=>t.includes(c))]));
+ const found=Object.values(result.checks.concepts).filter(Boolean).length;result.checks.conceptsFound=found;
+ if(!String(out.ro||'').includes('105470'))throw new Error('Real sheet RO mismatch: '+out.ro);
+ if((out.jobs?.length||0)<14||out.jobs.length>18)throw new Error('Real sheet expected about 16 jobs; got '+(out.jobs?.length||0));
+ if(found<9)throw new Error('Real sheet recovered only '+found+' of '+concepts.length+' anchor concepts: '+JSON.stringify(result.checks.concepts));
+ const low=(out.jobs||[]).filter(j=>j.titleLow||j.hoursLow||j.partsLow).length;result.checks.lowFields=low;
+ if(low>5)throw new Error('Too many low-confidence jobs on real sheet: '+low);
+ result.checks.browserErrors=errs.filter(e=>!e.includes('favicon'));
+ if(result.checks.browserErrors.length)throw new Error('Browser errors '+result.checks.browserErrors.join(' | '));
+ result.success=true;
+}catch(e){result.error=String(e?.stack||e)}finally{if(browser)await browser.close();fs.mkdirSync('validation',{recursive:true});fs.writeFileSync('validation/r22-actual-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2))}if(!result.success)process.exitCode=1;
