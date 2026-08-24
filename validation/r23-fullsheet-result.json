@@ -1,5 +1,5 @@
 {
-  "time": "2026-08-24T20:41:00.972Z",
+  "time": "2026-08-24T20:49:17.015Z",
   "success": false,
   "checks": {
     "domain": "16/16",
@@ -16,6 +16,36 @@
       "ods exterior trim reseal",
       "lp detector out of date replace",
       "wbp"
+    ],
+    "browserErrors": [
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "\u001b[0;93m2026-08-24 20:49:50.504699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.53.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.507800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.9.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.508300 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.46.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.508699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.3.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.508999 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.1.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.509299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.42.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.509700 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.41.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.511899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.40.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.512300 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.48.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.512499 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.34.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.512800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.36.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.513099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.26.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.513399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.49.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.513700 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.21.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.514000 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.6.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.514200 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.7.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.514800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.50.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.515200 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.8.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.515500 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.2.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.515899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.51.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.516199 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.35.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.516499 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.43.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.516800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.13.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.517099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.47.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.518099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.4.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.518400 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.38.0'. It is not used by any node and should be removed from the model.\u001b[m",
+      "\u001b[0;93m2026-08-24 20:49:50.518700 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.39.0'. It is not used by any node and should be removed from the model.\u001b[m"
     ]
   },
   "output": {
@@ -52,13 +82,13 @@
         "status": "PENDING",
         "title": "LP detector out of date replace",
         "rawTitle": "LP detector out of date replace",
-        "hours": "5",
+        "hours": "0.5",
         "parts": "65",
         "confidence": 0.9,
         "titleLow": false,
-        "hoursLow": true,
-        "partsLow": true,
-        "comment": "Verify labor, parts against photo. Calculated $1,060 does not match sheet total $65."
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
       },
       {
         "num": 4,
@@ -157,10 +187,10 @@
         "title": "LP detector out of date replace",
         "titleScore": 19,
         "parts": "65",
-        "hours": "5",
+        "hours": "0.5",
         "totalInfo": {
           "kind": "PRICE",
-          "value": 65
+          "value": 165
         },
         "red": 0.08058045241143832,
         "descInk": 0.10459770114942529,
@@ -652,5 +682,5 @@
       "Written Total Cost remains a cross-check rather than a source of invented values."
     ]
   },
-  "error": "Error: detector fields mismatch 5/65\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r23/fullsheet-smoke.mjs:14:828"
+  "error": "Error: Browser errors Failed to load resource: the server responded with a status of 404 (File not found) | \u001b[0;93m2026-08-24 20:49:50.504699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.53.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.507800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.9.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.508300 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.46.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.508699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.3.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.508999 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.1.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.509299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.42.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.509700 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.41.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.511899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.40.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.512300 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.48.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.512499 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.34.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.512800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.36.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.513099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.26.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.513399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.49.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.513700 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.21.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.514000 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.6.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.514200 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.7.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.514800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.50.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.515200 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.8.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.515500 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.2.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.515899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.51.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.516199 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.35.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.516499 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.43.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.516800 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.13.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.517099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.47.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.518099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.4.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.518400 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.38.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 20:49:50.518700 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.39.0'. It is not used by any node and should be removed from the model.\u001b[m\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r23/fullsheet-smoke.mjs:14:985"
 }
