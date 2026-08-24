@@ -37,7 +37,8 @@ jobs:
           git add validation/r22-fullsheet-result.json
           if ! git diff --cached --quiet; then
             git commit -m 'Record R22 full-sheet OCR validation result'
-            git push
+            git pull --rebase origin main
+            git push origin main
           fi
       - name: Enforce validation
         if: steps.test.outcome != 'success'
