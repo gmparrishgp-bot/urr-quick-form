@@ -1,0 +1,46 @@
+ async function analyzePage(kind,img,paper){
+   setAIProgress(2,"Preparing URR image…");
+   const canvas=normalizePaperCanvas(img,paper),cols=detectHeaderColumns(canvas);await ensureHandwritingModel();
+   let rowGap=detectGridGap(canvas);if(!(rowGap>.022&&rowGap<.050))rowGap=.0355;const geometry=buildPhysicalRows(canvas,rowGap),rows=geometry.rows.slice(1);
+   const roMeta=makePageCrop(canvas,cols.ro.x0,.112,cols.ro.x1,.225,700);
+   const roArr=await withTimeout(ocr.predict(roMeta.canvas,{textDetLimitSideLen:900,textDetLimitType:"max",textRecScoreThresh:.05}),45000,"RO read");
+   let ro="";if(roArr?.[0]?.items){const items=remapCropItems(roArr[0],roMeta),txt=orderedItemsText(items);const m=txt.match(/\bRO\s*#?\s*[:#-]?\s*(\d{4,8})\b/i);if(m)ro=m[1];if(!ro){const nums=items.map(x=>String(x.text||"").replace(/\D/g,"")).filter(x=>/^\d{4,8}$/.test(x));if(nums.length===1)ro=nums[0];}}
+   if(!ro){const hm=makePageCrop(canvas,Math.max(.03,cols.stock.x0-.015),.105,Math.min(.72,cols.date.x1+.02),.225,1050);const hr=await withTimeout(ocr.predict(hm.canvas,{textDetLimitSideLen:1200,textDetLimitType:"max",textRecScoreThresh:.04}),45000,"RO fallback read");if(hr?.[0]?.items){const its=remapCropItems(hr[0],hm);let label=its.find(x=>/\bRO\s*#?\b/i.test(String(x.text||"")));const nums=its.map(x=>({x,n:String(x.text||"").replace(/\D/g,"")})).filter(x=>/^\d{4,8}$/.test(x.n));if(label){nums.sort((a,b)=>Math.abs(a.x.cx-label.x.cx)-Math.abs(b.x.cx-label.x.cx));if(nums[0])ro=nums[0].n;}if(!ro){const inCell=nums.filter(x=>x.x.cx>=cols.ro.x0&&x.x.cx<=cols.ro.x1);if(inCell.length===1)ro=inCell[0].n;}}}
+   const descStart=cols.make.x0+.018,partX0=cols.ro.x1-.145,totalX0=cols.date.x0,totalX1=cols.date.x1,fixX0=cols.tech.x0,fixX1=(cols.tech.x0+cols.tech.x1)/2,asisX0=fixX1,asisX1=cols.tech.x1;
+   const metas=[];for(let i=0;i<rows.length;i++){for(const kindv of ["dark","original","contrast","threshold"]){const m=makePaddleVariant(canvas,descStart,rows[i].top,totalX1,rows[i].bottom,kindv,1800);m.row=i;metas.push(m);}}
+   const reads=await paddleBatch(metas,"Reading form fields",24,56),byRow=Array.from({length:rows.length},()=>[]);for(const r of reads)if(r)byRow[r.meta.row].push(r);
+   const descCrops=rows.map(r=>makeTrocrCrop(canvas,descStart,r.top,totalX0-.008,r.bottom,"descriptionSoft",1500));
+   const handTexts=await trocrBatch(descCrops,"Reading handwritten repairs",57,87,80);
+   const rowData=[];
+   for(let i=0;i<rows.length;i++){
+     const variants=byRow[i],descTexts=[],quoteTexts=[],totalTexts=[];
+     if(handTexts[i])descTexts.push(handTexts[i]);
+     for(const v of variants){descTexts.push(orderedItemsText(v.items.filter(x=>x.nx<totalX0-.006)));quoteTexts.push(orderedItemsText(v.items.filter(x=>x.nx>=partX0-.025&&x.nx<totalX0-.006)));totalTexts.push(orderedItemsText(v.items.filter(x=>x.nx>=totalX0-.015)));}
+     const desc=bestDescription(descTexts);let totalCands=totalTexts.flatMap(totalCandidatesFromText),quote=chooseQuote(quoteTexts,totalCands),totalInfo=chooseTotal(totalTexts,quote);
+     if(totalInfo.kind==="PRICE"){if(!quote.hours&&quote.parts){const h=inferHoursFromTotal(totalInfo.value,quote.parts);if(h)quote.hours=h;}else if(quote.hours&&!quote.parts){const p=inferPartsFromTotal(totalInfo.value,quote.hours);if(p)quote.parts=p;}}
+     const red=redInkDensity(canvas,partX0-.035,rows[i].top,totalX0-.002,rows[i].bottom),descInk=descriptionInkDensity(canvas,rows[i].y,rowGap,descStart,partX0-.01);let fixInk=0,asisInk=0;if(kind==="approval"){fixInk=cellInkDensity(canvas,fixX0,rows[i].top,fixX1,rows[i].bottom);asisInk=cellInkDensity(canvas,asisX0,rows[i].top,asisX1,rows[i].bottom);}
+     const title=cleanText(desc.text),hasText=title.length>=3&&!isPrintedNoise(title)&&!/problem\s*found|repair\s*needed|total\s*cost/i.test(title),hasDesc=hasText&&desc.score>.20,approvalEvidence=kind==="approval"&&(fixInk>.12||asisInk>.12),endEvidence=!!quote.parts||!!quote.hours||!!totalInfo.kind||red>.0012||approvalEvidence;
+     rowData.push({row:i+1,y:rows[i].y,title,titleScore:desc.score,parts:quote.parts||"",hours:quote.hours||"",totalInfo,red,descInk,fixInk,asisInk,hasText,hasDesc,endEvidence,handText:handTexts[i]||"",rawTexts:descTexts,quoteTexts,totalTexts});
+   }
+   const jobs=[];let pending=null;
+   function finish(force=false){
+     if(!pending)return;const title=cleanText(pending.pieces.join(" "));const meaningful=!!title||pending.hours!==""||pending.parts!==""||pending.status!=="PENDING"||pending.notes.length>0;if(!meaningful){pending=null;return;}
+     const titleLow=force||!title||pending.score<2.0,issues=[];if(titleLow)issues.push("description");if(pending.hoursLow)issues.push("labor");if(pending.partsLow)issues.push("parts");
+     jobs.push({num:jobs.length+1,status:pending.status||"PENDING",title:title||"[HANDWRITING NEEDS REVIEW]",rawTitle:title,hours:pending.hours||"",parts:pending.parts||"",confidence:titleLow?.42:.90,titleLow,hoursLow:!!pending.hoursLow,partsLow:!!pending.partsLow,comment:[issues.length?`Verify ${[...new Set(issues)].join(", ")} against photo.`:"",...(pending.notes||[])].filter(Boolean).join(" ")});pending=null;
+   }
+   for(const r of rowData){
+     if(!r.hasDesc&&!r.endEvidence){if(pending)finish(false);continue;}
+     if(pending&&r.hasDesc&&pending.pieces.length&&pending.lastRow&&r.row===pending.lastRow+1&&pending.score>=2.0&&r.titleScore>=2.0)finish(false);
+     if(!pending)pending={pieces:[],score:0,hours:"",parts:"",status:"PENDING",hoursLow:false,partsLow:false,notes:[],lastRow:0};
+     if(r.hasDesc&&r.title){pending.pieces.push(r.title);pending.score+=Math.max(0,r.titleScore);pending.lastRow=r.row;}
+     if(r.parts)pending.parts=r.parts;if(r.hours)pending.hours=r.hours;
+     if(r.totalInfo.kind==="RECON"||/\brecon\b/i.test(r.title||""))pending.status="RECON";else if(r.totalInfo.kind==="NOTE")pending.status="NOTE";
+     if(r.totalInfo.kind==="PRICE"&&pending.hours!==""&&pending.parts!==""&&calc(pending.hours,pending.parts)!==r.totalInfo.value){pending.hoursLow=true;pending.partsLow=true;pending.notes.push(`Calculated ${money(calc(pending.hours,pending.parts))} does not match sheet total ${money(r.totalInfo.value)}.`);}
+     if(kind==="approval"){if(r.fixInk>r.asisInk*1.35&&r.fixInk>.12)pending.status="APPROVED";else if(r.asisInk>r.fixInk*1.35&&r.asisInk>.12)pending.status="DECLINED";}
+     if(r.endEvidence)finish(false);
+   }
+   if(pending)finish(false);
+   const below=detectBelowRed(canvas,geometry.tableBottom+.004);for(const sig of below){const y=sig.y;if(y>.985||descriptionInkDensity(canvas,y,rowGap,.035,.72)<.010)continue;const top=Math.max(geometry.tableBottom,y-rowGap*.58),bottom=Math.min(.992,y+rowGap*.52),hc=makeTrocrCrop(canvas,.035,top,.72,bottom,"descriptionSoft",1500),ht=(await trocrBatch([hc],"Reading repair below form",89,93,80))[0]||"",ms=["dark","original","contrast","threshold"].map(k=>makePaddleVariant(canvas,.035,top,.80,bottom,k,1800)),rr=await paddleBatch(ms,"Reading repair values below form",93,97),texts=rr.map(x=>orderedItemsText(x.items)),desc=bestDescription([ht,...texts]),tc=texts.flatMap(totalCandidatesFromText),q=chooseQuote(texts,tc),ti=chooseTotal(texts,q),raw=cleanText(desc.text),hasSignal=raw.length>=3||q.hours||q.parts||ti.kind;if(!hasSignal)continue;const low=desc.score<2;jobs.push({num:jobs.length+1,status:ti.kind==="RECON"?"RECON":ti.kind==="NOTE"?"NOTE":"PENDING",title:raw||"[HANDWRITING NEEDS REVIEW]",rawTitle:raw,hours:q.hours||"",parts:q.parts||"",confidence:low?.42:.88,titleLow:low,hoursLow:false,partsLow:false,comment:low?"Verify description against photo.":""});}
+   if(!jobs.length)throw new Error("No repair jobs were recognized.");
+   return{ro,jobs,debugRows:rowData,notes:[`${jobs.length} repair${jobs.length===1?"":"s"} reconstructed from the form rows.`,`R23 uses a forced-WASM handwriting model for repair descriptions and PaddleOCR for form geometry, RO, parts, labor and totals.`,`Written Total Cost remains a cross-check rather than a source of invented values.`]};
+ }
