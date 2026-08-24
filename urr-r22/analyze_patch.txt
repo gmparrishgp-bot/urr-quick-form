@@ -1,7 +1,7 @@
  async function analyzePage(kind,img,paper){
    setAIProgress(2,"Preparing URR image…");
    const canvas=normalizePaperCanvas(img,paper),cols=detectHeaderColumns(canvas);await ensureHandwritingModel();
-   let rowGap=detectGridGap(canvas);if(!(rowGap>.022&&rowGap<.050))rowGap=.0355;const geometry=buildPhysicalRows(canvas,rowGap),rows=geometry.rows;
+   let rowGap=detectGridGap(canvas);if(!(rowGap>.022&&rowGap<.050))rowGap=.0355;const geometry=buildPhysicalRows(canvas,rowGap),rows=geometry.rows.slice(1);
    const roMeta=makePageCrop(canvas,cols.ro.x0,.112,cols.ro.x1,.225,700);
    const roArr=await withTimeout(ocr.predict(roMeta.canvas,{textDetLimitSideLen:900,textDetLimitType:"max",textRecScoreThresh:.05}),45000,"RO read");
    let ro="";if(roArr?.[0]?.items){const items=remapCropItems(roArr[0],roMeta),txt=orderedItemsText(items);const m=txt.match(/\bRO\s*#?\s*[:#-]?\s*(\d{4,8})\b/i);if(m)ro=m[1];if(!ro){const nums=items.map(x=>String(x.text||"").replace(/\D/g,"")).filter(x=>/^\d{4,8}$/.test(x));if(nums.length===1)ro=nums[0];}}
@@ -12,7 +12,7 @@
    const rowData=[];
    for(let i=0;i<rows.length;i++){
      const variants=byRow[i],descTexts=[],quoteTexts=[],totalTexts=[];
-     for(const v of variants){descTexts.push(orderedItemsText(v.items.filter(x=>x.nx<partX0-.004)));quoteTexts.push(orderedItemsText(v.items.filter(x=>x.nx>=partX0-.025&&x.nx<totalX0-.006)));totalTexts.push(orderedItemsText(v.items.filter(x=>x.nx>=totalX0-.015)));}
+     for(const v of variants){descTexts.push(orderedItemsText(v.items.filter(x=>x.nx<totalX0-.006)));quoteTexts.push(orderedItemsText(v.items.filter(x=>x.nx>=partX0-.025&&x.nx<totalX0-.006)));totalTexts.push(orderedItemsText(v.items.filter(x=>x.nx>=totalX0-.015)));}
      const desc=bestDescription(descTexts);let totalCands=totalTexts.flatMap(totalCandidatesFromText),quote=chooseQuote(quoteTexts,totalCands),totalInfo=chooseTotal(totalTexts,quote);
      if(totalInfo.kind==="PRICE"){if(!quote.hours&&quote.parts){const h=inferHoursFromTotal(totalInfo.value,quote.parts);if(h)quote.hours=h;}else if(quote.hours&&!quote.parts){const p=inferPartsFromTotal(totalInfo.value,quote.hours);if(p)quote.parts=p;}}
      const red=redInkDensity(canvas,partX0-.025,rows[i].top,totalX0-.006,rows[i].bottom),descInk=descriptionInkDensity(canvas,rows[i].y,rowGap,descStart,partX0-.01);let fixInk=0,asisInk=0;if(kind==="approval"){fixInk=cellInkDensity(canvas,fixX0,rows[i].top,fixX1,rows[i].bottom);asisInk=cellInkDensity(canvas,asisX0,rows[i].top,asisX1,rows[i].bottom);}
