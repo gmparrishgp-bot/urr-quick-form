@@ -2,18 +2,18 @@
    if(ocr)return;
    if(aiLoading)return aiLoading;
    aiLoading=(async()=>{
-     setAIProgress(4,"Loading handwriting reader…");
+     setAIProgress(4,"Loading English handwriting reader…");
      paddleModule=await import("https://cdn.jsdelivr.net/npm/@paddleocr/paddleocr-js/+esm");
      const {PaddleOCR}=paddleModule;
      if(!PaddleOCR)throw new Error("PaddleOCR browser SDK did not load.");
      ocr=await PaddleOCR.create({
-       textDetectionModelName:"PP-OCRv5_mobile_det",
-       textRecognitionModelName:"PP-OCRv5_mobile_rec",
+       lang:"en",
+       ocrVersion:"PP-OCRv5",
        textDetectionBatchSize:1,
        textRecognitionBatchSize:8,
        ortOptions:{backend:"wasm",wasmPaths:"https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/",numThreads:1,simd:true}
      });
-     setAIProgress(20,"Handwriting reader ready.","ready");
+     setAIProgress(20,"English handwriting reader ready.","ready");
    })().catch(e=>{aiLoading=null;throw e;});
    return aiLoading;
  }
