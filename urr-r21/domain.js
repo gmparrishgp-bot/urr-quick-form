@@ -68,7 +68,10 @@
       if(hasAnchor&&sc>bs){bs=sc;best=p;}
     }
     // Only use a phrase template when the read is already substantially similar.
-    if(best&&bs>=.76)return best.toUpperCase()==="WBP"?"WBP":best.replace(/\bods\b/ig,"ODS").replace(/\bds\b/ig,"DS").replace(/\bwbp\b/ig,"WBP");
+    if(best&&bs>=.76){
+      if(best==="wheel bearing pack"||best==="wbp")return "WBP";
+      return best.replace(/\bods\b/ig,"ODS").replace(/\bds\b/ig,"DS").replace(/\bwbp\b/ig,"WBP");
+    }
     return s;
   }
   function learnedCorrect(s){
@@ -82,6 +85,7 @@
       .replace(/\bout\s+of\s+(?:date|dates)\b/ig,"out of date");
     v=v.split(/(\s+|[^A-Za-z0-9/.-]+)/).map(part=>/^[A-Za-z]{4,}$/.test(part)?tokenCorrect(part):part).join("").replace(/\s+/g," ").trim();
     v=phraseRepair(v);
+    v=v.replace(/\bwheel\s+bearing\s+pack\b/ig,"WBP");
     return v;
   }
   // Replace the R20 corrector after the main bundle has loaded. Existing calls resolve
