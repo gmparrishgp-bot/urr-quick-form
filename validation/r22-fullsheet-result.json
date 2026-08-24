@@ -1,5 +1,5 @@
 {
-  "time": "2026-08-24T16:18:03.887Z",
+  "time": "2026-08-24T16:28:33.454Z",
   "success": false,
   "checks": {
     "domain": "13/13",
@@ -86,6 +86,552 @@
         "hoursLow": false,
         "partsLow": false,
         "comment": ""
+      }
+    ],
+    "debugRows": [
+      {
+        "row": 1,
+        "y": 0.2595238095238095,
+        "title": "Problem Found/Repair Needed",
+        "titleScore": -6.6,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.006679035250463822,
+        "descInk": 0.07418213969938107,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "Problem Found/Repair Needed",
+          "Problem Found/Repair Needed",
+          "Problem Found/Repair Needed"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "of f Repair",
+          "of Repair",
+          "of Repair"
+        ]
+      },
+      {
+        "row": 2,
+        "y": 0.2952380952380952,
+        "title": "ROOF SPOT SEAL HR",
+        "titleScore": 13,
+        "parts": "60",
+        "hours": "2",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 460
+        },
+        "red": 0.09461966604823747,
+        "descInk": 0.10008841732979663,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "rawTexts": [
+          "ROOFSPOTSEAL $60 ２HR",
+          "ROOF SPOT SEAL $602HR",
+          "ROOF SPOT SEAL $60 2HR"
+        ],
+        "quoteTexts": [
+          "$60 ２HR",
+          "$602HR",
+          "$60 2HR"
+        ],
+        "totalTexts": [
+          "$460",
+          "$460",
+          "$460"
+        ]
+      },
+      {
+        "row": 3,
+        "y": 0.3309523809523809,
+        "title": "ODS EXTERIOR TRIM reseal",
+        "titleScore": 16,
+        "parts": "30",
+        "hours": "0.5",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 130
+        },
+        "red": 0.09239332096474953,
+        "descInk": 0.09858532272325375,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "rawTexts": [
+          "ODS EXTERIOR TRIMRESSBD .5HR",
+          "ODS EXTERIOR TRIM REpEAL .5 HR",
+          "ODS EXIERIOR TRIM RES&AL .5 HR"
+        ],
+        "quoteTexts": [
+          ".5HR",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "$130",
+          "$130",
+          "$13U"
+        ]
+      },
+      {
+        "row": 4,
+        "y": 0.3666666666666666,
+        "title": "LP DETEC TOR OUT OF DABEREPHRQE",
+        "titleScore": -2.95,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.08710575139146567,
+        "descInk": 0.10459770114942529,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "LPDETECTOROU1 OF DAp65RE5HRCE$I65",
+          "LP DETEC TOR OUT OF DABEREPHRQE$165",
+          "LP DE TECTOR OUT OF DABEREPHRCESI65"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 5,
+        "y": 0.4023809523809523,
+        "title": "WBP",
+        "titleScore": 7,
+        "parts": "80",
+        "hours": "2.6",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 600
+        },
+        "red": 0.08460111317254175,
+        "descInk": 0.07904509283819629,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "rawTexts": [
+          "WBP $80 2.60 HR $600",
+          "WBP $80 2.60 HR $600",
+          "WBP $80 2.60 HR $600"
+        ],
+        "quoteTexts": [
+          "$80 2.60 HR $600",
+          "$80 2.60 HR $600",
+          "$80 2.60 HR $600"
+        ],
+        "totalTexts": [
+          "2.60 HR $600",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 6,
+        "y": 0.438095238095238,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 7,
+        "y": 0.4738095238095237,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.039610963748894785,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 8,
+        "y": 0.5095238095238094,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 9,
+        "y": 0.5452380952380951,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 10,
+        "y": 0.5809523809523808,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 11,
+        "y": 0.6166666666666665,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 12,
+        "y": 0.6523809523809522,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.039610963748894785,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 13,
+        "y": 0.6880952380952379,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 14,
+        "y": 0.7238095238095236,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 15,
+        "y": 0.7595238095238093,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 16,
+        "y": 0.795238095238095,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          ""
+        ]
       }
     ],
     "notes": [
