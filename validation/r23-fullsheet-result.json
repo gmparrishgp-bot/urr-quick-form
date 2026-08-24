@@ -1,0 +1,656 @@
+{
+  "time": "2026-08-24T20:41:00.972Z",
+  "success": false,
+  "checks": {
+    "domain": "16/16",
+    "math": {
+      "a": 130,
+      "b": 65,
+      "c": 775,
+      "d": 80
+    },
+    "ro": "105779",
+    "jobCount": 4,
+    "titles": [
+      "roof spot seal",
+      "ods exterior trim reseal",
+      "lp detector out of date replace",
+      "wbp"
+    ]
+  },
+  "output": {
+    "ro": "105779",
+    "jobs": [
+      {
+        "num": 1,
+        "status": "PENDING",
+        "title": "roof spot seal",
+        "rawTitle": "roof spot seal",
+        "hours": "2",
+        "parts": "60",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 2,
+        "status": "PENDING",
+        "title": "ODS exterior trim reseal",
+        "rawTitle": "ODS exterior trim reseal",
+        "hours": "0.5",
+        "parts": "30",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 3,
+        "status": "PENDING",
+        "title": "LP detector out of date replace",
+        "rawTitle": "LP detector out of date replace",
+        "hours": "5",
+        "parts": "65",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": true,
+        "partsLow": true,
+        "comment": "Verify labor, parts against photo. Calculated $1,060 does not match sheet total $65."
+      },
+      {
+        "num": 4,
+        "status": "PENDING",
+        "title": "WBP",
+        "rawTitle": "WBP",
+        "hours": "2.6",
+        "parts": "80",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      }
+    ],
+    "debugRows": [
+      {
+        "row": 1,
+        "y": 0.2952380952380952,
+        "title": "roof spot seal",
+        "titleScore": 13,
+        "parts": "60",
+        "hours": "2",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 460
+        },
+        "red": 0.08706786171574904,
+        "descInk": 0.10008841732979663,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "handText": "Kwurbsworth. M. L.",
+        "rawTexts": [
+          "ROOF SPOT SEAL",
+          "ROOFSPOTSEAL $60 ２HＲ",
+          "ROOF SPOT SEAL $602HR",
+          "ROOF SPOT SEAL $60 2HR"
+        ],
+        "quoteTexts": [
+          "",
+          "$60 ２HＲ",
+          "$602HR",
+          "$60 2HR"
+        ],
+        "totalTexts": [
+          "",
+          "$460",
+          "$460",
+          "$460"
+        ]
+      },
+      {
+        "row": 2,
+        "y": 0.3309523809523809,
+        "title": "ODS exterior trim reseal",
+        "titleScore": 16,
+        "parts": "30",
+        "hours": "0.5",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 130
+        },
+        "red": 0.08501920614596671,
+        "descInk": 0.09858532272325375,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "handText": "WASHINGTON IN RENEW",
+        "rawTexts": [
+          "ODS EXTERIOR TRIM REpF.FL",
+          "ODS EXTERIOR TRIMRESSBD .5HR",
+          "ODS EXTERIOR TRIM REpEAl .5 HR",
+          "ODS EXIERIOR TRIM REP&AL .S HR"
+        ],
+        "quoteTexts": [
+          "",
+          ".5HR",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "$130",
+          "$130",
+          "$130"
+        ]
+      },
+      {
+        "row": 3,
+        "y": 0.3666666666666666,
+        "title": "LP detector out of date replace",
+        "titleScore": 19,
+        "parts": "65",
+        "hours": "5",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 65
+        },
+        "red": 0.08058045241143832,
+        "descInk": 0.10459770114942529,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "handText": "\" Helptributions to bring in the time of",
+        "rawTexts": [
+          "LP DETECTOR OUIOF DA.F. RF? NQE",
+          "LP DEIECIOROUT OFDA$E5E5HRCE$I65",
+          "LP DE TEC TOR OUT OF DABEREPHRqE$I65",
+          "LP DETEC TOR OUT OF DAIDbREPHRCESI65"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 4,
+        "y": 0.4023809523809523,
+        "title": "WBP",
+        "titleScore": 7,
+        "parts": "80",
+        "hours": "2.6",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 600
+        },
+        "red": 0.08075117370892018,
+        "descInk": 0.07904509283819629,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "handText": "were been",
+        "rawTexts": [
+          "WBP",
+          "WBP $80 2.60 HR $600",
+          "WBP $80 2.60 Hk $600",
+          "b WBP $80 2.60 HR $600"
+        ],
+        "quoteTexts": [
+          "",
+          "$80 2.60 HR $600",
+          "$80 2.60 Hk $600",
+          "$80 2.60 HR $600"
+        ],
+        "totalTexts": [
+          "",
+          "2.60 HR $600",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 5,
+        "y": 0.438095238095238,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "0 0",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 6,
+        "y": 0.4738095238095237,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.039610963748894785,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "0 0",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 7,
+        "y": 0.5095238095238094,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "0 0",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 8,
+        "y": 0.5452380952380951,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "0 0",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 9,
+        "y": 0.5809523809523808,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "a b c d e f g h i j k l m h i j k / k / k",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 10,
+        "y": 0.6166666666666665,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 11,
+        "y": 0.6523809523809522,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.039610963748894785,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "0 0",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 12,
+        "y": 0.6880952380952379,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "a b c d e f g ht",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 13,
+        "y": 0.7238095238095236,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "1 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 14,
+        "y": 0.7595238095238093,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "a b c d e f. After the first time he was interested in a living man and",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 15,
+        "y": 0.795238095238095,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.07374005305039788,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "1 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000 000",
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ],
+    "notes": [
+      "4 repairs reconstructed from the form rows.",
+      "R23 uses a forced-WASM handwriting model for repair descriptions and PaddleOCR for form geometry, RO, parts, labor and totals.",
+      "Written Total Cost remains a cross-check rather than a source of invented values."
+    ]
+  },
+  "error": "Error: detector fields mismatch 5/65\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r23/fullsheet-smoke.mjs:14:828"
+}
