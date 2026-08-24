@@ -2,6 +2,8 @@ name: URR browser model validation
 on:
   push:
     branches: [urr-browser-validation-use-this]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 jobs:
   validate:
