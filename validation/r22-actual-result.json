@@ -1,10 +1,665 @@
 {
-  "time": "2026-08-24T22:23:39.712Z",
+  "time": "2026-08-24T22:29:57.704Z",
   "success": false,
   "checks": {
     "domain": "16/16",
-    "fixtureChars": 11687
+    "fixtureChars": 25712,
+    "ro": "",
+    "jobCount": 5,
+    "titles": [
+      "vaio",
+      "bearjhk",
+      "hhnl ucg",
+      "tuuen",
+      "240"
+    ],
+    "concepts": {
+      "roof": false,
+      "exterior trim": false,
+      "entry door": false,
+      "shower": false,
+      "slide": false,
+      "detector": false,
+      "bunk": false,
+      "smoke": false,
+      "kitchen": false,
+      "bedroom": false,
+      "cabinet": false,
+      "wbp": false
+    },
+    "conceptsFound": 0
   },
-  "output": null,
-  "error": "Error: Real-sheet fixture is incomplete: 11687 chars\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/actual-smoke.mjs:15:76"
+  "output": {
+    "ro": "",
+    "jobs": [
+      {
+        "num": 1,
+        "status": "PENDING",
+        "title": "VAIO",
+        "rawTitle": "VAIO",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 2,
+        "status": "PENDING",
+        "title": "BearJhK",
+        "rawTitle": "BearJhK",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 3,
+        "status": "PENDING",
+        "title": "hhnl UCG",
+        "rawTitle": "hhnl UCG",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 4,
+        "status": "PENDING",
+        "title": "tUueN",
+        "rawTitle": "tUueN",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 5,
+        "status": "PENDING",
+        "title": "240",
+        "rawTitle": "240",
+        "hours": "",
+        "parts": "80",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      }
+    ],
+    "debugRows": [
+      {
+        "row": 1,
+        "y": 0.269047619047619,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.008004926108374385,
+        "descInk": 0.2807106968615743,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "",
+          "1%",
+          "2"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 2,
+        "y": 0.30714285714285705,
+        "title": "VAIO",
+        "titleScore": 0.35,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.11972202674173117,
+        "descInk": 0.30772591567756497,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "VAIO",
+          "S",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "VAIO",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          "二"
+        ]
+      },
+      {
+        "row": 3,
+        "y": 0.3452380952380951,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.071164672765658,
+        "descInk": 0.31289594407631255,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 4,
+        "y": 0.3833333333333332,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.028413089373680506,
+        "descInk": 0.2534042088400204,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "105",
+          "50K5",
+          "K +"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          "+"
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 5,
+        "y": 0.42142857142857126,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.07749824067558057,
+        "descInk": 0.25085560329134204,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "",
+          "-",
+          "/ √ !"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 6,
+        "y": 0.45952380952380933,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.14391273750879663,
+        "descInk": 0.17731012888662345,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "n",
+          "",
+          "二"
+        ],
+        "quoteTexts": [
+          "",
+          "n",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 7,
+        "y": 0.4976190476190474,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.13520408163265307,
+        "descInk": 0.20927692419718924,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "",
+          "",
+          "2 年"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          "年"
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 8,
+        "y": 0.5357142857142855,
+        "title": "BearJhK",
+        "titleScore": 0.35,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.1427691766361717,
+        "descInk": 0.23126774921721402,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "rawTexts": [
+          "- C",
+          "- BearJhK",
+          "",
+          "運"
+        ],
+        "quoteTexts": [
+          "- C",
+          "BearJhK",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 9,
+        "y": 0.5738095238095235,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.1802956382436467,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "n t",
+          "2",
+          "+ 「"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "-",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 10,
+        "y": 0.6119047619047616,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.16747979319886405,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "",
+          "Y 3OS hL",
+          "OS",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "3OS hL",
+          "OS",
+          ""
+        ],
+        "totalTexts": [
+          "-",
+          "T",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 11,
+        "y": 0.6499999999999997,
+        "title": "hhnl UCG",
+        "titleScore": 0.7,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.14323163183572415,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "rawTexts": [
+          "hhUc",
+          "hhnl Ui",
+          "hhnl UCG",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "-",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 12,
+        "y": 0.6880952380952378,
+        "title": "om",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.11585232651277944,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": false,
+        "rawTexts": [
+          "om -",
+          "C",
+          "om C",
+          "以"
+        ],
+        "quoteTexts": [
+          "om -",
+          "C",
+          "C",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 13,
+        "y": 0.7261904761904758,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.04213581984517945,
+        "descInk": 0.12793999854365398,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "",
+          "",
+          "中"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "-",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 14,
+        "y": 0.7642857142857139,
+        "title": "tUueN",
+        "titleScore": 0.35,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.17214010048787592,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "rawTexts": [
+          "tUueN",
+          "TLU",
+          "1 - 2",
+          "4 中"
+        ],
+        "quoteTexts": [
+          "",
+          "TLU",
+          "1 - 2",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 15,
+        "y": 0.802380952380952,
+        "title": "",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0.041080225193525687,
+        "descInk": 0.17301390810456566,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": false,
+        "hasDesc": false,
+        "endEvidence": true,
+        "rawTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "0",
+          "",
+          ""
+        ]
+      }
+    ],
+    "notes": [
+      "5 repairs reconstructed from the actual form rows.",
+      "PaddleOCR dark-ink + original-color + contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
+      "RO is restricted to the fixed RO# header column with a header fallback."
+    ]
+  },
+  "error": "Error: Real sheet RO mismatch: \n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/actual-smoke.mjs:23:50"
 }
