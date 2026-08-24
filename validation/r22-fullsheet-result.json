@@ -1,8 +1,8 @@
 {
-  "time": "2026-08-24T16:33:38.827Z",
+  "time": "2026-08-24T16:45:26.947Z",
   "success": false,
   "checks": {
-    "domain": "14/15"
+    "domain": "15/16"
   },
   "output": null,
   "error": "Error: Domain benchmark failed\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:11:157"
