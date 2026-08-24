@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>URR model smoke</title><pre id="out">starting</pre><script type="module">
+const out=document.getElementById('out');
+function norm(s){return String(s||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();}
+function lev(a,b){a=norm(a);b=norm(b);const d=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));for(let i=0;i<=a.length;i++)d[i][0]=i;for(let j=0;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length];}
+try{
+ const {pipeline}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
+ out.textContent='module loaded';
+ const ocr=await pipeline('image-to-text','Xenova/trocr-base-handwritten',{device:'wasm',dtype:'q8'});
+ out.textContent='model loaded';
+ const tests=['ROOF SPOT SEAL','ODS EXTERIOR TRIM RESEAL','ENTRY DOOR SCREEN TEAR','LP DETECTOR OUT OF DATE REPLACE','BUNK WINDOW BLIND BROKEN','WBP'];
+ const results=[];
+ for(const expected of tests){
+   const c=document.createElement('canvas');c.width=900;c.height=120;const x=c.getContext('2d');x.fillStyle='white';x.fillRect(0,0,c.width,c.height);x.fillStyle='black';x.font='52px cursive';x.fillText(expected,18,78);
+   const r=await ocr(c.toDataURL('image/png'),{max_new_tokens:60});const got=Array.isArray(r)?r[0]?.generated_text:r?.generated_text;const dist=lev(expected,got);results.push({expected,got,dist,ratio:dist/Math.max(norm(expected).length,1)});
+ }
+ const pass=results.filter(r=>r.ratio<=.35).length;
+ window.__URR_RESULT={pass,total:results.length,results};out.textContent=JSON.stringify(window.__URR_RESULT,null,2);document.body.dataset.done='1';document.body.dataset.pass=pass>=4?'1':'0';
+}catch(e){window.__URR_RESULT={error:String(e?.stack||e)};out.textContent=JSON.stringify(window.__URR_RESULT,null,2);document.body.dataset.done='1';document.body.dataset.pass='0';}
+</script>
