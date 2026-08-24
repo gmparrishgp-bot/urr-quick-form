@@ -1,5 +1,5 @@
 {
-  "time": "2026-08-24T16:09:28.899Z",
+  "time": "2026-08-24T16:12:12.629Z",
   "success": false,
   "checks": {
     "domain": "11/11",
@@ -9,37 +9,38 @@
       "c": 775,
       "d": 80
     },
-    "ro": "",
-    "jobCount": 5,
+    "ro": "105779",
+    "jobCount": 6,
     "titles": [
-      "problem found/repair needed roof spot seal",
-      "ods exterior trim res3ol",
-      "lp detector out of da$es reeiarce",
+      "[handwriting needs review]",
+      "roof spot seal",
+      "ods exterior trim reseal",
+      "[handwriting needs review]",
       "wbp",
       "[handwriting needs review]"
     ]
   },
   "output": {
-    "ro": "",
+    "ro": "105779",
     "jobs": [
       {
         "num": 1,
         "status": "PENDING",
-        "title": "Problem Found/Repair Needed ROOF SPOT SEAL",
+        "title": "[HANDWRITING NEEDS REVIEW]",
         "hours": "",
-        "parts": "60",
-        "confidence": 0.88,
-        "titleLow": false,
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
         "hoursLow": false,
         "partsLow": false,
-        "comment": ""
+        "comment": "Verify description against photo."
       },
       {
         "num": 2,
         "status": "PENDING",
-        "title": "ODS EXTERIOR TRIM RES3oL",
-        "hours": "",
-        "parts": "",
+        "title": "ROOF SPOT SEAL",
+        "hours": "2",
+        "parts": "60",
         "confidence": 0.88,
         "titleLow": false,
         "hoursLow": false,
@@ -49,9 +50,9 @@
       {
         "num": 3,
         "status": "PENDING",
-        "title": "LP DETECTOR OUT OF DA$ES REeIARCE",
+        "title": "ODS EXTERIOR TRIM reseal",
         "hours": "",
-        "parts": "16",
+        "parts": "",
         "confidence": 0.88,
         "titleLow": false,
         "hoursLow": false,
@@ -61,8 +62,20 @@
       {
         "num": 4,
         "status": "PENDING",
-        "title": "WBP",
+        "title": "[HANDWRITING NEEDS REVIEW]",
         "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 5,
+        "status": "PENDING",
+        "title": "WBP",
+        "hours": "2.6",
         "parts": "80",
         "confidence": 0.88,
         "titleLow": false,
@@ -71,7 +84,7 @@
         "comment": ""
       },
       {
-        "num": 5,
+        "num": 6,
         "status": "PENDING",
         "title": "[HANDWRITING NEEDS REVIEW]",
         "hours": "",
@@ -84,10 +97,10 @@
       }
     ],
     "notes": [
-      "5 repairs reconstructed from the actual form rows.",
+      "6 repairs reconstructed from the actual form rows.",
       "PaddleOCR contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
       "RO is restricted to the fixed RO# header column."
     ]
   },
-  "error": "Error: RO mismatch \n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:297"
+  "error": "Error: Expected exactly 4 jobs, got 6\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:365"
 }
