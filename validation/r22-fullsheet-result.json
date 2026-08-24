@@ -1,5 +1,5 @@
 {
-  "time": "2026-08-24T16:28:33.454Z",
+  "time": "2026-08-24T16:30:57.564Z",
   "success": false,
   "checks": {
     "domain": "13/13",
@@ -10,12 +10,11 @@
       "d": 80
     },
     "ro": "105779",
-    "jobCount": 5,
+    "jobCount": 4,
     "titles": [
-      "[handwriting needs review]",
-      "roof spot seal hr",
+      "roof spot seal",
       "ods exterior trim reseal",
-      "[handwriting needs review]",
+      "lp detector ouiof da.f. rf? nqe",
       "wbp"
     ]
   },
@@ -25,21 +24,8 @@
       {
         "num": 1,
         "status": "PENDING",
-        "title": "[HANDWRITING NEEDS REVIEW]",
-        "rawTitle": "",
-        "hours": "",
-        "parts": "",
-        "confidence": 0.42,
-        "titleLow": true,
-        "hoursLow": false,
-        "partsLow": false,
-        "comment": "Verify description against photo."
-      },
-      {
-        "num": 2,
-        "status": "PENDING",
-        "title": "ROOF SPOT SEAL HR",
-        "rawTitle": "ROOF SPOT SEAL HR",
+        "title": "ROOF SPOT SEAL",
+        "rawTitle": "ROOF SPOT SEAL",
         "hours": "2",
         "parts": "60",
         "confidence": 0.88,
@@ -49,7 +35,7 @@
         "comment": ""
       },
       {
-        "num": 3,
+        "num": 2,
         "status": "PENDING",
         "title": "ODS EXTERIOR TRIM reseal",
         "rawTitle": "ODS EXTERIOR TRIM reseal",
@@ -62,20 +48,20 @@
         "comment": ""
       },
       {
-        "num": 4,
+        "num": 3,
         "status": "PENDING",
-        "title": "[HANDWRITING NEEDS REVIEW]",
-        "rawTitle": "",
+        "title": "LP DETECTOR OUIOF DA.F. RF? NQE",
+        "rawTitle": "LP DETECTOR OUIOF DA.F. RF? NQE",
         "hours": "",
         "parts": "",
-        "confidence": 0.42,
-        "titleLow": true,
+        "confidence": 0.88,
+        "titleLow": false,
         "hoursLow": false,
         "partsLow": false,
-        "comment": "Verify description against photo."
+        "comment": ""
       },
       {
-        "num": 5,
+        "num": 4,
         "status": "PENDING",
         "title": "WBP",
         "rawTitle": "WBP",
@@ -110,15 +96,18 @@
         "rawTexts": [
           "Problem Found/Repair Needed",
           "Problem Found/Repair Needed",
+          "Problem Found/Repair Needed",
           "Problem Found/Repair Needed"
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
-          "of f Repair",
+          "of Repair",
+          "of Repair",
           "of Repair",
           "of Repair"
         ]
@@ -126,7 +115,7 @@
       {
         "row": 2,
         "y": 0.2952380952380952,
-        "title": "ROOF SPOT SEAL HR",
+        "title": "ROOF SPOT SEAL",
         "titleScore": 13,
         "parts": "60",
         "hours": "2",
@@ -142,16 +131,19 @@
         "hasDesc": true,
         "endEvidence": true,
         "rawTexts": [
-          "ROOFSPOTSEAL $60 ２HR",
+          "ROOF SPOT SEAL",
+          "ROOFSPOTSEAL $60 ２HＲ",
           "ROOF SPOT SEAL $602HR",
           "ROOF SPOT SEAL $60 2HR"
         ],
         "quoteTexts": [
-          "$60 ２HR",
+          "",
+          "$60 ２HＲ",
           "$602HR",
           "$60 2HR"
         ],
         "totalTexts": [
+          "",
           "$460",
           "$460",
           "$460"
@@ -176,26 +168,29 @@
         "hasDesc": true,
         "endEvidence": true,
         "rawTexts": [
+          "ODS EXTERIOR TRIM REpF.FL",
           "ODS EXTERIOR TRIMRESSBD .5HR",
-          "ODS EXTERIOR TRIM REpEAL .5 HR",
-          "ODS EXIERIOR TRIM RES&AL .5 HR"
+          "ODS EXTERIOR TRIM REpEAl .5 HR",
+          "ODS EXIERIOR TRIM REP&AL .S HR"
         ],
         "quoteTexts": [
+          "",
           ".5HR",
           "",
           ""
         ],
         "totalTexts": [
+          "",
           "$130",
           "$130",
-          "$13U"
+          "$130"
         ]
       },
       {
         "row": 4,
         "y": 0.3666666666666666,
-        "title": "LP DETEC TOR OUT OF DABEREPHRQE",
-        "titleScore": -2.95,
+        "title": "LP DETECTOR OUIOF DA.F. RF? NQE",
+        "titleScore": 10.7,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -207,19 +202,22 @@
         "fixInk": 0,
         "asisInk": 0,
         "hasText": true,
-        "hasDesc": false,
+        "hasDesc": true,
         "endEvidence": true,
         "rawTexts": [
-          "LPDETECTOROU1 OF DAp65RE5HRCE$I65",
-          "LP DETEC TOR OUT OF DABEREPHRQE$165",
-          "LP DE TECTOR OUT OF DABEREPHRCESI65"
+          "LP DETECTOR OUIOF DA.F. RF? NQE",
+          "LP DEIECIOROUT OFDA$E5E5HRCE$I65",
+          "LP DE TEC TOR OUT OF DABEREPHRqE$I65",
+          "LP DETEC TOR OUT OF DAIDbREPHRCESI65"
         ],
         "quoteTexts": [
+          "",
           "",
           "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -244,16 +242,19 @@
         "hasDesc": true,
         "endEvidence": true,
         "rawTexts": [
+          "WBP",
           "WBP $80 2.60 HR $600",
-          "WBP $80 2.60 HR $600",
-          "WBP $80 2.60 HR $600"
+          "WBP $80 2.60 Hk $600",
+          "b WBP $80 2.60 HR $600"
         ],
         "quoteTexts": [
+          "",
           "$80 2.60 HR $600",
-          "$80 2.60 HR $600",
+          "$80 2.60 Hk $600",
           "$80 2.60 HR $600"
         ],
         "totalTexts": [
+          "",
           "2.60 HR $600",
           "",
           ""
@@ -280,14 +281,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -314,14 +318,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -348,14 +355,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -382,14 +392,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -416,14 +429,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -450,14 +466,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -484,14 +503,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -518,14 +540,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -552,14 +577,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -586,14 +614,17 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
           "",
           "",
+          "",
           ""
         ],
         "totalTexts": [
+          "",
           "",
           "",
           ""
@@ -620,9 +651,11 @@
         "rawTexts": [
           "",
           "",
+          "",
           ""
         ],
         "quoteTexts": [
+          "",
           "",
           "",
           ""
@@ -630,15 +663,16 @@
         "totalTexts": [
           "",
           "",
+          "",
           ""
         ]
       }
     ],
     "notes": [
-      "5 repairs reconstructed from the actual form rows.",
-      "PaddleOCR original-color + contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
+      "4 repairs reconstructed from the actual form rows.",
+      "PaddleOCR dark-ink + original-color + contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
       "RO is restricted to the fixed RO# header column with a header fallback."
     ]
   },
-  "error": "Error: Expected exactly 4 jobs, got 5\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:365"
+  "error": "Error: Browser errors Failed to load resource: the server responded with a status of 404 (File not found) | \u001b[0;93m2026-08-24 16:31:52.626599 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.53.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.629298 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.9.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.629698 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.46.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.629999 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.3.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.630299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.1.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.630599 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.42.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.630998 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.41.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.633198 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.40.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.633698 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.48.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.634099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.34.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.634398 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.36.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.634698 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.26.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.635099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.49.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.635498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.21.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.635698 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.6.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.636098 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.7.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.636398 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.50.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.636798 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.8.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.637098 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.2.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.637498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.51.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.637799 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.35.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.638099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.43.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.638498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.13.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.638898 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.47.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.639898 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.4.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.640198 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.38.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 16:31:52.640498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.39.0'. It is not used by any node and should be removed from the model.\u001b[m\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:631"
 }
