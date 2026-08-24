@@ -1,0 +1,28 @@
+name: URR browser model validation
+on:
+  push:
+    branches: [urr-browser-validation-use-this]
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm init -y
+      - run: npm install playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start local server
+        run: |
+          python3 -m http.server 8000 >/tmp/urr-http.log 2>&1 &
+          sleep 2
+      - name: Run model smoke
+        run: node validation/run-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: urr-model-result
+          path: validation/model-result.json
