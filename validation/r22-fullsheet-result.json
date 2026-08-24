@@ -1,6 +1,6 @@
 {
-  "time": "2026-08-24T22:32:34.303Z",
-  "success": false,
+  "time": "2026-08-24T22:36:18.478Z",
+  "success": true,
   "checks": {
     "domain": "16/16",
     "math": {
@@ -17,36 +17,7 @@
       "lp detector ouiof da.f. rf? nqe",
       "wbp"
     ],
-    "browserErrors": [
-      "Failed to load resource: the server responded with a status of 404 (File not found)",
-      "\u001b[0;93m2026-08-24 22:33:05.690498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.53.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.696598 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.9.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.697098 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.46.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.698299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.3.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.698998 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.1.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.699399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.42.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.699899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.41.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.701999 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.40.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.702299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.48.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.702699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.34.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.703099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.36.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.703399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.26.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.703899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.49.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.704199 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.21.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.704699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.6.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.704998 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.7.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.705398 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.50.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.705899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.8.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.706299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.2.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.706699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.51.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.707099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.35.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.707498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.43.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.707899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.13.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.708298 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.47.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.708998 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.4.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.709399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.38.0'. It is not used by any node and should be removed from the model.\u001b[m",
-      "\u001b[0;93m2026-08-24 22:33:05.709799 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.39.0'. It is not used by any node and should be removed from the model.\u001b[m"
-    ]
+    "browserErrors": []
   },
   "output": {
     "ro": "105779",
@@ -108,8 +79,8 @@
       {
         "row": 1,
         "y": 0.2595238095238095,
-        "title": "Problem Found/Repair Needed",
-        "titleScore": -6.6,
+        "title": "a b c d e f g h o f",
+        "titleScore": 0,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -120,10 +91,12 @@
         "descInk": 0.07418213969938107,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": true,
+        "trocr": "a b c d e f g h o f",
         "rawTexts": [
+          "a b c d e f g h o f",
           "Problem Found/Repair Needed",
           "Problem Found/Repair Needed",
           "Problem Found/Repair Needed",
@@ -160,11 +133,13 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": true,
+        "trocr": "of the best and the audience were",
         "rawTexts": [
+          "of the best and the audience were",
           "ROOF SPOT SEAL",
-          "ROOFSPOTSEAL $60 ２HＲ",
-          "ROOF SPOT SEAL $602HR",
-          "ROOF SPOT SEAL $60 2HR"
+          "ROOFSPOTSEAL",
+          "ROOF SPOT SEAL",
+          "ROOF SPOT SEAL"
         ],
         "quoteTexts": [
           "",
@@ -197,9 +172,11 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": true,
+        "trocr": "I think that the",
         "rawTexts": [
+          "I think that the",
           "ODS EXTERIOR TRIM REpF.FL",
-          "ODS EXTERIOR TRIMRESSBD .5HR",
+          "ODS EXTERIOR TRIMRESSBD",
           "ODS EXTERIOR TRIM REpEAl .5 HR",
           "ODS EXIERIOR TRIM REP&AL .S HR"
         ],
@@ -234,7 +211,9 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": true,
+        "trocr": "a b c duddled was the first time to",
         "rawTexts": [
+          "a b c duddled was the first time to",
           "LP DETECTOR OUIOF DA.F. RF? NQE",
           "LP DEIECIOROUT OFDA$E5E5HRCE$I65",
           "LP DE TEC TOR OUT OF DABEREPHRqE$I65",
@@ -271,11 +250,13 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": true,
+        "trocr": "1 000 000",
         "rawTexts": [
+          "1 000 000",
           "WBP",
-          "WBP $80 2.60 HR $600",
-          "WBP $80 2.60 Hk $600",
-          "b WBP $80 2.60 HR $600"
+          "WBP",
+          "WBP",
+          "b WBP"
         ],
         "quoteTexts": [
           "",
@@ -293,7 +274,7 @@
       {
         "row": 6,
         "y": 0.438095238095238,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -305,10 +286,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -330,7 +313,7 @@
       {
         "row": 7,
         "y": 0.4738095238095237,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -342,10 +325,12 @@
         "descInk": 0.039610963748894785,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -367,7 +352,7 @@
       {
         "row": 8,
         "y": 0.5095238095238094,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -379,10 +364,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -404,7 +391,7 @@
       {
         "row": 9,
         "y": 0.5452380952380951,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -416,10 +403,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -441,7 +430,7 @@
       {
         "row": 10,
         "y": 0.5809523809523808,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -453,10 +442,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -478,7 +469,7 @@
       {
         "row": 11,
         "y": 0.6166666666666665,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -490,10 +481,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -515,7 +508,7 @@
       {
         "row": 12,
         "y": 0.6523809523809522,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -527,10 +520,12 @@
         "descInk": 0.039610963748894785,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -552,7 +547,7 @@
       {
         "row": 13,
         "y": 0.6880952380952379,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -564,10 +559,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -589,7 +586,7 @@
       {
         "row": 14,
         "y": 0.7238095238095236,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -601,10 +598,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -626,7 +625,7 @@
       {
         "row": 15,
         "y": 0.7595238095238093,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -638,10 +637,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -663,7 +664,7 @@
       {
         "row": 16,
         "y": 0.795238095238095,
-        "title": "",
+        "title": "0 0",
         "titleScore": 0,
         "parts": "",
         "hours": "",
@@ -675,10 +676,12 @@
         "descInk": 0.07374005305039788,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
+        "hasText": true,
         "hasDesc": false,
         "endEvidence": false,
+        "trocr": "0 0",
         "rawTexts": [
+          "0 0",
           "",
           "",
           "",
@@ -700,9 +703,9 @@
     ],
     "notes": [
       "4 repairs reconstructed from the actual form rows.",
-      "PaddleOCR dark-ink + original-color + contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
-      "RO is restricted to the fixed RO# header column with a header fallback."
+      "TrOCR reads the handwritten description line; PaddleOCR reads the structured amount and total cells; RV terminology and written totals are used as cross-checks.",
+      "RO is restricted to the fixed RO# header column with handwritten-line fallback."
     ]
   },
-  "error": "Error: Browser errors Failed to load resource: the server responded with a status of 404 (File not found) | \u001b[0;93m2026-08-24 22:33:05.690498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.53.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.696598 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.9.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.697098 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.46.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.698299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.3.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.698998 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.1.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.699399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.42.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.699899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.41.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.701999 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.40.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.702299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.48.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.702699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.34.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.703099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.36.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.703399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.26.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.703899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.49.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.704199 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.21.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.704699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.6.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.704998 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.7.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.705398 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.50.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.705899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.8.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.706299 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.2.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.706699 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.51.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.707099 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.35.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.707498 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.43.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.707899 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.13.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.708298 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.47.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.708998 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full.4.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.709399 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.38.0'. It is not used by any node and should be removed from the model.\u001b[m | \u001b[0;93m2026-08-24 22:33:05.709799 [W:onnxruntime:, graph.cc:5457 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p2o.pd_op.full_int_array.39.0'. It is not used by any node and should be removed from the model.\u001b[m\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:677"
+  "error": null
 }
