@@ -10,16 +10,9 @@ try{
  await page.waitForFunction(()=>window.__urrTest?.analyzeData&&window.URR_R21_DOMAIN_TEST,{timeout:90000});
  const domain=await page.evaluate(()=>window.URR_R21_DOMAIN_TEST);result.checks.domain=`${domain.pass}/${domain.total}`;
  if(domain.pass!==domain.total)throw new Error('Domain benchmark failed');
- const fixtureParts=[
-  'validation/actual-sheet-105470.part0.b64',
-  'validation/actual-sheet-105470.part1a.b64',
-  'validation/actual-sheet-105470.part1b.b64',
-  'validation/actual-sheet-105470.part2.b64',
-  'validation/actual-sheet-105470.part3.b64'
- ];
- const b64=fixtureParts.map(p=>fs.readFileSync(p,'utf8').trim()).join('');
+ const b64=fs.readFileSync('validation/actual-sheet-reg2.b64','utf8').trim();
  result.checks.fixtureChars=b64.length;
- if(b64.length!==44312||!b64.startsWith('/9j/')||!b64.endsWith('=='))throw new Error('Real-sheet fixture is incomplete: '+b64.length+' chars');
+ if(b64.length!==25712||!b64.startsWith('/9j/')||!b64.endsWith('=='))throw new Error('Real-sheet fixture is incomplete: '+b64.length+' chars');
  const data='data:image/jpeg;base64,'+b64;
  const out=await page.evaluate(async d=>window.__urrTest.analyzeData(d,'quote'),data);result.output=out;
  result.checks.ro=out.ro;result.checks.jobCount=out.jobs?.length||0;
