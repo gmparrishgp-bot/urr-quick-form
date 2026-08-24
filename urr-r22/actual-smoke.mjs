@@ -9,7 +9,10 @@ try{
  await page.goto('http://127.0.0.1:8000/staging-r22.html',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.__urrTest?.analyzeData&&window.URR_R21_DOMAIN_TEST,{timeout:90000});
  const domain=await page.evaluate(()=>window.URR_R21_DOMAIN_TEST);result.checks.domain=`${domain.pass}/${domain.total}`;
- const b64=fs.readFileSync('validation/actual-sheet-105470.jpg.b64','utf8').trim();
+ if(domain.pass!==domain.total)throw new Error('Domain benchmark failed');
+ const b64=[0,1,2,3].map(i=>fs.readFileSync(`validation/actual-sheet-105470.part${i}.b64`,'utf8').trim()).join('');
+ result.checks.fixtureChars=b64.length;
+ if(!b64.startsWith('/9j/')||!b64.endsWith('=='))throw new Error('Real-sheet fixture is incomplete');
  const data='data:image/jpeg;base64,'+b64;
  const out=await page.evaluate(async d=>window.__urrTest.analyzeData(d,'quote'),data);result.output=out;
  result.checks.ro=out.ro;result.checks.jobCount=out.jobs?.length||0;
