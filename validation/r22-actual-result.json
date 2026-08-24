@@ -1,5 +1,5 @@
 {
-  "time": "2026-08-24T22:36:08.259Z",
+  "time": "2026-08-24T22:36:39.232Z",
   "success": false,
   "checks": {
     "domain": "16/16",
@@ -789,5 +789,5 @@
       "RO is restricted to the fixed RO# header column with handwritten-line fallback."
     ]
   },
-  "error": "Error: Real sheet RO mismatch: \n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/actual-smoke.mjs:23:50"
+  "error": "Error: Real sheet RO mismatch: \n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/actual-smoke.mjs:24:50"
 }
