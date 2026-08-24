@@ -10,7 +10,7 @@ try{
  await page.waitForFunction(()=>window.__urrTest?.analyzeData&&window.URR_R21_DOMAIN_TEST,{timeout:90000});
  const domain=await page.evaluate(()=>window.URR_R21_DOMAIN_TEST);result.checks.domain=`${domain.pass}/${domain.total}`;
  if(domain.pass!==domain.total)throw new Error('Domain benchmark failed');
- const b64=fs.readFileSync('validation/actual-sheet-reg2.b64','utf8').trim();
+ const b64=[0,1,2].map(i=>fs.readFileSync(`validation/reg2.part${i}.b64`,'utf8').trim()).join('');
  result.checks.fixtureChars=b64.length;
  if(b64.length!==25712||!b64.startsWith('/9j/')||!b64.endsWith('=='))throw new Error('Real-sheet fixture is incomplete: '+b64.length+' chars');
  const data='data:image/jpeg;base64,'+b64;
