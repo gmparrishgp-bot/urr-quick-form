@@ -1,8 +1,8 @@
 {
-  "time": "2026-08-24T16:12:12.629Z",
+  "time": "2026-08-24T16:15:46.399Z",
   "success": false,
   "checks": {
-    "domain": "11/11",
+    "domain": "13/13",
     "math": {
       "a": 130,
       "b": 65,
@@ -10,14 +10,13 @@
       "d": 80
     },
     "ro": "105779",
-    "jobCount": 6,
+    "jobCount": 5,
     "titles": [
       "[handwriting needs review]",
       "roof spot seal",
       "ods exterior trim reseal",
       "[handwriting needs review]",
-      "wbp",
-      "[handwriting needs review]"
+      "wbp"
     ]
   },
   "output": {
@@ -27,6 +26,7 @@
         "num": 1,
         "status": "PENDING",
         "title": "[HANDWRITING NEEDS REVIEW]",
+        "rawTitle": "",
         "hours": "",
         "parts": "",
         "confidence": 0.42,
@@ -39,6 +39,7 @@
         "num": 2,
         "status": "PENDING",
         "title": "ROOF SPOT SEAL",
+        "rawTitle": "ROOF SPOT SEAL",
         "hours": "2",
         "parts": "60",
         "confidence": 0.88,
@@ -51,8 +52,9 @@
         "num": 3,
         "status": "PENDING",
         "title": "ODS EXTERIOR TRIM reseal",
-        "hours": "",
-        "parts": "",
+        "rawTitle": "ODS EXTERIOR TRIM reseal",
+        "hours": "0.5",
+        "parts": "30",
         "confidence": 0.88,
         "titleLow": false,
         "hoursLow": false,
@@ -63,6 +65,7 @@
         "num": 4,
         "status": "PENDING",
         "title": "[HANDWRITING NEEDS REVIEW]",
+        "rawTitle": "",
         "hours": "",
         "parts": "",
         "confidence": 0.42,
@@ -75,6 +78,7 @@
         "num": 5,
         "status": "PENDING",
         "title": "WBP",
+        "rawTitle": "WBP",
         "hours": "2.6",
         "parts": "80",
         "confidence": 0.88,
@@ -82,25 +86,13 @@
         "hoursLow": false,
         "partsLow": false,
         "comment": ""
-      },
-      {
-        "num": 6,
-        "status": "PENDING",
-        "title": "[HANDWRITING NEEDS REVIEW]",
-        "hours": "",
-        "parts": "",
-        "confidence": 0.42,
-        "titleLow": true,
-        "hoursLow": false,
-        "partsLow": false,
-        "comment": "Verify description against photo."
       }
     ],
     "notes": [
-      "6 repairs reconstructed from the actual form rows.",
-      "PaddleOCR contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
-      "RO is restricted to the fixed RO# header column."
+      "5 repairs reconstructed from the actual form rows.",
+      "PaddleOCR original-color + contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
+      "RO is restricted to the fixed RO# header column with a header fallback."
     ]
   },
-  "error": "Error: Expected exactly 4 jobs, got 6\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:365"
+  "error": "Error: Expected exactly 4 jobs, got 5\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:365"
 }
