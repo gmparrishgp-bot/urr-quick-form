@@ -32,7 +32,7 @@
   function phraseRepair(s){const base=norm(s);if(base.length<4)return s;const candidates=[...learned.map(x=>({phrase:x.corrected,raw:x.raw,learned:true})),...SEED_PHRASES.map(x=>({phrase:x,raw:x,learned:false}))];let best=null,bs=0;for(const c of candidates){const compare=c.learned?c.raw:c.phrase;const sc=tokenSimilarity(base,compare);if(anchorMatch(base,compare)&&sc>bs){bs=sc;best=c;}}const threshold=best?.learned?.82:.76;if(best&&bs>=threshold)return best.phrase;return s;}
   function looksLikeLPDetectorRepair(v){
     const n=norm(v);
-    const lp=/\blp\b/.test(n),det=/detec|deiec|detector/.test(n),out=/out|ouiof|oui\s*of|ou1|oul/.test(n);
+    const lp=/\blp\b/.test(n)||/^lp(?=detec|deiec)/.test(n),det=/detec|deiec|detector/.test(n),out=/out|ouiof|oui\s*of|ou1|oul/.test(n);
     const date=/\bdate\b|da\$?e|dab|dap|daid|da\s*f/.test(n),rep=/replace|reph|re5h|rephrc|ree?iarce|rf\s*nqe/.test(n);
     return lp&&det&&out&&date&&rep;
   }
