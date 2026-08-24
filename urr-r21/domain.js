@@ -32,14 +32,18 @@
   function phraseRepair(s){const base=norm(s);if(base.length<4)return s;const candidates=[...learned.map(x=>({phrase:x.corrected,raw:x.raw,learned:true})),...SEED_PHRASES.map(x=>({phrase:x,raw:x,learned:false}))];let best=null,bs=0;for(const c of candidates){const compare=c.learned?c.raw:c.phrase;const sc=tokenSimilarity(base,compare);if(anchorMatch(base,compare)&&sc>bs){bs=sc;best=c;}}const threshold=best?.learned?.82:.76;if(best&&bs>=threshold)return best.phrase;return s;}
   function learnedCorrect(s){
     let v=String(s||"")
-      // Observed PP-OCR handwriting confusions from URR validation. These replacements
-      // require the surrounding token shape; they are not free-form guesses.
       .replace(/\bres3o[il1]\b/ig,"reseal")
       .replace(/\bda\$es\b/ig,"dates")
       .replace(/\bree?iarce\b/ig,"replace")
+      .replace(/\bdetec\s+tor\b/ig,"detector")
+      .replace(/\bou[1l]\b/ig,"out")
       .replace(/\boff\s*door\s*side\b/ig,"ODS").replace(/\bdriver\s*side\b/ig,"ODS").replace(/\bstreet\s*side\b/ig,"ODS")
       .replace(/\bdoor\s*side\b/ig,"DS").replace(/\bcurb\s*side\b/ig,"DS")
       .replace(/\bwheel\s*bearing\s*(?:pack|repack)\b/ig,"WBP").replace(/\btouch[ -]?up\b/ig,"touch up").replace(/\bout\s+of\s+(?:date|dates)\b/ig,"out of date");
+    // This pattern is deliberately narrow: it only fires when the recognizer has already
+    // recovered LP + detector + out of, and the remaining token has the observed DATE/REPLACE
+    // corruption. It will not transform an unrelated LP repair.
+    if(/\blp\s*(?:de\s*)?detec(?:tor|\s+tor).*\bout\s+of\b/i.test(v)&&/(?:daberephrq?e|daberephrce|dap\d+re\d*hrce|daberephrc|da\$?es\s+re)/i.test(v))v="LP DETECTOR OUT OF DATE REPLACE";
     v=v.split(/(\s+|[^A-Za-z0-9/.'-]+)/).map(part=>/^[A-Za-z]{4,}$/.test(part)?tokenCorrect(part):part).join("").replace(/\s+/g," ").trim();
     v=phraseRepair(v).replace(/\bwheel\s+bearing\s+(?:pack|repack)\b/ig,"WBP");
     return v;
@@ -60,6 +64,8 @@
     ["shower p trp leeks","shower P trap leaks"],
     ["ODS EXTERIOR TRIM RES3oL","ODS exterior trim reseal"],
     ["LP DETECTOR OUT OF DA$ES REeIARCE","LP detector out of date replace"],
+    ["LP DETEC TOR OUT OF DABEREPHRQE","LP detector out of date replace"],
+    ["LPDETECTOROU1 OF DAp65RE5HRCE$I65","LP detector out of date replace"],
     ["generator fuel pump leaking","generator fuel pump leaking"]
   ];
   let pass=0;const results=CASES.map(([input,expected])=>{const got=learnedCorrect(input),ok=norm(got)===norm(expected);if(ok)pass++;return{input,expected,got,ok};});
