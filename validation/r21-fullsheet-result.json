@@ -1,8 +1,8 @@
 {
-  "time": "2026-08-24T16:32:38.702Z",
+  "time": "2026-08-24T16:39:59.196Z",
   "success": false,
   "checks": {
-    "domain": "14/15"
+    "domain": "15/16"
   },
   "output": null,
   "error": "Error: Domain correction benchmark failed: [{\"input\":\"LPDETECTOROU1 OF DAp65RE5HRCE$I65\",\"expected\":\"LP detector out of date replace\",\"got\":\"LPDETECTOROU1 OF DAp65RE5HRCE$I65\",\"ok\":false}]\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r21/fullsheet-smoke.mjs:16:39"
