@@ -9,6 +9,7 @@ on:
       - 'urr-r22/**'
       - 'staging-r22.html'
       - 'validation/actual-sheet-105470*.b64'
+      - 'validation/reg2.part*.b64'
       - '.github/workflows/urr-r22-actual.yml'
 permissions:
   contents: write
@@ -38,7 +39,8 @@ jobs:
           git add validation/r22-actual-result.json
           if ! git diff --cached --quiet; then
             git commit -m 'Record R22 real-sheet OCR validation result'
-            git push
+            git pull --rebase origin main
+            git push origin main
           fi
       - name: Enforce validation
         if: steps.test.outcome != 'success'
