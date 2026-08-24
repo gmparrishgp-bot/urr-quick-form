@@ -30,7 +30,7 @@
  function usableHandText(s){s=cleanText(s);if(!s||s.length<3||s.length>90)return false;if(/what links here|wikidata|related changes|permanent link|successful representative|first time he was/i.test(s))return false;if(/^(?:\s*[a-z0-9]\s*){6,}$/i.test(s))return false;if(/(?:\b0\b\s*){4,}|(?:\b000\b\s*){3,}/.test(s))return false;return hasRVAnchor(s)&&rvPlausibility(s)>=3;}
  function normalizeQuoteText(s){
    s=String(s||"").replace(/[Oo]/g,"0").replace(/#/g,"$").replace(/\bH(?:E|C)\b/ig,"HR").replace(/,/g,".");
-   s=s.replace(/\$[Il](\d)/g,(_,d)=>"$1"+d).replace(/\$E(\d)/gi,(_,d)=>"$6"+d).replace(/\bE(\d)\s*H(?:R|RC|RCE|E|C)\b/gi,".$1 HR").replace(/\bR?E(\d)\s*H(?:R|RC|RCE|E|C)\b/gi,".$1 HR");
+   s=s.replace(/\$[Il](\d)/g,(_,d)=>"$1"+d).replace(/\$E(\d)/gi,(_,d)=>"$6"+d).replace(/R?E(\d)\s*H(?:R|RC|RCE|E|C)\b/gi,".$1 HR");
    return s.replace(/\s+/g," ").trim();
  }
  function quoteCandidatesFromText(s){
