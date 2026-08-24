@@ -1,0 +1,9 @@
+{
+  "time": "2026-08-24T16:37:55.973Z",
+  "success": false,
+  "checks": {
+    "domain": "14/15"
+  },
+  "output": null,
+  "error": "Error: Could not open the URR photo.\n    at #evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/cdp/ExecutionContext.js:388:19)\n    at async ExecutionContext.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/cdp/ExecutionContext.js:274:16)\n    at async IsolatedWorld.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/cdp/IsolatedWorld.js:102:16)\n    at async CdpFrame.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/api/Frame.js:359:20)\n    at async CdpPage.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/api/Page.js:826:20)\n    at async file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/actual-smoke.mjs:14:12\n    at im.onerror (:162:27)"
+}
