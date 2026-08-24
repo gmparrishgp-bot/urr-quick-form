@@ -1,0 +1,21 @@
+import puppeteer from 'puppeteer-core';
+import {execSync} from 'node:child_process';
+import fs from 'node:fs';
+const result={time:new Date().toISOString(),success:false,checks:{},output:null,error:null};let browser;
+try{
+ const chrome=execSync('which google-chrome || which chromium || which chromium-browser',{encoding:'utf8'}).trim().split('\n')[0];
+ browser=await puppeteer.launch({headless:true,executablePath:chrome,args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']});
+ const page=await browser.newPage();page.setDefaultTimeout(480000);const errs=[];page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+ await page.goto('http://127.0.0.1:8000/staging-r23.html',{waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>window.__urrTest?.analyzeData&&window.URR_R21_DOMAIN_TEST,{timeout:120000});
+ const domain=await page.evaluate(()=>window.URR_R21_DOMAIN_TEST);result.checks.domain=`${domain.pass}/${domain.total}`;if(domain.pass!==domain.total)throw new Error('Domain benchmark failed');
+ const fixtureParts=['validation/actual-sheet-105470.part0.b64','validation/actual-sheet-105470.part1a.b64','validation/actual-sheet-105470.part1b.b64','validation/actual-sheet-105470.part2.b64','validation/actual-sheet-105470.part3.b64'];
+ const b64=fixtureParts.map(p=>fs.readFileSync(p,'utf8').trim()).join('');result.checks.fixtureChars=b64.length;if(b64.length!==44312||!b64.startsWith('/9j/')||!b64.endsWith('=='))throw new Error('Real-sheet fixture incomplete');
+ const out=await page.evaluate(async d=>window.__urrTest.analyzeData(d,'quote'),'data:image/jpeg;base64,'+b64);result.output=out;result.checks.ro=out.ro;result.checks.jobCount=out.jobs?.length||0;
+ const titles=(out.jobs||[]).map(j=>String(j.title||'').toLowerCase());result.checks.titles=titles;const concepts=['roof','exterior','entry','shower','slide','detector','bunk','smoke','kitchen','bedroom','cabinet','wbp'];result.checks.concepts=Object.fromEntries(concepts.map(c=>[c,titles.some(t=>t.includes(c))]));result.checks.conceptsFound=Object.values(result.checks.concepts).filter(Boolean).length;
+ result.checks.handTexts=(out.debugRows||[]).map(r=>r.handText).filter(Boolean);
+ const low=(out.jobs||[]).filter(j=>j.titleLow||j.hoursLow||j.partsLow).length;result.checks.lowFields=low;
+ if(result.checks.conceptsFound<7)throw new Error('Hybrid reader recovered only '+result.checks.conceptsFound+' anchor concepts');
+ if((out.jobs?.length||0)<10)throw new Error('Hybrid reader reconstructed too few jobs: '+(out.jobs?.length||0));
+ result.checks.browserErrors=errs.filter(e=>!e.includes('favicon'));if(result.checks.browserErrors.length)throw new Error('Browser errors '+result.checks.browserErrors.join(' | '));result.success=true;
+}catch(e){result.error=String(e?.stack||e)}finally{if(browser)await browser.close();fs.mkdirSync('validation',{recursive:true});fs.writeFileSync('validation/r23-actual-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2))}if(!result.success)process.exitCode=1;
