@@ -1,0 +1,21 @@
+ async function readROHybrid(canvas,cols){
+   try{
+     const meta=makePageCrop(canvas,.025,.13,.965,.31,1700);
+     const rr=await withTimeout(ocr.predict(meta.canvas,{textDetLimitSideLen:1800,textDetLimitType:"max",textDetThresh:.10,textDetBoxThresh:.10,textRecScoreThresh:.025}),60000,"Reading RO header");
+     if(!rr?.[0]?.items)return"";
+     const items=remapCropItems(rr[0],meta);
+     const labels=items.filter(x=>/^\s*R[O0]\s*#?\s*$/i.test(String(x.text||""))||/\bRO\s*#\b/i.test(String(x.text||"")));
+     const nums=items.map(x=>({x,n:String(x.text||"").replace(/\D/g,"")})).filter(v=>/^\d{4,8}$/.test(v.n));
+     if(!nums.length)return"";
+     const cx=(cols.ro.x0+cols.ro.x1)/2;
+     let best=null,score=1e9;
+     for(const v of nums){
+       let s=Math.abs(v.x.cx-cx)*2.0;
+       if(v.x.cx>=cols.ro.x0-.035&&v.x.cx<=cols.ro.x1+.035)s-=.12;
+       if(v.x.cy<.16||v.x.cy>.305)s+=.5;
+       for(const l of labels){const dy=v.x.cy-l.cy,dx=Math.abs(v.x.cx-l.cx);if(dy>-.02&&dy<.12)s+=dx*.8+Math.abs(dy-.045)*.8-.20;}
+       if(s<score){score=s;best=v;}
+     }
+     return score<.55&&best?best.n:"";
+   }catch{return"";}
+ }
