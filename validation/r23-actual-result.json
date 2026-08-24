@@ -1,0 +1,727 @@
+{
+  "time": "2026-08-24T20:36:49.264Z",
+  "success": false,
+  "checks": {
+    "domain": "16/16",
+    "fixtureChars": 44312,
+    "ro": "1064101",
+    "jobCount": 6,
+    "titles": [
+      "a parallel to the rote dx b0o2 coc exe2iu to recu lpnecc tia estes0 5 y octr sgn t5 xnth0r saorse dosoe a85",
+      "oeo - )i what links hererelated changesupload filespecial pagespermanent linkpage informationcite this pagewikidata item",
+      "a b h. m. h. anderson said that he was not a successful representative a b c d e f g h. it is a small time of the first",
+      "what links hererelated changesupload filespecial pagespermanent linkpage informationcite this pagewikidata item",
+      "what links hererelated changesupload filespecial pagespermanent linkpage informationcite this pagewikidata item",
+      "what links hererelated changesupload filespecial pagespermanent linkpage informationcite this pagewikidata item"
+    ],
+    "concepts": {
+      "roof": false,
+      "exterior": false,
+      "entry": false,
+      "shower": false,
+      "slide": false,
+      "detector": false,
+      "bunk": false,
+      "smoke": false,
+      "kitchen": false,
+      "bedroom": false,
+      "cabinet": false,
+      "wbp": false
+    },
+    "conceptsFound": 0,
+    "handTexts": [
+      "a parallel to the",
+      "a b c d",
+      "a b c d e f",
+      "a b c d e f g h O.",
+      "a b c d e f g ht",
+      "a b c d",
+      "a b c d e f",
+      "a b c d e f g ht",
+      "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+      "a b H. M. H. Anderson said that he was not a successful representative",
+      "a b c d e f g h. It is a small time of the first",
+      "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+      "a b c d e f g ht",
+      "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+      "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item"
+    ],
+    "lowFields": 0
+  },
+  "output": {
+    "ro": "1064101",
+    "jobs": [
+      {
+        "num": 1,
+        "status": "PENDING",
+        "title": "a parallel to the Rote DX B0O2 COC Exe2iU TO ReCu Lpnecc tia estES0 5 y OCtR SGN T5 XnTH0R SAORSE DOSOE A85",
+        "rawTitle": "a parallel to the Rote DX B0O2 COC Exe2iU TO ReCu Lpnecc tia estES0 5 y OCtR SGN T5 XnTH0R SAORSE DOSOE A85",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 2,
+        "status": "PENDING",
+        "title": "OEO - )i What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTitle": "OEO - )i What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 3,
+        "status": "PENDING",
+        "title": "a b H. M. H. Anderson said that he was not a successful representative a b c d e f g h. It is a small time of the first",
+        "rawTitle": "a b H. M. H. Anderson said that he was not a successful representative a b c d e f g h. It is a small time of the first",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 4,
+        "status": "PENDING",
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTitle": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 5,
+        "status": "PENDING",
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTitle": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 6,
+        "status": "PENDING",
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTitle": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.9,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      }
+    ],
+    "debugRows": [
+      {
+        "row": 1,
+        "y": 0.26309523809523805,
+        "title": "a parallel to the",
+        "titleScore": 0.7,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.2976276580355851,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a parallel to the",
+        "rawTexts": [
+          "a parallel to the",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "ar",
+          "orHF",
+          "ar",
+          ""
+        ]
+      },
+      {
+        "row": 2,
+        "y": 0.3011904761904761,
+        "title": "Rote DX B0O2",
+        "titleScore": 0.35,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.3691595544626067,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b c d",
+        "rawTexts": [
+          "a b c d",
+          "R0c 8002",
+          "Rote DX B0O2",
+          "R0 86O2e",
+          ""
+        ],
+        "quoteTexts": [
+          "8002",
+          "B0O2",
+          "86O2e",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 3,
+        "y": 0.3392857142857142,
+        "title": "COC Exe2iU TO ReCu",
+        "titleScore": 1.0499999999999998,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.4097352813539708,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b c d e f",
+        "rawTexts": [
+          "a b c d e f",
+          "COC Eo2i tD ReCu",
+          "OaG Exe2iu TD Ru",
+          "COC Exe2iU TO ReCu -",
+          ""
+        ],
+        "quoteTexts": [
+          "ReCu",
+          "Ru",
+          "ReCu -",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 4,
+        "y": 0.37738095238095226,
+        "title": "Lpnecc tia estES0 5",
+        "titleScore": 1.0499999999999998,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.34861854477072185,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b c d e f g h O.",
+        "rawTexts": [
+          "a b c d e f g h O.",
+          "Lneoc 1 estEns0",
+          "Lpnecc tia estES0 5",
+          "Epnece 1 estens0",
+          ""
+        ],
+        "quoteTexts": [
+          "estEns0",
+          "estES0 5",
+          "estens0",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 5,
+        "y": 0.41547619047619033,
+        "title": "y OCtR SGN T5",
+        "titleScore": 0.7,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.34717199479242006,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b c d e f g ht",
+        "rawTexts": [
+          "a b c d e f g ht",
+          "y OCtR SGN T5",
+          "hy OCtR SANN TC5",
+          "y DGtR SUN T5",
+          ""
+        ],
+        "quoteTexts": [
+          "T5",
+          "TC5",
+          "T5",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 6,
+        "y": 0.4535714285714284,
+        "title": "XnTH0R SAORSE",
+        "titleScore": 0.7,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.2359323014610155,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b c d",
+        "rawTexts": [
+          "a b c d",
+          "XnTH0R SAORSE",
+          "XnLR SAOREF",
+          "XnLH0R SAOREE",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "-",
+          ""
+        ]
+      },
+      {
+        "row": 7,
+        "y": 0.4916666666666665,
+        "title": "DOSOE A85",
+        "titleScore": 0.35,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 5
+        },
+        "red": 0,
+        "descInk": 0.2593664111095038,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "handText": "a b c d e f",
+        "rawTexts": [
+          "a b c d e f",
+          "DOSOE A85",
+          "DOSNTRSIOE A55 U",
+          "DOSOE A55",
+          "T"
+        ],
+        "quoteTexts": [
+          "A85",
+          "A55 U",
+          "A55",
+          ""
+        ],
+        "totalTexts": [
+          "005",
+          "",
+          "05",
+          ""
+        ]
+      },
+      {
+        "row": 8,
+        "y": 0.5297619047619045,
+        "title": "OEO - )i",
+        "titleScore": 0.35,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.23788514393172283,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b c d e f g ht",
+        "rawTexts": [
+          "a b c d e f g ht",
+          "OEO - )i",
+          "EOA - - - 1E -",
+          "OEEOAC - Ps 1C",
+          ""
+        ],
+        "quoteTexts": [
+          "- )i",
+          "- - - 1E -",
+          "- Ps 1C",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "-",
+          ""
+        ]
+      },
+      {
+        "row": 9,
+        "y": 0.5678571428571426,
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "titleScore": 3.8500000000000005,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "PRICE",
+          "value": 160
+        },
+        "red": 0,
+        "descInk": 0.23036308404455375,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": true,
+        "handText": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTexts": [
+          "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "Pu160",
+          "P1e0",
+          "B160",
+          ""
+        ]
+      },
+      {
+        "row": 10,
+        "y": 0.6059523809523807,
+        "title": "a b H. M. H. Anderson said that he was not a successful representative",
+        "titleScore": 2.45,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.2266743815998843,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b H. M. H. Anderson said that he was not a successful representative",
+        "rawTexts": [
+          "a b H. M. H. Anderson said that he was not a successful representative",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "- - -",
+          ""
+        ]
+      },
+      {
+        "row": 11,
+        "y": 0.6440476190476188,
+        "title": "a b c d e f g h. It is a small time of the first",
+        "titleScore": 1.4,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.17633444235498336,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "a b c d e f g h. It is a small time of the first",
+        "rawTexts": [
+          "a b c d e f g h. It is a small time of the first",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "0",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 12,
+        "y": 0.6821428571428568,
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "titleScore": 3.8500000000000005,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.19702010704469838,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTexts": [
+          "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 13,
+        "y": 0.7202380952380949,
+        "title": "a b c d e f g ht",
+        "titleScore": 0,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.22862722407059163,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": false,
+        "endEvidence": false,
+        "handText": "a b c d e f g ht",
+        "rawTexts": [
+          "a b c d e f g ht",
+          "",
+          "",
+          "",
+          "川"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      {
+        "row": 14,
+        "y": 0.758333333333333,
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "titleScore": 3.8500000000000005,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.25864313612035295,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTexts": [
+          "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+          "",
+          "",
+          "",
+          "A"
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "0",
+          "",
+          "0",
+          ""
+        ]
+      },
+      {
+        "row": 15,
+        "y": 0.796428571428571,
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "titleScore": 3.8500000000000005,
+        "parts": "",
+        "hours": "",
+        "totalInfo": {
+          "kind": "",
+          "value": null
+        },
+        "red": 0,
+        "descInk": 0.2927093881093592,
+        "fixInk": 0,
+        "asisInk": 0,
+        "hasText": true,
+        "hasDesc": true,
+        "endEvidence": false,
+        "handText": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "rawTexts": [
+          "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+          "EEEOOMCON",
+          "",
+          "M SO",
+          ""
+        ],
+        "quoteTexts": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "totalTexts": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    ],
+    "notes": [
+      "6 repairs reconstructed from the form rows.",
+      "R23 uses a forced-WASM handwriting model for repair descriptions and PaddleOCR for form geometry, RO, parts, labor and totals.",
+      "Written Total Cost remains a cross-check rather than a source of invented values."
+    ]
+  },
+  "error": "Error: Hybrid reader recovered only 0 anchor concepts\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r23/actual-smoke.mjs:18:41"
+}
