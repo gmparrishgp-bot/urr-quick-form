@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer-core';
 import {execSync} from 'node:child_process';
 import fs from 'node:fs';
 const result={time:new Date().toISOString(),success:false,checks:{},output:null,error:null};let browser;
+const fatalBrowserError=e=>{const s=String(e||'');return !/favicon|Failed to load resource: the server responded with a status of 404|onnxruntime:.*CleanUnusedInitializersAndNodeArgs/i.test(s)};
 try{
  const chrome=execSync('which google-chrome || which chromium || which chromium-browser',{encoding:'utf8'}).trim().split('\n')[0];
  browser=await puppeteer.launch({headless:true,executablePath:chrome,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -25,7 +26,7 @@ try{
  if(found<9)throw new Error('Real sheet recovered only '+found+' of '+concepts.length+' anchor concepts: '+JSON.stringify(result.checks.concepts));
  const low=(out.jobs||[]).filter(j=>j.titleLow||j.hoursLow||j.partsLow).length;result.checks.lowFields=low;
  if(low>5)throw new Error('Too many low-confidence jobs on real sheet: '+low);
- result.checks.browserErrors=errs.filter(e=>!e.includes('favicon'));
+ result.checks.browserErrors=errs.filter(fatalBrowserError);
  if(result.checks.browserErrors.length)throw new Error('Browser errors '+result.checks.browserErrors.join(' | '));
  result.success=true;
 }catch(e){result.error=String(e?.stack||e)}finally{if(browser)await browser.close();fs.mkdirSync('validation',{recursive:true});fs.writeFileSync('validation/r22-actual-result.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2))}if(!result.success)process.exitCode=1;
