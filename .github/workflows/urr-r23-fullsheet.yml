@@ -1,0 +1,45 @@
+name: URR R23 hybrid OCR regression
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'urr-r20/**'
+      - 'urr-r21/domain.js'
+      - 'urr-r21/learning-hooks.js'
+      - 'urr-r22/helpers_patch.txt'
+      - 'urr-r23/**'
+      - 'staging-r23.html'
+      - '.github/workflows/urr-r23-fullsheet.yml'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser driver
+        run: npm install --no-save puppeteer-core@24
+      - name: Start local site
+        run: |
+          python3 -m http.server 8000 >/tmp/urr-http.log 2>&1 &
+          sleep 2
+      - name: Run R23 OCR regression
+        id: test
+        continue-on-error: true
+        run: node urr-r23/fullsheet-smoke.mjs
+      - name: Record validation result
+        run: |
+          git config user.name 'urr-validation-bot'
+          git config user.email 'urr-validation-bot@users.noreply.github.com'
+          git add validation/r23-fullsheet-result.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record R23 full-sheet OCR validation result'
+            git push
+          fi
+      - name: Enforce validation
+        if: steps.test.outcome != 'success'
+        run: exit 1
