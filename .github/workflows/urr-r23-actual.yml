@@ -11,6 +11,16 @@ on:
       - 'staging-r23.html'
       - 'validation/actual-sheet-105470*.b64'
       - '.github/workflows/urr-r23-actual.yml'
+  pull_request:
+    paths:
+      - 'urr-r20/**'
+      - 'urr-r21/domain.js'
+      - 'urr-r21/learning-hooks.js'
+      - 'urr-r22/helpers_patch.txt'
+      - 'urr-r23/**'
+      - 'staging-r23.html'
+      - 'validation/actual-sheet-105470*.b64'
+      - '.github/workflows/urr-r23-actual.yml'
 permissions:
   contents: write
 jobs:
@@ -33,6 +43,7 @@ jobs:
         continue-on-error: true
         run: node urr-r23/actual-smoke.mjs
       - name: Record validation result
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name 'urr-validation-bot'
           git config user.email 'urr-validation-bot@users.noreply.github.com'
