@@ -1,0 +1,93 @@
+{
+  "time": "2026-08-24T16:09:28.899Z",
+  "success": false,
+  "checks": {
+    "domain": "11/11",
+    "math": {
+      "a": 130,
+      "b": 65,
+      "c": 775,
+      "d": 80
+    },
+    "ro": "",
+    "jobCount": 5,
+    "titles": [
+      "problem found/repair needed roof spot seal",
+      "ods exterior trim res3ol",
+      "lp detector out of da$es reeiarce",
+      "wbp",
+      "[handwriting needs review]"
+    ]
+  },
+  "output": {
+    "ro": "",
+    "jobs": [
+      {
+        "num": 1,
+        "status": "PENDING",
+        "title": "Problem Found/Repair Needed ROOF SPOT SEAL",
+        "hours": "",
+        "parts": "60",
+        "confidence": 0.88,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 2,
+        "status": "PENDING",
+        "title": "ODS EXTERIOR TRIM RES3oL",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.88,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 3,
+        "status": "PENDING",
+        "title": "LP DETECTOR OUT OF DA$ES REeIARCE",
+        "hours": "",
+        "parts": "16",
+        "confidence": 0.88,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 4,
+        "status": "PENDING",
+        "title": "WBP",
+        "hours": "",
+        "parts": "80",
+        "confidence": 0.88,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 5,
+        "status": "PENDING",
+        "title": "[HANDWRITING NEEDS REVIEW]",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      }
+    ],
+    "notes": [
+      "5 repairs reconstructed from the actual form rows.",
+      "PaddleOCR contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
+      "RO is restricted to the fixed RO# header column."
+    ]
+  },
+  "error": "Error: RO mismatch \n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/fullsheet-smoke.mjs:14:297"
+}
