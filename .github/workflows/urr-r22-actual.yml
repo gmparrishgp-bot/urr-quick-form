@@ -8,7 +8,7 @@ on:
       - 'urr-r21/learning-hooks.js'
       - 'urr-r22/**'
       - 'staging-r22.html'
-      - 'validation/actual-sheet-105470.jpg.b64'
+      - 'validation/actual-sheet-105470*.b64'
       - '.github/workflows/urr-r22-actual.yml'
 permissions:
   contents: write
