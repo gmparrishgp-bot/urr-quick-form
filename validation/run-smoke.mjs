@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage();
+page.on('console',m=>console.log('BROWSER',m.type(),m.text()));
+page.on('pageerror',e=>console.error('PAGEERROR',e));
+await page.goto('http://127.0.0.1:8000/validation/model-smoke.html',{waitUntil:'domcontentloaded',timeout:60000});
+await page.waitForFunction(()=>document.body.dataset.done==='1',{timeout:600000});
+const result=await page.evaluate(()=>window.__URR_RESULT);
+console.log('URR_RESULT='+JSON.stringify(result));
+fs.writeFileSync('validation/model-result.json',JSON.stringify(result,null,2));
+const pass=await page.evaluate(()=>document.body.dataset.pass==='1');
+await browser.close();
+if(!pass)process.exit(1);
