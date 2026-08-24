@@ -1,17 +1,24 @@
 {
-  "time": "2026-08-24T22:32:34.031Z",
+  "time": "2026-08-24T22:36:08.259Z",
   "success": false,
   "checks": {
     "domain": "16/16",
     "fixtureChars": 25712,
     "ro": "",
-    "jobCount": 5,
+    "jobCount": 12,
     "titles": [
-      "vaio",
-      "bearjhk",
-      "hhnl ucg",
-      "tuuen",
-      "240"
+      "# pittsburgh",
+      "competitive",
+      "helplearn to editcommunity portalrecent changesupload fill",
+      "displaystyle f_ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
+      "helplearn to editcommunity portalrecent changesupload fill",
+      "displaystylestyle",
+      "what links here are a living point of living than the most successful business wire",
+      "a b c d e f g htledge 2 2 2 2nd overall",
+      "not logged intalkcontributionscreate accountlog in helplearn to editcommunity portalrecent changesupload fill helplearn to editcommunity what links hererelated changesupload filespecial pagespermanent linkpage informationcite this pagewikidata item the first of the",
+      "attractiveness opportunities established",
+      "affiliated to the united states wire",
+      "representatives of the southern"
     ],
     "concepts": {
       "roof": false,
@@ -35,8 +42,8 @@
       {
         "num": 1,
         "status": "PENDING",
-        "title": "VAIO",
-        "rawTitle": "VAIO",
+        "title": "# Pittsburgh",
+        "rawTitle": "# Pittsburgh",
         "hours": "",
         "parts": "",
         "confidence": 0.42,
@@ -48,8 +55,8 @@
       {
         "num": 2,
         "status": "PENDING",
-        "title": "BearJhK",
-        "rawTitle": "BearJhK",
+        "title": "competitive",
+        "rawTitle": "competitive",
         "hours": "",
         "parts": "",
         "confidence": 0.42,
@@ -61,21 +68,21 @@
       {
         "num": 3,
         "status": "PENDING",
-        "title": "hhnl UCG",
-        "rawTitle": "hhnl UCG",
+        "title": "HelpLearn to editCommunity portalRecent changesUpload fill",
+        "rawTitle": "HelpLearn to editCommunity portalRecent changesUpload fill",
         "hours": "",
         "parts": "",
-        "confidence": 0.42,
-        "titleLow": true,
+        "confidence": 0.88,
+        "titleLow": false,
         "hoursLow": false,
         "partsLow": false,
-        "comment": "Verify description against photo."
+        "comment": ""
       },
       {
         "num": 4,
         "status": "PENDING",
-        "title": "tUueN",
-        "rawTitle": "tUueN",
+        "title": "displaystyle f_ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
+        "rawTitle": "displaystyle f_ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
         "hours": "",
         "parts": "",
         "confidence": 0.42,
@@ -87,10 +94,101 @@
       {
         "num": 5,
         "status": "PENDING",
-        "title": "240",
-        "rawTitle": "240",
+        "title": "HelpLearn to editCommunity portalRecent changesUpload fill",
+        "rawTitle": "HelpLearn to editCommunity portalRecent changesUpload fill",
         "hours": "",
-        "parts": "80",
+        "parts": "",
+        "confidence": 0.88,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 6,
+        "status": "PENDING",
+        "title": "displaystylestyle",
+        "rawTitle": "displaystylestyle",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 7,
+        "status": "PENDING",
+        "title": "What links here are a living point of living than the most successful business wire",
+        "rawTitle": "What links here are a living point of living than the most successful business wire",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.88,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 8,
+        "status": "PENDING",
+        "title": "a b c d e f g htledge 2 2 2 2nd overall",
+        "rawTitle": "a b c d e f g htledge 2 2 2 2nd overall",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 9,
+        "status": "PENDING",
+        "title": "Not logged inTalkContributionsCreate accountLog in HelpLearn to editCommunity portalRecent changesUpload fill HelpLearn to editCommunity What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item the first of the",
+        "rawTitle": "Not logged inTalkContributionsCreate accountLog in HelpLearn to editCommunity portalRecent changesUpload fill HelpLearn to editCommunity What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item the first of the",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.88,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 10,
+        "status": "PENDING",
+        "title": "attractiveness opportunities established",
+        "rawTitle": "attractiveness opportunities established",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.42,
+        "titleLow": true,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": "Verify description against photo."
+      },
+      {
+        "num": 11,
+        "status": "PENDING",
+        "title": "Affiliated to the United States wire",
+        "rawTitle": "Affiliated to the United States wire",
+        "hours": "",
+        "parts": "",
+        "confidence": 0.86,
+        "titleLow": false,
+        "hoursLow": false,
+        "partsLow": false,
+        "comment": ""
+      },
+      {
+        "num": 12,
+        "status": "PENDING",
+        "title": "representatives of the Southern",
+        "rawTitle": "representatives of the Southern",
+        "hours": "",
+        "parts": "",
         "confidence": 0.42,
         "titleLow": true,
         "hoursLow": false,
@@ -102,8 +200,8 @@
       {
         "row": 1,
         "y": 0.269047619047619,
-        "title": "",
-        "titleScore": 0,
+        "title": "# Pittsburgh",
+        "titleScore": 0.35,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -114,10 +212,12 @@
         "descInk": 0.2807106968615743,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "# Pittsburgh",
         "rawTexts": [
+          "# Pittsburgh",
           "",
           "",
           "1%",
@@ -139,7 +239,7 @@
       {
         "row": 2,
         "y": 0.30714285714285705,
-        "title": "VAIO",
+        "title": "competitive",
         "titleScore": 0.35,
         "parts": "",
         "hours": "",
@@ -154,9 +254,11 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": true,
+        "trocr": "competitive",
         "rawTexts": [
+          "competitive",
           "",
-          "VAIO",
+          "",
           "S",
           ""
         ],
@@ -176,8 +278,8 @@
       {
         "row": 3,
         "y": 0.3452380952380951,
-        "title": "",
-        "titleScore": 0,
+        "title": "HelpLearn to editCommunity portalRecent changesUpload fill",
+        "titleScore": 4.4,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -188,10 +290,12 @@
         "descInk": 0.31289594407631255,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "HelpLearn to editCommunity portalRecent changesUpload file",
         "rawTexts": [
+          "HelpLearn to editCommunity portalRecent changesUpload file",
           "",
           "",
           "",
@@ -213,8 +317,8 @@
       {
         "row": 4,
         "y": 0.3833333333333332,
-        "title": "",
-        "titleScore": 0,
+        "title": "displaystyle f_ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
+        "titleScore": 0.35,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -225,14 +329,16 @@
         "descInk": 0.2534042088400204,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "displaystyle f_ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
         "rawTexts": [
+          "displaystyle f_ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
           "",
           "105",
           "50K5",
-          "K +"
+          "K"
         ],
         "quoteTexts": [
           "",
@@ -250,8 +356,8 @@
       {
         "row": 5,
         "y": 0.42142857142857126,
-        "title": "",
-        "titleScore": 0,
+        "title": "HelpLearn to editCommunity portalRecent changesUpload fill",
+        "titleScore": 4.4,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -262,10 +368,12 @@
         "descInk": 0.25085560329134204,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "HelpLearn to editCommunity portalRecent changesUpload file",
         "rawTexts": [
+          "HelpLearn to editCommunity portalRecent changesUpload file",
           "",
           "",
           "-",
@@ -287,8 +395,8 @@
       {
         "row": 6,
         "y": 0.45952380952380933,
-        "title": "",
-        "titleScore": 0,
+        "title": "displaystylestyle",
+        "titleScore": 0.35,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -299,12 +407,14 @@
         "descInk": 0.17731012888662345,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "displaystylestyle",
         "rawTexts": [
+          "displaystylestyle",
           "",
-          "n",
+          "",
           "",
           "二"
         ],
@@ -324,8 +434,8 @@
       {
         "row": 7,
         "y": 0.4976190476190474,
-        "title": "",
-        "titleScore": 0,
+        "title": "What links here are a living point of living than the most successful business wire",
+        "titleScore": 7.2,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -336,14 +446,16 @@
         "descInk": 0.20927692419718924,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "What links here are a living point of living than the most successful business were",
         "rawTexts": [
+          "What links here are a living point of living than the most successful business were",
           "",
           "",
           "",
-          "2 年"
+          "2"
         ],
         "quoteTexts": [
           "",
@@ -361,8 +473,8 @@
       {
         "row": 8,
         "y": 0.5357142857142855,
-        "title": "BearJhK",
-        "titleScore": 0.35,
+        "title": "a b c d e f g htledge 2 2 2 2nd overall",
+        "titleScore": 0.7,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -376,9 +488,11 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": true,
+        "trocr": "a b c d e f g htledge 2 2 2 2nd overall",
         "rawTexts": [
-          "- C",
-          "- BearJhK",
+          "a b c d e f g htledge 2 2 2 2nd overall",
+          "",
+          "-",
           "",
           "運"
         ],
@@ -398,8 +512,8 @@
       {
         "row": 9,
         "y": 0.5738095238095235,
-        "title": "",
-        "titleScore": 0,
+        "title": "Not logged inTalkContributionsCreate accountLog in",
+        "titleScore": 1.4,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -410,10 +524,12 @@
         "descInk": 0.1802956382436467,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": false,
+        "trocr": "Not logged inTalkContributionsCreate accountLog in",
         "rawTexts": [
+          "Not logged inTalkContributionsCreate accountLog in",
           "",
           "n t",
           "2",
@@ -435,8 +551,8 @@
       {
         "row": 10,
         "y": 0.6119047619047616,
-        "title": "",
-        "titleScore": 0,
+        "title": "HelpLearn to editCommunity portalRecent changesUpload fill",
+        "titleScore": 4.4,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -447,13 +563,15 @@
         "descInk": 0.16747979319886405,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": false,
+        "trocr": "HelpLearn to editCommunity portalRecent changesUpload file",
         "rawTexts": [
+          "HelpLearn to editCommunity portalRecent changesUpload file",
           "",
-          "Y 3OS hL",
-          "OS",
+          "Y",
+          "",
           ""
         ],
         "quoteTexts": [
@@ -472,7 +590,7 @@
       {
         "row": 11,
         "y": 0.6499999999999997,
-        "title": "hhnl UCG",
+        "title": "HelpLearn to editCommunity",
         "titleScore": 0.7,
         "parts": "",
         "hours": "",
@@ -487,7 +605,9 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": false,
+        "trocr": "HelpLearn to editCommunity",
         "rawTexts": [
+          "HelpLearn to editCommunity",
           "hhUc",
           "hhnl Ui",
           "hhnl UCG",
@@ -509,8 +629,8 @@
       {
         "row": 12,
         "y": 0.6880952380952378,
-        "title": "om",
-        "titleScore": 0,
+        "title": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+        "titleScore": 3.8500000000000005,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -521,13 +641,15 @@
         "descInk": 0.11585232651277944,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": false,
+        "trocr": "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
         "rawTexts": [
-          "om -",
-          "C",
-          "om C",
+          "What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item",
+          "om",
+          "",
+          "om",
           "以"
         ],
         "quoteTexts": [
@@ -546,8 +668,8 @@
       {
         "row": 13,
         "y": 0.7261904761904758,
-        "title": "",
-        "titleScore": 0,
+        "title": "the first of the",
+        "titleScore": 1.0499999999999998,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -558,10 +680,12 @@
         "descInk": 0.12793999854365398,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "the first of the",
         "rawTexts": [
+          "the first of the",
           "",
           "",
           "",
@@ -583,7 +707,7 @@
       {
         "row": 14,
         "y": 0.7642857142857139,
-        "title": "tUueN",
+        "title": "attractiveness",
         "titleScore": 0.35,
         "parts": "",
         "hours": "",
@@ -598,10 +722,12 @@
         "hasText": true,
         "hasDesc": true,
         "endEvidence": false,
+        "trocr": "attractiveness -",
         "rawTexts": [
+          "attractiveness -",
           "tUueN",
           "TLU",
-          "1 - 2",
+          "",
           "4 中"
         ],
         "quoteTexts": [
@@ -620,8 +746,8 @@
       {
         "row": 15,
         "y": 0.802380952380952,
-        "title": "",
-        "titleScore": 0,
+        "title": "opportunities established",
+        "titleScore": 0.7,
         "parts": "",
         "hours": "",
         "totalInfo": {
@@ -632,10 +758,12 @@
         "descInk": 0.17301390810456566,
         "fixInk": 0,
         "asisInk": 0,
-        "hasText": false,
-        "hasDesc": false,
+        "hasText": true,
+        "hasDesc": true,
         "endEvidence": true,
+        "trocr": "opportunities established",
         "rawTexts": [
+          "opportunities established",
           "",
           "",
           "",
@@ -656,9 +784,9 @@
       }
     ],
     "notes": [
-      "5 repairs reconstructed from the actual form rows.",
-      "PaddleOCR dark-ink + original-color + contrast + threshold reads are combined with RV context and the written Total Cost as a cross-check.",
-      "RO is restricted to the fixed RO# header column with a header fallback."
+      "12 repairs reconstructed from the actual form rows.",
+      "TrOCR reads the handwritten description line; PaddleOCR reads the structured amount and total cells; RV terminology and written totals are used as cross-checks.",
+      "RO is restricted to the fixed RO# header column with handwritten-line fallback."
     ]
   },
   "error": "Error: Real sheet RO mismatch: \n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r22/actual-smoke.mjs:23:50"
