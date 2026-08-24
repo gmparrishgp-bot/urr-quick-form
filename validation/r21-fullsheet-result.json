@@ -1,9 +1,9 @@
 {
-  "time": "2026-08-24T16:04:32.138Z",
+  "time": "2026-08-24T16:32:38.702Z",
   "success": false,
   "checks": {
-    "domain": "11/11"
+    "domain": "14/15"
   },
   "output": null,
-  "error": "Error: no available backend found. ERR: [webgpu] Error: Failed to get GPU adapter. You may need to enable flag \"--enable-unsafe-webgpu\" if you are using Chrome.\nl (https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:1:71435)\nasync e.create (https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:1:88811)\nasync _ (https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:1:465201)\nasync https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:1:520606\nasync Promise.all (index 0)\nasync D (https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:1:517445)\nasync Promise.all (index 0)\nasync Vn.from_pretrained (https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:1:529857)\nasync gc.from_pretrained (https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:1:580990)\n    at #evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/cdp/ExecutionContext.js:388:19)\n    at async ExecutionContext.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/cdp/ExecutionContext.js:274:16)\n    at async IsolatedWorld.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/cdp/IsolatedWorld.js:102:16)\n    at async CdpFrame.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/api/Frame.js:359:20)\n    at async CdpPage.evaluate (file:///home/runner/work/urr-quick-form/urr-quick-form/node_modules/puppeteer-core/lib/esm/puppeteer/api/Page.js:826:20)\n    at async file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r21/fullsheet-smoke.mjs:42:13\n    at l (https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1:0:71434)"
+  "error": "Error: Domain correction benchmark failed: [{\"input\":\"LPDETECTOROU1 OF DAp65RE5HRCE$I65\",\"expected\":\"LP detector out of date replace\",\"got\":\"LPDETECTOROU1 OF DAp65RE5HRCE$I65\",\"ok\":false}]\n    at file:///home/runner/work/urr-quick-form/urr-quick-form/urr-r21/fullsheet-smoke.mjs:16:39"
 }
