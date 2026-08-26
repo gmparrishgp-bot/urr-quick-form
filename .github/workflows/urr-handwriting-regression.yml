@@ -1,0 +1,17 @@
+name: URR handwriting regression
+on:
+  push:
+    branches: [urr-dev]
+  workflow_dispatch:
+jobs:
+  handwriting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm init -y
+      - run: npm install @huggingface/transformers@3.8.1
+      - run: node tests/trocr_regression.mjs
