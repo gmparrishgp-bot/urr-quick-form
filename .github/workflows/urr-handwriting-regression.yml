@@ -14,7 +14,5 @@ jobs:
           node-version: '22'
       - run: npm init -y
       - run: npm install @huggingface/transformers@4.2.0
-      - name: Prove TrOCR is not acceptable
-        run: node tests/trocr_regression.mjs || true
       - name: Test SmolVLM on real URR handwriting
         run: node tests/smolvlm_regression.mjs
