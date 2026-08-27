@@ -1,4 +1,4 @@
-name: Diagnose real URR fixture
+name: Materialize real URR fixture
 on:
   push:
     branches: [urr-dev]
@@ -10,37 +10,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Diagnose stored high-resolution chunks
+      - name: Reconstruct collected RO 105470 fixture
         run: |
           python - <<'PY'
           from pathlib import Path
-          import base64,re
-          groups={
-            'hi':sorted(Path('validation').glob('actual-sheet-105470-hi-p*.b64')),
-            'realhi':sorted(Path('validation').glob('realhi.part*.b64')),
-            'reg2':sorted(Path('validation').glob('reg2.part*.b64')),
-          }
-          for name,paths in groups.items():
-            print('\nGROUP',name,[p.name for p in paths])
-            chunks=[]
-            for p in paths:
-              s=''.join(p.read_text().split())
-              bad=re.findall(r'[^A-Za-z0-9+/=]',s)
-              print(p.name,'len',len(s),'mod4',len(s)%4,'padding',s.count('='),'bad',bad[:5],'head',s[:12],'tail',s[-12:])
-              chunks.append(s)
-            s=''.join(chunks)
-            eq=s.find('=')
-            print('joined len',len(s),'mod4',len(s)%4,'first padding',eq,'padding before final4', eq>=0 and eq<len(s)-4)
-            try:
-              data=base64.b64decode(s,validate=True)
-              out=Path('validation')/f'{name}-decoded.jpg';out.write_bytes(data)
-              print('DECODE OK',out,len(data),data[:12])
-            except Exception as e: print('DECODE FAIL',repr(e))
+          import base64, io
+          from PIL import Image
+
+          paths=sorted(Path('validation').glob('actual-sheet-105470-hi-p*.b64'))
+          if not paths: raise SystemExit('No high-resolution fixture chunks found')
+          payload=b''
+          for p in paths:
+            s=''.join(p.read_text().split())
+            block=base64.b64decode(s, validate=True)
+            print(p.name, 'decoded bytes', len(block))
+            payload += block
+          out=Path('validation/actual-sheet-105470-hi-decoded.jpg')
+          out.write_bytes(payload)
+          print(out, 'chunks', len(paths), 'bytes', len(payload), 'head', payload[:12])
+          try:
+            im=Image.open(io.BytesIO(payload)); size=im.size; fmt=im.format; im.verify()
+            print('PIL VERIFY OK', fmt, size)
+          except Exception as e:
+            raise SystemExit(f'Invalid reconstructed image: {e}')
           PY
-      - name: Commit any valid decoded fixtures
+          file validation/actual-sheet-105470-hi-decoded.jpg
+      - name: Commit verified fixture
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add validation/*-decoded.jpg || true
-          git commit -m 'Materialize valid real URR fixture images' || exit 0
+          git add validation/actual-sheet-105470-hi-decoded.jpg
+          git commit -m 'Materialize verified high resolution RO 105470 fixture' || exit 0
           git push
