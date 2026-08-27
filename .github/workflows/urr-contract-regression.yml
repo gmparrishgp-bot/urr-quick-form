@@ -1,0 +1,18 @@
+name: URR contract regression
+on:
+  push:
+    branches: [urr-dev]
+    paths:
+      - validation/ground-truth-105470.json
+      - tests/ground_truth_contract.mjs
+      - .github/workflows/urr-contract-regression.yml
+  workflow_dispatch:
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/ground_truth_contract.mjs
