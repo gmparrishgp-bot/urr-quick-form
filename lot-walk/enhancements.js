@@ -1,15 +1,26 @@
 // Lot Walk recognition/matching hardening layered over app.js.
 (function(){
-  // The failed browser gate showed a 90-degree identifier could be fragmented into
-  // contour candidates and the whole-frame fallback never reached the OCR loop.
-  // Always put the full frame first, then adaptive candidates. This guarantees all
-  // four orientation passes get one complete view before smaller regions are tried.
+  // Always give OCR one complete view of the frame before smaller adaptive candidates.
   const baseDetectRegions=detectRegions;
   detectRegions=function(c){
     const boxes=baseDetectRegions(c)||[];
     const full={x:0,y:0,w:c.width,h:c.height,score:Number.MAX_SAFE_INTEGER};
     const rest=boxes.filter(b=>!(b.x===0&&b.y===0&&b.w===c.width&&b.h===c.height));
     return [full,...rest];
+  };
+
+  // Default automatic page segmentation was breaking a corrected 90-degree
+  // identifier into isolated glyphs. Candidate crops are label/tag regions, so
+  // a uniform-block segmentation mode is a better fit and remains multi-line capable.
+  const baseEnsureWorker=ensureWorker;
+  ensureWorker=async function(){
+    const worker=await baseEnsureWorker();
+    await worker.setParameters({
+      tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789- /',
+      tessedit_pageseg_mode:'6',
+      preserve_interword_spaces:'1'
+    });
+    return worker;
   };
 
   const baseScoreRow=scoreRow;
