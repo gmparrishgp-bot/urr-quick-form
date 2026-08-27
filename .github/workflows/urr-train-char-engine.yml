@@ -4,13 +4,15 @@ on:
     branches: [urr-dev]
     paths:
       - training/urr_char_engine.py
+      - training/urr_numeric_engine.py
       - training/eval_real_rows.py
+      - urr-r24/handwriting-engine.js
       - .github/workflows/urr-train-char-engine.yml
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  train:
+  train-and-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -20,20 +22,28 @@ jobs:
           python-version: '3.12'
       - name: Install training and evaluation dependencies
         run: pip install --disable-pip-version-check torch torchvision onnx onnxruntime opencv-python-headless pillow
-      - name: Train handwriting character recognizer
+      - name: Train description character recognizer
         run: python training/urr_char_engine.py --epochs 2 --max-train 80000 --max-test 12000 --min-acc .82
-      - name: Evaluate against real URR holdout rows
+      - name: Train numeric recognizer
+        run: python training/urr_numeric_engine.py --epochs 2 --min-acc .975
+      - name: Gate both models against real URR holdout rows
         run: python training/eval_real_rows.py
       - uses: actions/upload-artifact@v4
         with:
-          name: urr-char-engine
-          path: training/artifacts/
+          name: urr-handwriting-engine
+          path: |
+            training/artifacts/urr-char.onnx
+            training/artifacts/urr-char-classes.json
+            training/artifacts/urr-numeric.onnx
+            training/artifacts/metrics.json
+            training/artifacts/numeric-metrics.json
+            training/artifacts/real-row-results.json
           if-no-files-found: error
-      - name: Commit trained browser model and metrics
+      - name: Commit models only after end-to-end holdout passes
         if: success()
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add training/artifacts/urr-char.onnx training/artifacts/urr-char-classes.json training/artifacts/metrics.json training/artifacts/real-row-results.json
-          git commit -m 'Train URR handwriting engine model' || exit 0
+          git add training/artifacts/urr-char.onnx training/artifacts/urr-char-classes.json training/artifacts/urr-numeric.onnx training/artifacts/metrics.json training/artifacts/numeric-metrics.json training/artifacts/real-row-results.json
+          git commit -m 'Promote gated URR handwriting models' || exit 0
           git push
