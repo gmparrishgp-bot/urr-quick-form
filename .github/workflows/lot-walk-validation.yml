@@ -14,6 +14,8 @@ jobs:
         with:
           node-version: '22'
       - name: Syntax check app
-        run: node --check lot-walk/app.js
+        run: |
+          node --check lot-walk/app.js
+          node --check lot-walk/enhancements.js
       - name: Matching regression
         run: node lot-walk/validation/matching.test.js
