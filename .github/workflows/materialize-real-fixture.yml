@@ -1,0 +1,23 @@
+name: Materialize real URR fixture
+on:
+  push:
+    branches: [urr-dev]
+    paths: [.github/workflows/materialize-real-fixture.yml]
+permissions:
+  contents: write
+jobs:
+  fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode collected RO 105470 fixture
+        run: |
+          cat validation/actual-sheet-105470.part0.b64 validation/actual-sheet-105470.part1a.b64 validation/actual-sheet-105470.part1b.b64 validation/actual-sheet-105470.part2.b64 validation/actual-sheet-105470.part3.b64 | tr -d '\n\r ' | base64 -d > validation/actual-sheet-105470-preview.jpg
+          file validation/actual-sheet-105470-preview.jpg
+      - name: Commit decoded fixture
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add validation/actual-sheet-105470-preview.jpg
+          git commit -m 'Materialize RO 105470 regression fixture' || exit 0
+          git push
