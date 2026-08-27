@@ -10,14 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Decode collected RO 105470 fixture
+      - name: Decode collected RO 105470 fixtures
         run: |
           cat validation/actual-sheet-105470.part0.b64 validation/actual-sheet-105470.part1a.b64 validation/actual-sheet-105470.part1b.b64 validation/actual-sheet-105470.part2.b64 validation/actual-sheet-105470.part3.b64 | tr -d '\n\r ' | base64 -d > validation/actual-sheet-105470-preview.jpg
-          file validation/actual-sheet-105470-preview.jpg
-      - name: Commit decoded fixture
+          cat validation/actual-sheet-105470-hi-p00.b64 validation/actual-sheet-105470-hi-p01.b64 validation/actual-sheet-105470-hi-p02.b64 validation/actual-sheet-105470-hi-p03.b64 validation/actual-sheet-105470-hi-p04.b64 validation/actual-sheet-105470-hi-p05.b64 | tr -d '\n\r ' | base64 -d > validation/actual-sheet-105470-hi.jpg
+          file validation/actual-sheet-105470-preview.jpg validation/actual-sheet-105470-hi.jpg
+      - name: Commit decoded fixtures
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add validation/actual-sheet-105470-preview.jpg
-          git commit -m 'Materialize RO 105470 regression fixture' || exit 0
+          git add validation/actual-sheet-105470-preview.jpg validation/actual-sheet-105470-hi.jpg
+          git commit -m 'Materialize high resolution RO 105470 fixture' || exit 0
           git push
