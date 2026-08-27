@@ -35,8 +35,12 @@ def main():
     m.eval();seen=ok=0
     with torch.no_grad():
         for x,y in DataLoader(te,batch_size=a.batch,num_workers=2):z=m(x);seen+=len(y);ok+=(z.argmax(1)==y).sum().item()
-    acc=ok/seen;print(json.dumps({'numeric_holdout_acc':acc,'samples':seen}));
-    dummy=torch.zeros(1,1,28,28);torch.onnx.export(m,dummy,ART/'urr-numeric.onnx',input_names=['image'],output_names=['logits'],dynamic_axes={'image':{0:'batch'},'logits':{0:'batch'}},opset_version=17)
+    acc=ok/seen;print(json.dumps({'numeric_holdout_acc':acc,'samples':seen}))
+    # Explicitly use the stable legacy exporter. Recent PyTorch releases default to
+    # the dynamo/onnxscript path, which adds an exporter dependency unrelated to
+    # model quality and previously caused CI to fail after training completed.
+    dummy=torch.zeros(1,1,28,28)
+    torch.onnx.export(m,dummy,ART/'urr-numeric.onnx',input_names=['image'],output_names=['logits'],dynamic_axes={'image':{0:'batch'},'logits':{0:'batch'}},opset_version=17,dynamo=False)
     (ART/'numeric-metrics.json').write_text(json.dumps({'holdout_acc':acc,'samples':seen},indent=2))
     if acc<a.min_acc:raise SystemExit(f'numeric holdout accuracy {acc:.4f} < {a.min_acc:.4f}')
 if __name__=='__main__':main()
