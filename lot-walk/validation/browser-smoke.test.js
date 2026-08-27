@@ -7,6 +7,7 @@ const assert = require('assert');
   page.on('console',m=>console.log('BROWSER',m.type(),m.text()));
   await page.goto('http://127.0.0.1:4173/lot-walk/',{waitUntil:'domcontentloaded',timeout:60000});
   await page.click('#loadDemo');
+  await page.waitForFunction(()=>typeof window.lotWalkScanSourceV2==='function',{timeout:30000});
 
   async function synthetic(text,deg){
     return await page.evaluate(async({text,deg})=>{
@@ -14,8 +15,8 @@ const assert = require('assert');
       const x=c.getContext('2d');x.fillStyle='white';x.fillRect(0,0,c.width,c.height);
       x.translate(c.width/2,c.height/2);x.rotate(deg*Math.PI/180);
       x.fillStyle='black';x.textAlign='center';x.textBaseline='middle';x.font='bold 110px monospace';x.fillText(text,0,0);
-      const read=await readImage(c);
-      return {read,result:document.getElementById('result').innerText};
+      const scan=await window.lotWalkScanSourceV2(c);
+      return {read:scan.text,result:document.getElementById('result').innerText,attempts:scan.reads.map(r=>({text:r.text,deg:r.deg,confidence:r.confidence,kind:r.kind}))};
     },{text,deg});
   }
 
@@ -32,5 +33,5 @@ const assert = require('assert');
   assert.match(contextual.result,/104746/,'180-degree RO suffix should match RO 104746');
 
   await browser.close();
-  console.log('PASS browser OCR smoke: straight + 90-degree + 180-degree/contextual');
+  console.log('PASS scanner-v2 OCR: straight + 90-degree + 180-degree/contextual');
 })().catch(e=>{console.error(e);process.exit(1)});
