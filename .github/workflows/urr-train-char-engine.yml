@@ -1,0 +1,28 @@
+name: URR train handwriting engine
+on:
+  push:
+    branches: [urr-dev]
+    paths:
+      - training/urr_char_engine.py
+      - .github/workflows/urr-train-char-engine.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install training dependencies
+        run: pip install --disable-pip-version-check torch torchvision onnx
+      - name: Train handwriting character recognizer
+        run: python training/urr_char_engine.py --epochs 2 --max-train 80000 --max-test 12000 --min-acc .82
+      - uses: actions/upload-artifact@v4
+        with:
+          name: urr-char-engine
+          path: training/artifacts/
+          if-no-files-found: error
