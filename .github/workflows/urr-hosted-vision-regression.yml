@@ -1,0 +1,26 @@
+name: URR hosted vision regression
+on:
+  push:
+    branches: [urr-dev]
+    paths:
+      - tests/github_models_vision_regression.mjs
+      - .github/workflows/urr-hosted-vision-regression.yml
+      - validation/actual-sheet-105470-preview.jpg
+      - validation/reg2-decoded.jpg
+  workflow_dispatch:
+permissions:
+  contents: read
+  models: read
+jobs:
+  vision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Benchmark hosted vision on real fixtures
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tests/github_models_vision_regression.mjs
