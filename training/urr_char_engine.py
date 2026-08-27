@@ -72,7 +72,9 @@ def train(args):
     print(json.dumps({"holdout_acc":acc,"samples":seen}))
     torch.save({"state":model.state_dict(),"classes":classes},ART/'urr-char.pt')
     dummy=torch.zeros(1,1,28,28)
-    torch.onnx.export(model,dummy,ART/'urr-char.onnx',input_names=['image'],output_names=['logits'],dynamic_axes={'image':{0:'batch'},'logits':{0:'batch'}},opset_version=17)
+    # Pin to the stable exporter. This keeps CI failures tied to recognition quality
+    # instead of PyTorch's optional dynamo/onnxscript exporter dependency.
+    torch.onnx.export(model,dummy,ART/'urr-char.onnx',input_names=['image'],output_names=['logits'],dynamic_axes={'image':{0:'batch'},'logits':{0:'batch'}},opset_version=17,dynamo=False)
     (ART/'urr-char-classes.json').write_text(json.dumps(classes))
     (ART/'metrics.json').write_text(json.dumps({"holdout_acc":acc,"train_samples":len(ds),"test_samples":seen},indent=2))
     if acc < args.min_acc: raise SystemExit(f"holdout accuracy {acc:.4f} < gate {args.min_acc:.4f}")
