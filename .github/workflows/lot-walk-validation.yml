@@ -19,3 +19,12 @@ jobs:
           node --check lot-walk/enhancements.js
       - name: Matching regression
         run: node lot-walk/validation/matching.test.js
+      - name: Install browser test runtime
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Browser OCR smoke
+        run: |
+          python3 -m http.server 4173 >/tmp/lotwalk-http.log 2>&1 &
+          node lot-walk/validation/browser-smoke.test.js
