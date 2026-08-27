@@ -1,0 +1,30 @@
+{
+  "fixture": "actual-sheet-105470-preview.jpg",
+  "ro": "105470",
+  "rules": {
+    "laborRate": 199,
+    "rounding": "ceil_to_next_5",
+    "quotedDollarDefaultStatus": "DECLINED",
+    "explicitApprovalOverrides": true,
+    "reconQuotedAmountsExpectedBlank": true
+  },
+  "jobs": [
+    {"num":1,"title":"ROOF SPOT SEAL","hours":2.0,"parts":60,"status":"DECLINED","total":460},
+    {"num":2,"title":"ODS EXTERIOR TRIM RESEAL","hours":0.5,"parts":30,"status":"DECLINED","total":130},
+    {"num":3,"title":"DS EXTERIOR TRIM RESEAL","hours":0.5,"parts":30,"status":"DECLINED","total":130},
+    {"num":4,"title":"ENTRY DOOR SCREEN TEAR","hours":0.5,"parts":15,"status":"DECLINED","total":115},
+    {"num":5,"title":"EXTERIOR SHOWER","hours":0.5,"parts":65,"status":"DECLINED","total":165},
+    {"num":6,"title":"ODS REAR SLIDE WIPER SEAL","hours":0.5,"parts":15,"status":"DECLINED","total":115},
+    {"num":7,"title":"LP DETECTOR REPLACE","hours":0.2,"parts":85,"status":"APPROVED","total":125},
+    {"num":8,"title":"BUNK WINDOW BLIND","hours":0.5,"parts":65,"status":"DECLINED","total":165},
+    {"num":9,"title":"SMOKE DETECTOR BATTERY","hours":null,"parts":null,"status":"RECON","total":null},
+    {"num":10,"title":"SLIDE CEILING TRIM","hours":null,"parts":null,"status":"RECON","total":null},
+    {"num":11,"title":"KITCHEN TRIM","hours":null,"parts":null,"status":"RECON","total":null},
+    {"num":12,"title":"KITCHEN BLIND","hours":null,"parts":null,"status":"RECON","total":null},
+    {"num":13,"title":"BUNK ROOM TRIM","hours":null,"parts":null,"status":"RECON","total":null},
+    {"num":14,"title":"BEDROOM DOOR TOUCH UP","hours":null,"parts":null,"status":"RECON","total":null},
+    {"num":15,"title":"CABINET DOOR TOUCH UP","hours":null,"parts":null,"status":"RECON","total":null},
+    {"num":16,"title":"WBP","hours":2.6,"parts":80,"status":"DECLINED","total":600}
+  ],
+  "source": "Corrected August 19, 2026 URR review. Quoted-dollar lines are declined unless explicitly approved; row 7 is the only approved quoted item."
+}
