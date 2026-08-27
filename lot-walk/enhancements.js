@@ -1,7 +1,17 @@
-// Lot Walk matching hardening layered over app.js.
-// Adds RO-suffix handling and one-character OCR tolerance without allowing weak reads
-// to become confident matches by themselves.
+// Lot Walk recognition/matching hardening layered over app.js.
 (function(){
+  // The failed browser gate showed a 90-degree identifier could be fragmented into
+  // contour candidates and the whole-frame fallback never reached the OCR loop.
+  // Always put the full frame first, then adaptive candidates. This guarantees all
+  // four orientation passes get one complete view before smaller regions are tried.
+  const baseDetectRegions=detectRegions;
+  detectRegions=function(c){
+    const boxes=baseDetectRegions(c)||[];
+    const full={x:0,y:0,w:c.width,h:c.height,score:Number.MAX_SAFE_INTEGER};
+    const rest=boxes.filter(b=>!(b.x===0&&b.y===0&&b.w===c.width&&b.h===c.height));
+    return [full,...rest];
+  };
+
   const baseScoreRow=scoreRow;
   const confusablePairs=[['0','O'],['1','I'],['1','L'],['2','Z'],['5','S'],['6','G'],['8','B']];
   function oneConfusionAway(a,b){
