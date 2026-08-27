@@ -1,35 +1,10 @@
 name: URR train numeric handwriting engine
 on:
-  push:
-    branches: [urr-dev]
-    paths:
-      - training/urr_numeric_engine.py
-      - .github/workflows/urr-train-numeric-engine.yml
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  train-numeric:
+  note:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install --disable-pip-version-check torch torchvision onnx
-      - name: Train numeric handwriting recognizer
-        run: python training/urr_numeric_engine.py --epochs 2 --min-acc .975
-      - uses: actions/upload-artifact@v4
-        with:
-          name: urr-numeric-engine
-          path: |
-            training/artifacts/urr-numeric.onnx
-            training/artifacts/numeric-metrics.json
-      - name: Commit numeric browser model
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add training/artifacts/urr-numeric.onnx training/artifacts/numeric-metrics.json
-          git commit -m 'Train URR numeric handwriting model' || exit 0
-          git push
+      - run: echo "Numeric training is now part of the combined URR handwriting release gate."
