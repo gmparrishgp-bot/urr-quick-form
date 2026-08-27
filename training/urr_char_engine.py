@@ -5,11 +5,10 @@ Architecture:
 - A small CNN is trained for browser deployment.
 - URR fields are segmented before recognition, so numeric fields use a restricted
   alphabet and description fields use RV vocabulary correction downstream.
-- Real URR fixtures are never used as training labels unless explicitly placed in
-  training/real_finetune.json; by default they remain holdout regression data.
+- Real URR fixtures are holdout regression data and are not training labels.
 """
 from __future__ import annotations
-import argparse, json, math, os, random, re
+import argparse, json, os, random
 from pathlib import Path
 
 import torch
@@ -17,8 +16,6 @@ from torch import nn
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms
 
-# EMNIST Balanced merges ambiguous upper/lowercase glyphs and is a good fit for
-# block-print service handwriting. Dataset exposes the canonical 47-class map.
 ROOT = Path(os.environ.get("URR_DATA", ".urr-data"))
 ART = Path("training/artifacts")
 ART.mkdir(parents=True, exist_ok=True)
@@ -36,23 +33,27 @@ class CharCNN(nn.Module):
     def forward(self,x): return self.net(x)
 
 def make_ds(train: bool):
-    # EMNIST images are transposed relative to normal viewing; correct here.
-    tfm=transforms.Compose([
-        transforms.Lambda(lambda im: im.transpose(0).flip(1)),
+    ops=[
         transforms.ToTensor(),
-        transforms.RandomAffine(8, translate=(.08,.08), scale=(.88,1.12), shear=7) if train else transforms.Lambda(lambda x:x),
-        transforms.Normalize((.5,),(.5,))
-    ])
-    return datasets.EMNIST(ROOT, split="balanced", train=train, download=True, transform=tfm)
+        # torchvision EMNIST is stored rotated/transposed. This makes glyphs upright.
+        transforms.Lambda(lambda x: x.transpose(1,2).flip(2)),
+    ]
+    if train:
+        ops.append(transforms.RandomAffine(8, translate=(.08,.08), scale=(.88,1.12), shear=7))
+    ops.append(transforms.Normalize((.5,),(.5,)))
+    return datasets.EMNIST(ROOT, split="balanced", train=train, download=True, transform=transforms.Compose(ops))
 
 def train(args):
     random.seed(args.seed); torch.manual_seed(args.seed)
-    ds=make_ds(True); test=make_ds(False)
-    n=len(ds.classes)
+    train_full=make_ds(True); test_full=make_ds(False)
+    classes=train_full.classes
+    n=len(classes)
+    ds=train_full; test=test_full
     if args.max_train and args.max_train < len(ds):
         idx=torch.randperm(len(ds), generator=torch.Generator().manual_seed(args.seed))[:args.max_train].tolist()
         ds=Subset(ds,idx)
-    if args.max_test and args.max_test < len(test): test=Subset(test,list(range(args.max_test)))
+    if args.max_test and args.max_test < len(test):
+        test=Subset(test,list(range(args.max_test)))
     model=CharCNN(n)
     opt=torch.optim.AdamW(model.parameters(),lr=args.lr,weight_decay=1e-4)
     lossfn=nn.CrossEntropyLoss(label_smoothing=.03)
@@ -69,12 +70,11 @@ def train(args):
             z=model(x); seen += len(y); correct += (z.argmax(1)==y).sum().item()
     acc=correct/seen
     print(json.dumps({"holdout_acc":acc,"samples":seen}))
-    torch.save({"state":model.state_dict(),"classes":getattr(make_ds(False),'classes',None)},ART/'urr-char.pt')
+    torch.save({"state":model.state_dict(),"classes":classes},ART/'urr-char.pt')
     dummy=torch.zeros(1,1,28,28)
     torch.onnx.export(model,dummy,ART/'urr-char.onnx',input_names=['image'],output_names=['logits'],dynamic_axes={'image':{0:'batch'},'logits':{0:'batch'}},opset_version=17)
-    # Store EMNIST mapping from dataset metadata, not an inferred alphabet.
-    classes=make_ds(False).classes
     (ART/'urr-char-classes.json').write_text(json.dumps(classes))
+    (ART/'metrics.json').write_text(json.dumps({"holdout_acc":acc,"train_samples":len(ds),"test_samples":seen},indent=2))
     if acc < args.min_acc: raise SystemExit(f"holdout accuracy {acc:.4f} < gate {args.min_acc:.4f}")
 
 def main():
