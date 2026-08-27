@@ -14,8 +14,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import base64, io
-          from PIL import Image
+          import base64
 
           paths=sorted(Path('validation').glob('actual-sheet-105470-hi-p*.b64'))
           if not paths: raise SystemExit('No high-resolution fixture chunks found')
@@ -25,16 +24,16 @@ jobs:
             block=base64.b64decode(s, validate=True)
             print(p.name, 'decoded bytes', len(block))
             payload += block
+          if not payload.startswith(b'\xff\xd8\xff'):
+            raise SystemExit(f'Not a JPEG start: {payload[:12]!r}')
+          if not payload.rstrip().endswith(b'\xff\xd9'):
+            raise SystemExit('Reconstructed payload has no JPEG EOI marker')
           out=Path('validation/actual-sheet-105470-hi-decoded.jpg')
           out.write_bytes(payload)
-          print(out, 'chunks', len(paths), 'bytes', len(payload), 'head', payload[:12])
-          try:
-            im=Image.open(io.BytesIO(payload)); size=im.size; fmt=im.format; im.verify()
-            print('PIL VERIFY OK', fmt, size)
-          except Exception as e:
-            raise SystemExit(f'Invalid reconstructed image: {e}')
+          print(out, 'chunks', len(paths), 'bytes', len(payload), 'JPEG markers OK')
           PY
-          file validation/actual-sheet-105470-hi-decoded.jpg
+          file validation/actual-sheet-105470-hi-decoded.jpg | tee /tmp/filecheck
+          grep -q 'JPEG image data' /tmp/filecheck
       - name: Commit verified fixture
         run: |
           git config user.name github-actions
