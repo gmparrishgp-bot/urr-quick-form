@@ -14,8 +14,8 @@ class DigitCNN(nn.Module):
         super().__init__();self.net=nn.Sequential(
             nn.Conv2d(1,32,3,padding=1),nn.ReLU(),nn.MaxPool2d(2),
             nn.Conv2d(32,64,3,padding=1),nn.ReLU(),nn.MaxPool2d(2),
-            nn.Conv2d(64,96,3,padding=1),nn.ReLU(),nn.AdaptiveAvgPool2d((4,4)),nn.Flatten(),
-            nn.Linear(96*4*4,128),nn.ReLU(),nn.Dropout(.10),nn.Linear(128,10))
+            nn.Conv2d(64,96,3,padding=1),nn.ReLU(),nn.MaxPool2d(2),nn.Flatten(),
+            nn.Linear(96*3*3,128),nn.ReLU(),nn.Dropout(.10),nn.Linear(128,10))
     def forward(self,x):return self.net(x)
 
 def make(train):
@@ -36,9 +36,6 @@ def main():
     with torch.no_grad():
         for x,y in DataLoader(te,batch_size=a.batch,num_workers=2):z=m(x);seen+=len(y);ok+=(z.argmax(1)==y).sum().item()
     acc=ok/seen;print(json.dumps({'numeric_holdout_acc':acc,'samples':seen}))
-    # Explicitly use the stable legacy exporter. Recent PyTorch releases default to
-    # the dynamo/onnxscript path, which adds an exporter dependency unrelated to
-    # model quality and previously caused CI to fail after training completed.
     dummy=torch.zeros(1,1,28,28)
     torch.onnx.export(m,dummy,ART/'urr-numeric.onnx',input_names=['image'],output_names=['logits'],dynamic_axes={'image':{0:'batch'},'logits':{0:'batch'}},opset_version=17,dynamo=False)
     (ART/'numeric-metrics.json').write_text(json.dumps({'holdout_acc':acc,'samples':seen},indent=2))
