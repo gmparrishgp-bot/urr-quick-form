@@ -2,6 +2,9 @@ name: URR handwriting regression
 on:
   push:
     branches: [urr-dev]
+    paths:
+      - tests/qwen2vl_regression.mjs
+      - .github/workflows/urr-handwriting-regression.yml
   workflow_dispatch:
 jobs:
   handwriting:
