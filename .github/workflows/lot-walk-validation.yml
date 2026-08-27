@@ -17,6 +17,7 @@ jobs:
         run: |
           node --check lot-walk/app.js
           node --check lot-walk/enhancements.js
+          node --check lot-walk/scanner-v2.js
       - name: Matching regression
         run: node lot-walk/validation/matching.test.js
       - name: Install browser test runtime
