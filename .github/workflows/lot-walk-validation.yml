@@ -1,0 +1,19 @@
+name: Lot Walk validation
+on:
+  push:
+    paths:
+      - 'lot-walk/**'
+      - '.github/workflows/lot-walk-validation.yml'
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check app
+        run: node --check lot-walk/app.js
+      - name: Matching regression
+        run: node lot-walk/validation/matching.test.js
