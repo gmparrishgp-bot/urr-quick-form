@@ -26,9 +26,8 @@ class CharCNN(nn.Module):
         self.net = nn.Sequential(
             nn.Conv2d(1, 32, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2),
             nn.Conv2d(32, 64, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2),
-            nn.Conv2d(64, 96, 3, padding=1), nn.ReLU(),
-            nn.AdaptiveAvgPool2d((4,4)), nn.Flatten(),
-            nn.Linear(96*4*4, 192), nn.ReLU(), nn.Dropout(.15), nn.Linear(192,n)
+            nn.Conv2d(64, 96, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2), nn.Flatten(),
+            nn.Linear(96*3*3, 192), nn.ReLU(), nn.Dropout(.15), nn.Linear(192,n)
         )
     def forward(self,x): return self.net(x)
 
@@ -72,8 +71,6 @@ def train(args):
     print(json.dumps({"holdout_acc":acc,"samples":seen}))
     torch.save({"state":model.state_dict(),"classes":classes},ART/'urr-char.pt')
     dummy=torch.zeros(1,1,28,28)
-    # Pin to the stable exporter. This keeps CI failures tied to recognition quality
-    # instead of PyTorch's optional dynamo/onnxscript exporter dependency.
     torch.onnx.export(model,dummy,ART/'urr-char.onnx',input_names=['image'],output_names=['logits'],dynamic_axes={'image':{0:'batch'},'logits':{0:'batch'}},opset_version=17,dynamo=False)
     (ART/'urr-char-classes.json').write_text(json.dumps(classes))
     (ART/'metrics.json').write_text(json.dumps({"holdout_acc":acc,"train_samples":len(ds),"test_samples":seen},indent=2))
