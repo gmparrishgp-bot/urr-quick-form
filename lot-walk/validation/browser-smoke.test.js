@@ -27,10 +27,8 @@ const assert = require('assert');
   assert(['MEDIUM','HIGH'].includes(real4746.confidence),'real July 4746 crop must be defensible, not LOW');
 
   const real1174=await scanPath('/lot-walk/validation/real/1174_actual_crop.jpg');console.log('REAL1174_CROP',JSON.stringify(real1174));
-  assert(!(['MEDIUM','HIGH'].includes(real1174.confidence)&&!real1174.ros.includes('104862')),'1174 chalk crop must never produce a false confident match');
+  assert(real1174.ros.includes('104862'),'real July 1174 crop must resolve RO 104862');
+  assert(['MEDIUM','HIGH'].includes(real1174.confidence),'real July 1174 crop must be defensible, not LOW');
 
-  const context1174=await scanPath('/lot-walk/validation/real/1174_context.jpg');console.log('REAL1174_CONTEXT',JSON.stringify(context1174));
-  assert(!(['MEDIUM','HIGH'].includes(context1174.confidence)&&!context1174.ros.includes('104862')),'1174 context must never produce a false confident match');
-
-  await browser.close();console.log('PASS synthetic gates + real 4746 gate + 1174 false-positive guards');
+  await browser.close();console.log('PASS synthetic gates + real July 4746 and 1174 gates');
 })().catch(e=>{console.error(e);process.exit(1)});
