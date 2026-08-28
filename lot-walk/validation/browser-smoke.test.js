@@ -20,6 +20,19 @@ const assert = require('assert');
     },{text,deg});
   }
 
+  async function chalkSynthetic(text){
+    return await page.evaluate(async({text})=>{
+      const c=document.createElement('canvas');c.width=1152;c.height=1536;const x=c.getContext('2d');
+      x.fillStyle='#82bde8';x.fillRect(0,0,c.width,c.height*.35);x.fillStyle='#ececec';x.fillRect(120,500,900,560);
+      x.fillStyle='#161616';x.fillRect(130,955,890,230);x.fillStyle='#272727';x.fillRect(625,1010,300,105);
+      x.strokeStyle='#dedede';x.lineWidth=7;x.lineCap='round';x.lineJoin='round';x.font='64px cursive';x.fillStyle='#dedede';x.fillText(text,690,1080);
+      // light visual clutter around the target, similar to a frame/pin-box area
+      x.strokeStyle='#777';x.lineWidth=3;for(let i=0;i<8;i++){x.beginPath();x.moveTo(150+i*95,970);x.lineTo(180+i*95,1160);x.stroke();}
+      const scan=await window.lotWalkScanSourceV2(c);
+      return {read:scan.text,result:document.getElementById('result').innerText,attempts:scan.reads.map(r=>({text:r.text,deg:r.deg,confidence:r.confidence,kind:r.kind}))};
+    },{text});
+  }
+
   const straight=await synthetic('0013',0);
   console.log('straight',straight);
   assert.match(straight.result,/104849/,'straight identifier should match RO 104849');
@@ -32,6 +45,10 @@ const assert = require('assert');
   console.log('contextual',contextual);
   assert.match(contextual.result,/104746/,'180-degree RO suffix should match RO 104746');
 
+  const chalk=await chalkSynthetic('4746');
+  console.log('chalk',chalk);
+  assert.match(chalk.result,/104746/,'small light-on-dark chalk identifier should match RO 104746');
+
   await browser.close();
-  console.log('PASS scanner-v2 OCR: straight + 90-degree + 180-degree/contextual');
+  console.log('PASS scanner OCR: straight + rotated + contextual + chalk-on-dark');
 })().catch(e=>{console.error(e);process.exit(1)});
