@@ -1,6 +1,5 @@
 // Lot Walk recognition/matching hardening layered over app.js.
 (function(){
-  // Always give OCR one complete view of the frame before smaller adaptive candidates.
   const baseDetectRegions=detectRegions;
   detectRegions=function(c){
     const boxes=baseDetectRegions(c)||[];
@@ -9,9 +8,6 @@
     return [full,...rest];
   };
 
-  // Default automatic page segmentation was breaking a corrected 90-degree
-  // identifier into isolated glyphs. Candidate crops are label/tag regions, so
-  // a uniform-block segmentation mode is a better fit and remains multi-line capable.
   const baseEnsureWorker=ensureWorker;
   ensureWorker=async function(){
     const worker=await baseEnsureWorker();
@@ -25,6 +21,7 @@
 
   const baseScoreRow=scoreRow;
   const confusablePairs=[['0','O'],['1','I'],['1','L'],['2','Z'],['5','S'],['6','G'],['8','B']];
+  const genericContext=new Set(['GRAND','DESIGN','FOREST','RIVER','PRIME','WAYFINDER','HIGHLAND','TRAILER','TRAVEL','SPORT','LIMITED']);
   function oneConfusionAway(a,b){
     a=norm(a);b=norm(b);if(a.length!==b.length||a.length<4)return false;
     let diffs=0;
@@ -34,6 +31,17 @@
       if(++diffs>1)return false;
     }
     return diffs===1;
+  }
+  function uniqueModelTokens(row,ocrText){
+    const words=new Set(tokens(ocrText));
+    const rowTokens=[...new Set([...tokens(row.make),...tokens(row.model)])]
+      .filter(t=>t.length>=6&&!genericContext.has(t)&&words.has(t));
+    if(!rowTokens.length)return[];
+    const distinctVin=r=>norm(r.vin)||('RO'+norm(r.ro));
+    return rowTokens.filter(t=>{
+      const vins=new Set(state.workOrders.filter(r=>[...tokens(r.make),...tokens(r.model)].includes(t)).map(distinctVin));
+      return vins.size===1&&vins.has(distinctVin(row));
+    });
   }
   scoreRow=function(row,ocrText,clues){
     const out=baseScoreRow(row,ocrText,clues);
@@ -49,6 +57,15 @@
         const tail=stock.slice(-c.length);
         if(oneConfusionAway(c,tail)){out.score+=34;out.e.push(`near stock ${clue}`);}
       }
+    }
+    // A human can often identify a unit from a distinctive family/model word even when
+    // the small chalk VIN suffix is unreadable. Only promote words that occur on one
+    // physical VIN in the currently loaded open-WO file; generic manufacturer words
+    // never get this boost.
+    const unique=uniqueModelTokens(row,ocrText);
+    if(unique.length){
+      out.score+=unique.length>=2?72:58;
+      out.e.push(`unique model context ${unique.join('/')}`);
     }
     out.e=[...new Set(out.e)];
     return out;
