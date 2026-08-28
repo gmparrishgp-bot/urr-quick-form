@@ -51,6 +51,28 @@
     }
     return map;
   }
+  function shortSegments(ocrText){
+    const out=[];
+    for(const line of String(ocrText||'').toUpperCase().split(/\n+/)){
+      const n=line.replace(/[^A-Z0-9]/g,'');
+      if(n.length>=3&&n.length<=8)out.push(n);
+      // OCR frequently inserts spaces inside one chalk number (for example "1 17U").
+      for(const m of line.matchAll(/(?:[A-Z0-9]\s*){3,6}/g)){
+        const c=norm(m[0]);if(c.length>=3&&c.length<=6)out.push(c);
+      }
+    }
+    return [...new Set(out)];
+  }
+  function droppedLeadingDigitCorroboration(row,ocrText,uniqueTails){
+    const vin=norm(row.vin);if(vin.length<4)return null;const suffix4=vin.slice(-4),head3=suffix4.slice(0,3),tail3=suffix4.slice(1);
+    if(uniqueTails.get(tail3)!==physicalKey(row))return null;
+    const segs=shortSegments(ocrText);
+    // The unique 3-digit tail must be seen independently, plus another compact OCR fragment
+    // must preserve the first three characters of the expected four-character suffix. This
+    // reconstructs a dropped/garbled edge digit but cannot promote a lone 3-digit coincidence.
+    const support=segs.find(s=>s.includes(head3)||oneConfusionAway((s.length===4?s:s.slice(0,4)),suffix4));
+    return support?{suffix4,tail3,support}:null;
+  }
   scoreRow=function(row,ocrText,clues){
     const out=baseScoreRow(row,ocrText,clues);
     const ro=norm(row.ro),vin=norm(row.vin),stock=norm(row.stock);
@@ -67,12 +89,12 @@
         if(oneConfusionAway(c,tail)){out.score+=34;out.e.push(`near stock ${clue}`);}
       }
     }
-    // A three-digit tail is too weak to promote by itself. It is retained only when it
-    // uniquely maps to one physical VIN in the loaded WO set, so model/brand evidence can
-    // corroborate a dropped first chalk character without creating a confident standalone hit.
-    for(const [tail,key] of uniqueThreeDigitTails(ocrText))if(key===physicalKey(row)&&vin.endsWith(tail)){
+    const uniqueTails=uniqueThreeDigitTails(ocrText);
+    for(const [tail,key] of uniqueTails)if(key===physicalKey(row)&&vin.endsWith(tail)){
       out.score+=28;out.e.push(`weak unique VIN tail ${tail}`);
     }
+    const reconstructed=droppedLeadingDigitCorroboration(row,ocrText,uniqueTails);
+    if(reconstructed){out.score+=36;out.e.push(`corroborated VIN suffix ${reconstructed.suffix4}`);}
     const unique=uniqueModelTokens(row,ocrText);
     if(unique.length){
       out.score+=unique.length>=2?72:58;
