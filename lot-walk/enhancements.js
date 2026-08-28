@@ -22,6 +22,7 @@
   const baseScoreRow=scoreRow;
   const confusablePairs=[['0','O'],['1','I'],['1','L'],['1','7'],['2','Z'],['5','S'],['6','G'],['8','B']];
   const genericContext=new Set(['GRAND','DESIGN','FOREST','RIVER','PRIME','WAYFINDER','HIGHLAND','TRAILER','TRAVEL','SPORT','LIMITED']);
+  const physicalKey=r=>norm(r.vin)||('RO'+norm(r.ro));
   function oneConfusionAway(a,b){
     a=norm(a);b=norm(b);if(a.length!==b.length||a.length<4)return false;
     let diffs=0;
@@ -37,11 +38,18 @@
     const rowTokens=[...new Set([...tokens(row.make),...tokens(row.model)])]
       .filter(t=>t.length>=4&&!genericContext.has(t)&&words.has(t));
     if(!rowTokens.length)return[];
-    const distinctVin=r=>norm(r.vin)||('RO'+norm(r.ro));
     return rowTokens.filter(t=>{
-      const vins=new Set(state.workOrders.filter(r=>[...tokens(r.make),...tokens(r.model)].includes(t)).map(distinctVin));
-      return vins.size===1&&vins.has(distinctVin(row));
+      const vins=new Set(state.workOrders.filter(r=>[...tokens(r.make),...tokens(r.model)].includes(t)).map(physicalKey));
+      return vins.size===1&&vins.has(physicalKey(row));
     });
+  }
+  function uniqueThreeDigitTails(ocrText){
+    const vals=[...new Set((String(ocrText||'').match(/\b\d{3}\b/g)||[]))],map=new Map();
+    for(const c of vals){
+      const vins=new Set(state.workOrders.filter(r=>norm(r.vin).endsWith(c)).map(physicalKey));
+      if(vins.size===1)map.set(c,[...vins][0]);
+    }
+    return map;
   }
   scoreRow=function(row,ocrText,clues){
     const out=baseScoreRow(row,ocrText,clues);
@@ -49,7 +57,7 @@
     for(const clue of clues){
       const c=norm(clue);if(c.length<4)continue;
       if(ro&&ro.endsWith(c)&&c!==ro){out.score+=64;out.e.push(`RO suffix ${clue}`);}
-      if(ro&&c.length>=4){const tail=ro.slice(-c.length);if(oneConfusionAway(c,tail)){out.score+=52;out.e.push(`near RO suffix ${clue}`);}}
+      if(ro&&c.length>=4){const tail=ro.slice(-c.length);if(oneConfusionAway(c,tail)){out.score+=64;out.e.push(`near RO suffix ${clue}`);}}
       if(vin&&c.length>=5){
         const tail=vin.slice(-c.length);
         if(oneConfusionAway(c,tail)){out.score+=38;out.e.push(`near VIN suffix ${clue}`);}
@@ -59,9 +67,12 @@
         if(oneConfusionAway(c,tail)){out.score+=34;out.e.push(`near stock ${clue}`);}
       }
     }
-    // Distinctive model/family words can be stronger evidence than tiny chalk text. The
-    // token only receives a boost when it maps to exactly one physical VIN in the currently
-    // loaded open-WO set. Short generic words and manufacturer boilerplate never qualify.
+    // A three-digit tail is too weak to promote by itself. It is retained only when it
+    // uniquely maps to one physical VIN in the loaded WO set, so model/brand evidence can
+    // corroborate a dropped first chalk character without creating a confident standalone hit.
+    for(const [tail,key] of uniqueThreeDigitTails(ocrText))if(key===physicalKey(row)&&vin.endsWith(tail)){
+      out.score+=28;out.e.push(`weak unique VIN tail ${tail}`);
+    }
     const unique=uniqueModelTokens(row,ocrText);
     if(unique.length){
       out.score+=unique.length>=2?72:58;
