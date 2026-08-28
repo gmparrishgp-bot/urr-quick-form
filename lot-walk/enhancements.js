@@ -20,7 +20,7 @@
   };
 
   const baseScoreRow=scoreRow;
-  const confusablePairs=[['0','O'],['1','I'],['1','L'],['2','Z'],['5','S'],['6','G'],['8','B']];
+  const confusablePairs=[['0','O'],['1','I'],['1','L'],['1','7'],['2','Z'],['5','S'],['6','G'],['8','B']];
   const genericContext=new Set(['GRAND','DESIGN','FOREST','RIVER','PRIME','WAYFINDER','HIGHLAND','TRAILER','TRAVEL','SPORT','LIMITED']);
   function oneConfusionAway(a,b){
     a=norm(a);b=norm(b);if(a.length!==b.length||a.length<4)return false;
@@ -35,7 +35,7 @@
   function uniqueModelTokens(row,ocrText){
     const words=new Set(tokens(ocrText));
     const rowTokens=[...new Set([...tokens(row.make),...tokens(row.model)])]
-      .filter(t=>t.length>=6&&!genericContext.has(t)&&words.has(t));
+      .filter(t=>t.length>=4&&!genericContext.has(t)&&words.has(t));
     if(!rowTokens.length)return[];
     const distinctVin=r=>norm(r.vin)||('RO'+norm(r.ro));
     return rowTokens.filter(t=>{
@@ -49,6 +49,7 @@
     for(const clue of clues){
       const c=norm(clue);if(c.length<4)continue;
       if(ro&&ro.endsWith(c)&&c!==ro){out.score+=64;out.e.push(`RO suffix ${clue}`);}
+      if(ro&&c.length>=4){const tail=ro.slice(-c.length);if(oneConfusionAway(c,tail)){out.score+=52;out.e.push(`near RO suffix ${clue}`);}}
       if(vin&&c.length>=5){
         const tail=vin.slice(-c.length);
         if(oneConfusionAway(c,tail)){out.score+=38;out.e.push(`near VIN suffix ${clue}`);}
@@ -58,10 +59,9 @@
         if(oneConfusionAway(c,tail)){out.score+=34;out.e.push(`near stock ${clue}`);}
       }
     }
-    // A human can often identify a unit from a distinctive family/model word even when
-    // the small chalk VIN suffix is unreadable. Only promote words that occur on one
-    // physical VIN in the currently loaded open-WO file; generic manufacturer words
-    // never get this boost.
+    // Distinctive model/family words can be stronger evidence than tiny chalk text. The
+    // token only receives a boost when it maps to exactly one physical VIN in the currently
+    // loaded open-WO set. Short generic words and manufacturer boilerplate never qualify.
     const unique=uniqueModelTokens(row,ocrText);
     if(unique.length){
       out.score+=unique.length>=2?72:58;
