@@ -21,11 +21,9 @@
     for(let i=0;i<d.length;i+=16) vals.push(.299*d[i]+.587*d[i+1]+.114*d[i+2]);
     vals.sort((a,b)=>a-b); const q=p=>vals[Math.min(vals.length-1,Math.floor(vals.length*p))];
     const mean=vals.reduce((a,b)=>a+b,0)/vals.length, sd=Math.sqrt(vals.reduce((a,v)=>a+(v-mean)*(v-mean),0)/vals.length);
-    // Actual lot chalk/marker is a small bright fraction of a very dark frame.
     const thr=Math.max(q(.91),mean+Math.max(8,.85*sd));
     const W=c.width,H=c.height,m=new Uint8Array(W*H);
     for(let p=0,i=0;i<d.length;i+=4,p++){const v=.299*d[i]+.587*d[i+1]+.114*d[i+2];m[p]=v>=thr?1:0;}
-    // close small gaps in marker strokes (3x3 dilation then mild vertical closing)
     const out=new Uint8Array(m.length);
     for(let y=0;y<H;y++) for(let xx=0;xx<W;xx++){
       let on=0; for(let dy=-1;dy<=1&&!on;dy++) for(let dx=-1;dx<=1;dx++){const nx=xx+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<W&&ny<H&&m[ny*W+nx]){on=1;break;}}
@@ -34,8 +32,7 @@
     return {W,H,m:out};
   }
   function components(bin){
-    const {W,H,m}=bin,seen=new Uint8Array(m.length),comps=[];
-    const stack=[];
+    const {W,H,m}=bin,seen=new Uint8Array(m.length),comps=[],stack=[];
     for(let y=0;y<H;y++) for(let x=0;x<W;x++){
       const s=y*W+x; if(!m[s]||seen[s]) continue;
       seen[s]=1; stack.length=0; stack.push(s); let minX=x,maxX=x,minY=y,maxY=y,n=0;
@@ -44,14 +41,12 @@
       }
       const w=maxX-minX+1,h=maxY-minY+1;
       if(n<12||h<H*.055||h>H*.72||w<2) continue;
-      // remove long bright trim/reflection lines and huge blocks
       if(w/h>2.2||w>W*.45) continue;
       comps.push({x:minX,y:minY,w,h,n,cx:(minX+maxX)/2,cy:(minY+maxY)/2});
     }
     return comps;
   }
   function mergeFragments(cs){
-    // Merge vertically split pieces belonging to the same handwritten glyph.
     const arr=cs.slice().sort((a,b)=>a.x-b.x),used=new Array(arr.length).fill(false),out=[];
     for(let i=0;i<arr.length;i++){
       if(used[i])continue; let a={...arr[i]}; used[i]=true;
@@ -85,6 +80,59 @@
     for(const l of lines){const k=l.g.map(a=>`${a.x},${a.y},${a.w},${a.h}`).join('|');if(seen.has(k))continue;seen.add(k);out.push(l);if(out.length>=8)break;}
     return out;
   }
+
+  // Count enclosed background islands inside one segmented glyph. This is intentionally
+  // simpler than generic OCR: 8 usually carries two holes; 0/4/6/9 one; 1/2/3/5/7 none.
+  function holeCount(bin,b){
+    const {W,H,m}=bin,pad=2,x0=Math.max(0,b.x-pad),y0=Math.max(0,b.y-pad),x1=Math.min(W,b.x+b.w+pad),y1=Math.min(H,b.y+b.h+pad),w=x1-x0,h=y1-y0;
+    const seen=new Uint8Array(w*h),stack=[],idx=(x,y)=>y*w+x; let holes=0;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const gi=(y0+y)*W+(x0+x),li=idx(x,y); if(m[gi]||seen[li])continue;
+      seen[li]=1; stack.length=0;stack.push(li);let touches=x===0||y===0||x===w-1||y===h-1,area=0;
+      while(stack.length){const p=stack.pop(),py=Math.floor(p/w),px=p-py*w;area++;
+        for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=px+dx,ny=py+dy;if(nx<0||ny<0||nx>=w||ny>=h)continue;const ni=idx(nx,ny),ggi=(y0+ny)*W+(x0+nx);if(m[ggi]||seen[ni])continue;seen[ni]=1;if(nx===0||ny===0||nx===w-1||ny===h-1)touches=true;stack.push(ni);}
+      }
+      if(!touches&&area>=Math.max(3,Math.round(b.w*b.h*.002)))holes++;
+    }
+    return Math.min(2,holes);
+  }
+  const EXPECTED_HOLES={0:1,1:0,2:0,3:0,4:1,5:0,6:1,7:0,8:2,9:1};
+  function holePenalty(observed,expected){
+    if(observed===expected)return 0;
+    // A handwritten 8 commonly loses the waist and appears as one enclosed loop after
+    // thresholding. The reverse errors are less trustworthy and are penalized harder.
+    if(expected===2&&observed===1)return .5;
+    if(expected===1&&observed===0)return 1;
+    if(expected===0&&observed===1)return 2;
+    return 3*Math.abs(observed-expected);
+  }
+  function topologyCandidate(bin,line){
+    const observed=line.g.map(b=>holeCount(bin,b)),len=observed.length;
+    if(observed.filter(h=>h>0).length<2)return null;
+    const byTail=new Map();
+    for(const row of state.workOrders){
+      const key=norm(row.vin)||('RO'+norm(row.ro));
+      for(const source of [norm(row.vin),norm(row.stock)]){
+        if(source.length<len)continue;const tail=source.slice(-len);if(!/^\d+$/.test(tail))continue;
+        if(!byTail.has(tail))byTail.set(tail,new Set());byTail.get(tail).add(key);
+      }
+    }
+    const scored=[];
+    for(const [tail,keys] of byTail){
+      if(keys.size!==1)continue;const expected=[...tail].map(d=>EXPECTED_HOLES[d]);
+      let penalty=0,exact=0;for(let i=0;i<len;i++){penalty+=holePenalty(observed[i],expected[i]);if(observed[i]===expected[i])exact++;}
+      scored.push({tail,penalty,exact,expected});
+    }
+    scored.sort((a,b)=>a.penalty-b.penalty||b.exact-a.exact);if(!scored.length)return null;
+    const best=scored[0],second=scored[1];
+    // Promote only a near-complete topology fingerprint with a clear margin over every
+    // other VIN/stock suffix currently in WIP. Otherwise leave it for the OCR paths.
+    if(best.penalty>1||best.exact<len-1)return null;
+    if(second&&second.penalty-best.penalty<1.25)return null;
+    const match=exactNumeric(best.tail);if(!match)return null;
+    return{text:best.tail,match,observed,topology:{penalty:best.penalty,exact:best.exact,secondPenalty:second?.penalty??null}};
+  }
+
   function glyphCanvas(bin,b){
     const {W,H,m}=bin,pad=Math.max(3,Math.round(b.h*.18)),x0=Math.max(0,b.x-pad),y0=Math.max(0,b.y-pad),x1=Math.min(W,b.x+b.w+pad),y1=Math.min(H,b.y+b.h+pad),sw=x1-x0,sh=y1-y0;
     const scale=Math.max(2,Math.min(7,Math.floor(150/Math.max(sw,sh)))),c=document.createElement('canvas');c.width=Math.max(60,sw*scale);c.height=Math.max(80,sh*scale);
@@ -105,6 +153,8 @@
     for(const deg of [0,180,90,270]){
       const oriented=rotate(base,deg),bin=threshold(oriented),lines=candidateLines(components(bin),bin.W,bin.H);
       for(let li=0;li<lines.length;li++){
+        const topo=topologyCandidate(bin,lines[li]);
+        if(topo){reads.push({text:topo.text,confidence:90,kind:'glyph-topology',deg,line:li+1,holes:topo.observed.join('')});return{...topo,reads,segmented:true};}
         const digits=[];let conf=0,ok=true;
         for(const b of lines[li].g){const r=await readGlyph(glyphCanvas(bin,b));reads.push({text:r.digit,confidence:r.confidence,kind:'segmented-digit',deg,line:li+1,x:b.x,y:b.y,w:b.w,h:b.h});if(!r.digit||r.confidence<8){ok=false;break;}digits.push(r.digit);conf+=r.confidence;}
         if(!ok)continue; const id=digits.join(''),m=exactNumeric(id);
