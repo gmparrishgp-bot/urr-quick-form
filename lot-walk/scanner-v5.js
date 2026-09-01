@@ -34,12 +34,8 @@
         for(const c of tails){
           if(c.text.length!==joined.length)continue;
           const numericOnly=/^\d+$/.test(c.text);
-          // Short all-numeric suffixes collide too easily across a WIP list. Require an exact
-          // reconstruction for 4-5 digit numeric candidates; fuzzy reconstruction is allowed
-          // only for >=6 digits or identifiers containing letters.
-          const d=lev(joined,c.text);
-          if(d>1)continue;
-          if(numericOnly&&c.text.length<6&&d!==0)continue;
+          if(numericOnly&&c.text.length<6)continue;
+          const d=lev(joined,c.text);if(d>1)continue;
           const exactA=c.text.includes(a.text),exactB=c.text.includes(b.text);
           if(!exactA&&!exactB)continue;
           const broad=(a.kind==='whole'?8:0)+(b.kind==='whole'?8:0);
@@ -65,6 +61,7 @@
     if(shouldRender){if(out?.match)renderResult(out.match);$('scanStatus').textContent=out?.text?`Read: ${out.text.slice(0,140)}`:'Unknown / research';}
     return out;
   }
+  window.lotWalkReconstructV5=reconstruct;
   window.lotWalkScanSourceV5=scan;window.lotWalkScanSourceV2=scan;$('scanNow').onclick=()=>scan(video);
   const old=$('photoFile');if(old){const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{scan(img);URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f);});}
 })();
