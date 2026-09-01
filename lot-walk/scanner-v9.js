@@ -1,0 +1,18 @@
+// Lot Walk Scanner v9: aggressively upscale small crops before fast numeric-tail OCR.
+(function(){
+  const fallback=window.lotWalkScanSourceV8;
+  let workerPromise=null,busy=false;
+  function prep(source){
+    const sw=source.videoWidth||source.naturalWidth||source.width,sh=source.videoHeight||source.naturalHeight||source.height;if(!sw||!sh)throw Error('Image not ready');
+    const target=Math.max(sw,sh)<600?Math.min(1400,Math.max(sw,sh)*6):Math.min(1800,Math.max(sw,sh));const s=target/Math.max(sw,sh),c=document.createElement('canvas');c.width=Math.round(sw*s);c.height=Math.round(sh*s);const x=c.getContext('2d',{willReadFrequently:true});x.imageSmoothingEnabled=true;x.filter='grayscale(1) contrast(3.2) brightness(1.2)';x.drawImage(source,0,0,c.width,c.height);return c;
+  }
+  async function worker(){if(!workerPromise)workerPromise=Tesseract.createWorker('eng',1);return workerPromise;}
+  async function read(src,psm){const w=await worker();await w.setParameters({tessedit_char_whitelist:'0123456789',tessedit_pageseg_mode:String(psm)});const r=await w.recognize(src);return{text:(r.data.text||'').trim(),confidence:r.data.confidence||0};}
+  function exactNumeric(id){if(!/^\d{4,7}$/.test(id))return null;const rows=state.workOrders.filter(r=>{const v=norm(r.vin),s=norm(r.stock),ro=norm(r.ro);return(v&&v.endsWith(id))||(s&&s.endsWith(id))||(ro&&ro.endsWith(id));});const keys=new Set(rows.map(r=>norm(r.vin)||('RO'+norm(r.ro))));if(!rows.length||keys.size!==1)return null;const m=matchOCR(id);return m&&m.status==='MATCH'&&['MEDIUM','HIGH'].includes(m.confidence)?m:null;}
+  function unique4(tail){if(!/^\d{3}$/.test(tail))return null;const ids=new Map();for(const row of state.workOrders){const key=norm(row.vin)||('RO'+norm(row.ro));for(const src of [norm(row.vin),norm(row.stock)]){if(src.length<4)continue;const id=src.slice(-4);if(/^\d{4}$/.test(id)&&id.endsWith(tail)){if(!ids.has(id))ids.set(id,new Set());ids.get(id).add(key);}}}const c=[...ids.entries()].filter(([,k])=>k.size===1).map(([id])=>id);return c.length===1?c[0]:null;}
+  function tokens(t){return String(t||'').match(/\d{3,7}/g)||[];}
+  async function fast(source){const base=prep(source),reads=[];for(const psm of [11,6]){const r=await read(base,psm);reads.push({text:r.text,confidence:r.confidence,kind:'fast-upscaled',psm});for(const t of tokens(r.text)){if(t.length>=4){const m=exactNumeric(t);if(m)return{text:t,match:m,reads,fast:true,mode:'upscaled'};}else if(t.length===3&&r.confidence>=6){const id=unique4(t),m=id&&exactNumeric(id);if(m){m.evidence=[...(m.evidence||[]),`unique VIN-tail completion ${t} → ${id}`];return{text:id,match:m,reads,fast:true,mode:'upscaled',completion:{tail:t,id}};}}}}return{reads};}
+  function render(out){if(out?.match){$('scanStatus').textContent=`Read: ${out.text}`;renderResult(out.match);}}
+  async function scan(source,{render:shouldRender=true}={}){if(busy)return fallback(source,{render:shouldRender});busy=true;try{const first=await fast(source);if(first.match){if(shouldRender)render(first);return first;}const fb=await fallback(source,{render:false}),out={...fb,reads:[...(first.reads||[]),...(fb.reads||[])]};if(shouldRender){if(out.match)renderResult(out.match);$('scanStatus').textContent=out.text?`Read: ${String(out.text).slice(0,140)}`:'Unknown / research';}return out;}finally{busy=false;}}
+  window.lotWalkScanSourceV9=scan;window.lotWalkScanSourceV2=scan;$('scanNow').onclick=()=>scan(video);const old=$('photoFile');if(old){const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{scan(img);URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f);});}
+})();
