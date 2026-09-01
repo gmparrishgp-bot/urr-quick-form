@@ -1,4 +1,4 @@
-// Lot Walk Scanner v6: isolate handwritten numeric suffixes into individual glyphs before generic OCR.
+// Lot Walk Scanner v6: isolate handwritten numeric suffixes, then candidate-directed zoom before generic OCR.
 (function(){
   const fallback=window.lotWalkScanSourceV5;
   let busy=false;
@@ -80,9 +80,6 @@
     for(const l of lines){const k=l.g.map(a=>`${a.x},${a.y},${a.w},${a.h}`).join('|');if(seen.has(k))continue;seen.add(k);out.push(l);if(out.length>=8)break;}
     return out;
   }
-
-  // Count enclosed background islands inside one segmented glyph. This is intentionally
-  // simpler than generic OCR: 8 usually carries two holes; 0/4/6/9 one; 1/2/3/5/7 none.
   function holeCount(bin,b){
     const {W,H,m}=bin,pad=2,x0=Math.max(0,b.x-pad),y0=Math.max(0,b.y-pad),x1=Math.min(W,b.x+b.w+pad),y1=Math.min(H,b.y+b.h+pad),w=x1-x0,h=y1-y0;
     const seen=new Uint8Array(w*h),stack=[],idx=(x,y)=>y*w+x; let holes=0;
@@ -97,42 +94,15 @@
     return Math.min(2,holes);
   }
   const EXPECTED_HOLES={0:1,1:0,2:0,3:0,4:1,5:0,6:1,7:0,8:2,9:1};
-  function holePenalty(observed,expected){
-    if(observed===expected)return 0;
-    // A handwritten 8 commonly loses the waist and appears as one enclosed loop after
-    // thresholding. The reverse errors are less trustworthy and are penalized harder.
-    if(expected===2&&observed===1)return .5;
-    if(expected===1&&observed===0)return 1;
-    if(expected===0&&observed===1)return 2;
-    return 3*Math.abs(observed-expected);
-  }
+  function holePenalty(observed,expected){if(observed===expected)return 0;if(expected===2&&observed===1)return .5;if(expected===1&&observed===0)return 1;if(expected===0&&observed===1)return 2;return 3*Math.abs(observed-expected);}
   function topologyCandidate(bin,line){
-    const observed=line.g.map(b=>holeCount(bin,b)),len=observed.length;
-    if(observed.filter(h=>h>0).length<2)return null;
-    const byTail=new Map();
-    for(const row of state.workOrders){
-      const key=norm(row.vin)||('RO'+norm(row.ro));
-      for(const source of [norm(row.vin),norm(row.stock)]){
-        if(source.length<len)continue;const tail=source.slice(-len);if(!/^\d+$/.test(tail))continue;
-        if(!byTail.has(tail))byTail.set(tail,new Set());byTail.get(tail).add(key);
-      }
-    }
-    const scored=[];
-    for(const [tail,keys] of byTail){
-      if(keys.size!==1)continue;const expected=[...tail].map(d=>EXPECTED_HOLES[d]);
-      let penalty=0,exact=0;for(let i=0;i<len;i++){penalty+=holePenalty(observed[i],expected[i]);if(observed[i]===expected[i])exact++;}
-      scored.push({tail,penalty,exact,expected});
-    }
-    scored.sort((a,b)=>a.penalty-b.penalty||b.exact-a.exact);if(!scored.length)return null;
-    const best=scored[0],second=scored[1];
-    // Promote only a near-complete topology fingerprint with a clear margin over every
-    // other VIN/stock suffix currently in WIP. Otherwise leave it for the OCR paths.
-    if(best.penalty>1||best.exact<len-1)return null;
-    if(second&&second.penalty-best.penalty<1.25)return null;
-    const match=exactNumeric(best.tail);if(!match)return null;
+    const observed=line.g.map(b=>holeCount(bin,b)),len=observed.length;if(observed.filter(h=>h>0).length<2)return null;
+    const byTail=new Map();for(const row of state.workOrders){const key=norm(row.vin)||('RO'+norm(row.ro));for(const source of [norm(row.vin),norm(row.stock)]){if(source.length<len)continue;const tail=source.slice(-len);if(!/^\d+$/.test(tail))continue;if(!byTail.has(tail))byTail.set(tail,new Set());byTail.get(tail).add(key);}}
+    const scored=[];for(const [tail,keys] of byTail){if(keys.size!==1)continue;const expected=[...tail].map(d=>EXPECTED_HOLES[d]);let penalty=0,exact=0;for(let i=0;i<len;i++){penalty+=holePenalty(observed[i],expected[i]);if(observed[i]===expected[i])exact++;}scored.push({tail,penalty,exact,expected});}
+    scored.sort((a,b)=>a.penalty-b.penalty||b.exact-a.exact);if(!scored.length)return null;const best=scored[0],second=scored[1];
+    if(best.penalty>1||best.exact<len-1)return null;if(second&&second.penalty-best.penalty<1.25)return null;const match=exactNumeric(best.tail);if(!match)return null;
     return{text:best.tail,match,observed,topology:{penalty:best.penalty,exact:best.exact,secondPenalty:second?.penalty??null}};
   }
-
   function glyphCanvas(bin,b){
     const {W,H,m}=bin,pad=Math.max(3,Math.round(b.h*.18)),x0=Math.max(0,b.x-pad),y0=Math.max(0,b.y-pad),x1=Math.min(W,b.x+b.w+pad),y1=Math.min(H,b.y+b.h+pad),sw=x1-x0,sh=y1-y0;
     const scale=Math.max(2,Math.min(7,Math.floor(150/Math.max(sw,sh)))),c=document.createElement('canvas');c.width=Math.max(60,sw*scale);c.height=Math.max(80,sh*scale);
@@ -142,6 +112,7 @@
   }
   async function worker(){if(!state.worker)state.worker=await Tesseract.createWorker('eng',1);return state.worker;}
   async function readGlyph(c){const w=await worker();await w.setParameters({tessedit_char_whitelist:'0123456789',tessedit_pageseg_mode:'10'});const r=await w.recognize(c),t=(r.data.text||'').replace(/\D/g,'');return {digit:t.length===1?t:'',confidence:r.data.confidence||0};}
+  async function readText(c,{digits=false,psm=11}={}){const w=await worker();await w.setParameters({tessedit_char_whitelist:digits?'0123456789':'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789- /',tessedit_pageseg_mode:String(psm)});const r=await w.recognize(c);return{text:(r.data.text||'').trim(),confidence:r.data.confidence||0};}
   function exactNumeric(id){
     if(!/^\d{4,7}$/.test(id))return null;
     const rows=state.workOrders.filter(r=>{const v=norm(r.vin),s=norm(r.stock),ro=norm(r.ro);return (v&&v.endsWith(id))||(s&&s.endsWith(id))||(ro&&ro.endsWith(id));});
@@ -150,30 +121,41 @@
   }
   async function segmented(source){
     const base=copy(source),reads=[];
+    for(const deg of [0,180,90,270]){const oriented=rotate(base,deg),bin=threshold(oriented),lines=candidateLines(components(bin),bin.W,bin.H);
+      for(let li=0;li<lines.length;li++){const topo=topologyCandidate(bin,lines[li]);if(topo){reads.push({text:topo.text,confidence:90,kind:'glyph-topology',deg,line:li+1,holes:topo.observed.join('')});return{...topo,reads,segmented:true};}
+        const digits=[];let conf=0,ok=true;for(const b of lines[li].g){const r=await readGlyph(glyphCanvas(bin,b));reads.push({text:r.digit,confidence:r.confidence,kind:'segmented-digit',deg,line:li+1,x:b.x,y:b.y,w:b.w,h:b.h});if(!r.digit||r.confidence<8){ok=false;break;}digits.push(r.digit);conf+=r.confidence;}if(!ok)continue;const id=digits.join(''),m=exactNumeric(id);reads.push({text:id,confidence:conf/digits.length,kind:'segmented-sequence',deg,line:li+1});if(m)return{text:id,match:m,reads,segmented:true};}
+    }return{reads};
+  }
+
+  function completionCandidates(tail){
+    if(!/^\d{3}$/.test(tail))return[];const map=new Map();
+    for(const row of state.workOrders){const key=norm(row.vin)||('RO'+norm(row.ro));for(const source of [norm(row.vin),norm(row.stock),norm(row.ro)])for(let len=4;len<=7;len++){if(source.length<len)continue;const id=source.slice(-len);if(!/^\d+$/.test(id)||!id.endsWith(tail))continue;const k=id+'|'+key;if(!map.has(k))map.set(k,{id,key});}}
+    const ids=new Map();for(const v of map.values()){if(!ids.has(v.id))ids.set(v.id,new Set());ids.get(v.id).add(v.key);}return[...ids].filter(([,keys])=>keys.size===1).map(([id])=>id);
+  }
+  function windowCrop(src,x,y,w,h,scale=3){const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.8)';g.drawImage(src,x,y,w,h,0,0,c.width,c.height);return c;}
+  async function candidateDirectedZoom(source){
+    const base=copy(source,1600),reads=[];
     for(const deg of [0,180,90,270]){
-      const oriented=rotate(base,deg),bin=threshold(oriented),lines=candidateLines(components(bin),bin.W,bin.H);
-      for(let li=0;li<lines.length;li++){
-        const topo=topologyCandidate(bin,lines[li]);
-        if(topo){reads.push({text:topo.text,confidence:90,kind:'glyph-topology',deg,line:li+1,holes:topo.observed.join('')});return{...topo,reads,segmented:true};}
-        const digits=[];let conf=0,ok=true;
-        for(const b of lines[li].g){const r=await readGlyph(glyphCanvas(bin,b));reads.push({text:r.digit,confidence:r.confidence,kind:'segmented-digit',deg,line:li+1,x:b.x,y:b.y,w:b.w,h:b.h});if(!r.digit||r.confidence<8){ok=false;break;}digits.push(r.digit);conf+=r.confidence;}
-        if(!ok)continue; const id=digits.join(''),m=exactNumeric(id);
-        reads.push({text:id,confidence:conf/digits.length,kind:'segmented-sequence',deg,line:li+1});
-        if(m)return{text:id,match:m,reads,segmented:true};
+      const oriented=rotate(base,deg),broad=await readText(oriented,{digits:false,psm:11});reads.push({...broad,kind:'candidate-broad',deg});
+      const direct=matchOCR(broad.text);if(direct?.status==='MATCH'&&['MEDIUM','HIGH'].includes(direct.confidence))return{text:broad.text,match:direct,reads,candidateZoom:true};
+      const tails=[...(broad.text.match(/(?<!\d)\d{3}(?!\d)/g)||[])];
+      const candidates=[...new Set(tails.flatMap(completionCandidates))];if(!candidates.length)continue;
+      const W=oriented.width,H=oriented.height,windows=[[0,0,W,H],[0,0,W,Math.round(H*.65)],[0,Math.round(H*.2),W,Math.round(H*.65)],[0,Math.round(H*.35),W,Math.round(H*.65)],[0,0,Math.round(W*.72),H],[Math.round(W*.28),0,Math.round(W*.72),H]];
+      for(let wi=0;wi<windows.length;wi++){
+        const [x,y,w,h]=windows[wi],r=await readText(windowCrop(oriented,x,y,w,h,3),{digits:true,psm:11});reads.push({...r,kind:'candidate-zoom',deg,window:wi+1});const digits=(r.text.match(/\d{4,7}/g)||[]);
+        for(const id of candidates){if(digits.includes(id)){const m=exactNumeric(id);if(m)return{text:id,match:m,reads,candidateZoom:true};}}
       }
     }
-    return {reads};
+    return{reads};
   }
   function render(out){if(out?.match){$('scanStatus').textContent=`Read: ${out.text}`;renderResult(out.match);}}
   async function scan(source,{render:shouldRender=true}={}){
     if(busy)return fallback(source,{render:shouldRender});busy=true;
     try{
-      const seg=await segmented(source);
-      if(seg.match){if(shouldRender)render(seg);return seg;}
-      const fb=await fallback(source,{render:false}),out={...fb,reads:[...(seg.reads||[]),...(fb.reads||[])]};
-      if(shouldRender){if(out.match)renderResult(out.match);$('scanStatus').textContent=out.text?`Read: ${String(out.text).slice(0,140)}`:'Unknown / research';}
-      return out;
-    } finally {busy=false;}
+      const seg=await segmented(source);if(seg.match){if(shouldRender)render(seg);return seg;}
+      const zoom=await candidateDirectedZoom(source);if(zoom.match){const out={...zoom,reads:[...(seg.reads||[]),...(zoom.reads||[])]};if(shouldRender)render(out);return out;}
+      const fb=await fallback(source,{render:false}),out={...fb,reads:[...(seg.reads||[]),...(zoom.reads||[]),...(fb.reads||[])]};if(shouldRender){if(out.match)renderResult(out.match);$('scanStatus').textContent=out.text?`Read: ${String(out.text).slice(0,140)}`:'Unknown / research';}return out;
+    }finally{busy=false;}
   }
   window.lotWalkScanSourceV6=scan;window.lotWalkScanSourceV2=scan;$('scanNow').onclick=()=>scan(video);
   const old=$('photoFile');if(old){const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{scan(img);URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f);});}
