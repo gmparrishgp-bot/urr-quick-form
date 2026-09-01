@@ -15,38 +15,16 @@
 <body>
 <div class="wrap">
   <div class="top"><div><div class="title">Lot Walk Scanner</div><div class="muted">Adaptive identifier scan → open RO match</div></div><div id="dataCount" class="pill">0 WOs</div></div>
-
-  <div class="card">
-    <div class="row"><b>Open work orders</b><span class="muted">CSV/XLSX stays in this browser</span></div>
-    <div class="row" style="margin-top:8px"><input id="woFile" type="file" accept=".csv,.xlsx,.xls"><button id="loadDemo" class="secondary">Load regression WOs</button></div>
-    <div id="dataStatus" class="status" style="margin-top:8px">Load the current open-WO export before the lot walk.</div>
-  </div>
-
-  <div class="card">
-    <div class="row"><button id="serviceToggle" class="secondary">Service Area Scanned: No</button><button id="salesToggle" class="secondary">Sales Area Scanned: No</button></div>
-  </div>
-
-  <div class="card">
-    <div class="cam"><video id="video" autoplay playsinline muted></video><canvas id="overlay" class="overlay"></canvas></div>
-    <canvas id="frame" class="hidden"></canvas>
-    <div class="row" style="margin-top:10px"><button id="startCam" class="grow">Start Camera</button><button id="scanNow" class="grow good">Scan Now</button><label class="btn secondary grow" style="text-align:center">Use Photo<input id="photoFile" class="hidden" type="file" accept="image/*" capture="environment"></label></div>
-    <div id="scanStatus" class="status" style="margin-top:8px">Camera idle.</div>
-  </div>
-
-  <div id="resultCard" class="card hidden">
-    <div id="result" class="match"></div>
-    <div class="row" style="margin-top:12px"><button id="proceed" class="grow good">Proceed</button><button id="rescan" class="secondary">Rescan</button></div>
-  </div>
-
-  <div class="card">
-    <div class="row"><b>Regression validation</b><button id="runTests" class="secondary">Run Matching Tests</button><label class="btn secondary">Run Historical Photos<input id="fixtureFiles" class="hidden" type="file" accept="image/*" multiple></label></div>
-    <div id="testSummary" class="muted" style="margin-top:8px">Known-answer matching fixtures are built in. Historical-photo tests run when the original image files are selected.</div>
-    <div id="testResults"></div>
-  </div>
+  <div class="card"><div class="row"><b>Open work orders</b><span class="muted">CSV/XLSX stays in this browser</span></div><div class="row" style="margin-top:8px"><input id="woFile" type="file" accept=".csv,.xlsx,.xls"><button id="loadDemo" class="secondary">Load regression WOs</button></div><div id="dataStatus" class="status" style="margin-top:8px">Load the current open-WO export before the lot walk.</div></div>
+  <div class="card"><div class="row"><button id="serviceToggle" class="secondary">Service Area Scanned: No</button><button id="salesToggle" class="secondary">Sales Area Scanned: No</button></div></div>
+  <div class="card"><div class="cam"><video id="video" autoplay playsinline muted></video><canvas id="overlay" class="overlay"></canvas></div><canvas id="frame" class="hidden"></canvas><div class="row" style="margin-top:10px"><button id="startCam" class="grow">Start Camera</button><button id="scanNow" class="grow good">Scan Now</button><label class="btn secondary grow" style="text-align:center">Use Photo<input id="photoFile" class="hidden" type="file" accept="image/*" capture="environment"></label></div><div id="scanStatus" class="status" style="margin-top:8px">Camera idle.</div></div>
+  <div id="resultCard" class="card hidden"><div id="result" class="match"></div><div class="row" style="margin-top:12px"><button id="proceed" class="grow good">Proceed</button><button id="rescan" class="secondary">Rescan</button></div></div>
+  <div class="card"><div class="row"><b>Regression validation</b><button id="runTests" class="secondary">Run Matching Tests</button><label class="btn secondary">Run Historical Photos<input id="fixtureFiles" class="hidden" type="file" accept="image/*" multiple></label></div><div id="testSummary" class="muted" style="margin-top:8px">Known-answer matching fixtures are built in. Historical-photo tests run when the original image files are selected.</div><div id="testResults"></div></div>
 </div>
 <script src="./app.js"></script>
 <script src="./enhancements.js"></script>
 <script src="./scanner-v2.js"></script>
 <script src="./scanner-v4.js"></script>
+<script src="./scanner-v5.js"></script>
 </body>
 </html>
