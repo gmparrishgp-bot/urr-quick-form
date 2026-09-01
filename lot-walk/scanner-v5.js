@@ -20,7 +20,12 @@
         const t=norm(m[0]);if(t.length>=2&&t.length<=5&&/\d/.test(t))out.push({text:t,i,confidence:c,kind:r.kind||'',deg:r.deg});
       }
     }
-    const seen=new Set(),dedup=[];for(const x of out){const k=x.text+'|'+x.i;if(seen.has(k))continue;seen.add(k);dedup.push(x);}return dedup.slice(0,120);
+    const seen=new Set(),dedup=[];for(const x of out){const k=x.text+'|'+x.i;if(seen.has(k))continue;seen.add(k);dedup.push(x);}
+    // Whole-frame and broad-region reads are the most independent signals. Keep them before
+    // the hundreds of tiny contour reads so a useful split identifier cannot be crowded out.
+    const priority=k=>k==='whole'?4:(k==='center'||k==='lower-band'||k==='lower-left'||k==='lower-right'||k==='mid-left'||k==='mid-right'||k==='upper-left'||k==='upper-right'?3:(k.startsWith('cv-')?2:1));
+    dedup.sort((a,b)=>priority(b.kind)-priority(a.kind)||b.confidence-a.confidence||a.i-b.i);
+    return dedup.slice(0,180);
   }
   function reconstruct(reads){
     const toks=readTokens(reads),tails=candidateTails(),hits=[];
@@ -31,7 +36,8 @@
         for(const c of tails){if(c.text.length!==joined.length)continue;const d=lev(joined,c.text);if(d>1)continue;
           const exactA=c.text.includes(a.text),exactB=c.text.includes(b.text);
           if(!exactA&&!exactB)continue;
-          const score=(d===0?100:72)+Math.min(18,(a.confidence+b.confidence)/10)+(exactA&&exactB?12:5);
+          const broad=(a.kind==='whole'?8:0)+(b.kind==='whole'?8:0);
+          const score=(d===0?100:72)+Math.min(18,(a.confidence+b.confidence)/10)+(exactA&&exactB?12:5)+broad;
           hits.push({score,c,a,b,joined,d});
         }
       }
@@ -39,13 +45,10 @@
     hits.sort((x,y)=>y.score-x.score);if(!hits.length)return null;
     const best=hits[0],other=hits.find(h=>h.c.key!==best.c.key);
     if(other&&best.score-other.score<12)return null;
-    const sameKey=hits.filter(h=>h.c.key===best.c.key&&h.score>=best.score-8);
-    const evidencePairs=new Set(sameKey.map(h=>h.a.text+'+'+h.b.text));
-    if(evidencePairs.size<1)return null;
     const m=matchOCR(best.c.text);if(!m||m.status!=='MATCH')return null;
     m.confidence=m.confidence==='LOW'?'MEDIUM':m.confidence;
     m.evidence=[...(m.evidence||[]),`corroborated OCR fragments ${best.a.text} + ${best.b.text}`];
-    return{text:best.c.text,match:m};
+    return{text:best.c.text,match:m,reconstruction:{candidate:best.c.text,joined:best.joined,distance:best.d,score:best.score,a:best.a.text,b:best.b.text}};
   }
   function render(out){if(!out)return;const m=out.match;if(m){$('scanStatus').textContent=`Read: ${out.text.slice(0,140)}`;renderResult(m);}}
   async function scan(source,{render:shouldRender=true}={}){
