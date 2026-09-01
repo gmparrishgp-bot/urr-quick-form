@@ -21,8 +21,6 @@
       }
     }
     const seen=new Set(),dedup=[];for(const x of out){const k=x.text+'|'+x.i;if(seen.has(k))continue;seen.add(k);dedup.push(x);}
-    // Whole-frame and broad-region reads are the most independent signals. Keep them before
-    // the hundreds of tiny contour reads so a useful split identifier cannot be crowded out.
     const priority=k=>k==='whole'?4:(k==='center'||k==='lower-band'||k==='lower-left'||k==='lower-right'||k==='mid-left'||k==='mid-right'||k==='upper-left'||k==='upper-right'?3:(k.startsWith('cv-')?2:1));
     dedup.sort((a,b)=>priority(b.kind)-priority(a.kind)||b.confidence-a.confidence||a.i-b.i);
     return dedup.slice(0,180);
@@ -33,7 +31,15 @@
       const a=toks[i],b=toks[j];if(a.i===b.i)continue;
       for(const joined of [a.text+b.text,b.text+a.text]){
         if(joined.length<4||joined.length>7)continue;
-        for(const c of tails){if(c.text.length!==joined.length)continue;const d=lev(joined,c.text);if(d>1)continue;
+        for(const c of tails){
+          if(c.text.length!==joined.length)continue;
+          const numericOnly=/^\d+$/.test(c.text);
+          // Short all-numeric suffixes collide too easily across a WIP list. Require an exact
+          // reconstruction for 4-5 digit numeric candidates; fuzzy reconstruction is allowed
+          // only for >=6 digits or identifiers containing letters.
+          const d=lev(joined,c.text);
+          if(d>1)continue;
+          if(numericOnly&&c.text.length<6&&d!==0)continue;
           const exactA=c.text.includes(a.text),exactB=c.text.includes(b.text);
           if(!exactA&&!exactB)continue;
           const broad=(a.kind==='whole'?8:0)+(b.kind==='whole'?8:0);
