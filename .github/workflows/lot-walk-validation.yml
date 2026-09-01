@@ -20,6 +20,7 @@ jobs:
           node --check lot-walk/scanner-v2.js
           node --check lot-walk/scanner-v4.js
           node --check lot-walk/scanner-v5.js
+          node --check lot-walk/scanner-v6.js
       - name: Matching regression
         run: node lot-walk/validation/matching.test.js
       - name: Validate real fixture bytes
