@@ -17,17 +17,16 @@ jobs:
         run: |
           node --check lot-walk/app.js
           node --check lot-walk/enhancements.js
-          node --check lot-walk/scanner-v2.js
-          node --check lot-walk/scanner-v4.js
-          node --check lot-walk/scanner-v5.js
-          node --check lot-walk/scanner-v6.js
+          for f in lot-walk/scanner-v*.js; do node --check "$f"; done
       - name: Matching regression
         run: node lot-walk/validation/matching.test.js
       - name: Validate real fixture bytes
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          for p in [Path('lot-walk/validation/real/L3116_crop.jpg'),Path('lot-walk/validation/real/839289_crop.jpg')]:
+          files=['4746_actual_crop.jpg','1174_actual_crop.jpg','L3116_crop.jpg','839289_crop.jpg']
+          for name in files:
+              p=Path('lot-walk/validation/real')/name
               b=p.read_bytes()
               assert b[:2]==b'\xff\xd8' and b[-2:]==b'\xff\xd9', f'invalid JPEG {p}'
               print('VALID JPEG',p,len(b))
