@@ -59,7 +59,7 @@ const assert = require('assert');
   // Area completion toggles must return from phone to computer on the same channel.
   const beforeSales=await page.evaluate(()=>state.sales);
   await phone.click('#salesToggle');
-  await page.waitForFunction(before=>state.sales!==beforeSales,beforeSales,{timeout:10000});
+  await page.waitForFunction(before=>state.sales!==before,beforeSales,{timeout:10000});
   console.log('LIVE_PAIR PASS',JSON.stringify({phoneRows:liveTransfer.count,onLot:'573TE3224S6654376',salesSynced:true}));
 
   await phone.close();await browser.close();console.log('PASS v10 OCR gates + deterministic pairing + live two-browser pairing/audit workflow');
