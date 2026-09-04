@@ -26,7 +26,7 @@
   </div>
 
   <div class="card"><div class="row"><b>Area Complete</b><button id="serviceToggle" class="secondary">Service Area Scanned: No</button><button id="salesToggle" class="secondary">Sales Area Scanned: No</button></div></div>
-  <div class="card"><div class="cam"><video id="video" autoplay playsinline muted></video><canvas id="overlay" class="overlay"></canvas></div><canvas id="frame" class="hidden"></canvas><div class="row" style="margin-top:10px"><button id="startCam" class="grow">Start Camera</button><button id="scanNow" class="grow good">Scan Now</button><label class="btn secondary grow" style="text-align:center">Use Photo<input id="photoFile" class="hidden" type="file" accept="image/*"></label></div><div id="scanStatus" class="status" style="margin-top:8px">Choose Service Area or Sales Area before scanning.</div></div>
+  <div class="card"><div class="cam"><video id="video" autoplay playsinline muted></video><canvas id="overlay" class="overlay"></canvas></div><canvas id="frame" class="hidden"></canvas><div class="row" style="margin-top:10px"><button id="startCam" class="grow">Start Camera</button><button id="scanNow" class="grow good">Scan Now</button><label class="btn secondary grow" style="text-align:center">Use Photos<input id="photoFile" class="hidden" type="file" accept="image/*" multiple></label></div><div id="scanStatus" class="status" style="margin-top:8px">Choose Service Area or Sales Area before scanning.</div></div>
   <div id="resultCard" class="card hidden"><div id="result" class="match"></div><div class="row" style="margin-top:12px"><button id="proceed" class="grow good">Proceed</button><button id="rescan" class="secondary">Rescan</button></div></div>
   <div class="card"><div class="row"><b>Regression validation</b><button id="runTests" class="secondary">Run Matching Tests</button><label class="btn secondary">Run Historical Photos<input id="fixtureFiles" class="hidden" type="file" accept="image/*" multiple></label></div><div id="testSummary" class="muted" style="margin-top:8px">Known-answer matching fixtures are built in. Historical-photo tests run when the original image files are selected.</div><div id="testResults"></div></div>
 </div>
@@ -42,5 +42,6 @@
 <script src="./scanner-v10.js"></script>
 <script src="./pairing.js"></script>
 <script src="./capture-session.js"></script>
+<script src="./pairing-reliability.js"></script>
 </body>
 </html>
