@@ -1,0 +1,94 @@
+// Lot Walk computer <-> phone pairing and desktop audit workflow.
+// Uses PeerJS only for WebRTC signaling; work-order data and scan results travel
+// directly between the paired browsers over an encrypted WebRTC data channel.
+(function(){
+  const pair={peer:null,conn:null,role:'standalone',lastMatch:null,records:new Map(),sessionId:'',fingerprint:''};
+  const qs=new URLSearchParams(location.search),pairTarget=qs.get('pair');
+
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function uniqueUnits(){
+    const map=new Map();
+    for(const r of state.workOrders){const key=norm(r.vin)||('RO:'+norm(r.ro));if(!map.has(key))map.set(key,{key,vin:r.vin||'',stock:r.stock||'',customer:r.customer||'',year:r.year||'',make:r.make||'',model:r.model||'',ros:[]});const u=map.get(key);if(r.ro&&!u.ros.includes(r.ro))u.ros.push(r.ro);if(!u.stock&&r.stock)u.stock=r.stock;}
+    return [...map.values()];
+  }
+  function fingerprint(){const s=state.workOrders.map(r=>`${norm(r.ro)}|${norm(r.vin)}|${norm(r.stock)}`).sort().join(';');let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
+  function storageKey(){return pair.fingerprint?`lotWalkAudit:${pair.fingerprint}`:'';}
+  function loadAudit(){pair.records.clear();const k=storageKey();if(!k)return;try{for(const r of JSON.parse(localStorage.getItem(k)||'[]'))pair.records.set(r.key,r);}catch{}}
+  function saveAudit(){const k=storageKey();if(k)localStorage.setItem(k,JSON.stringify([...pair.records.values()]));}
+  function rowStatus(key){return pair.records.get(key)?.status||'NOT SEEN';}
+  function setStatus(key,status,source='manual',details={}){const prev=pair.records.get(key)||{key};pair.records.set(key,{...prev,...details,key,status,source,updatedAt:new Date().toISOString()});saveAudit();renderAudit();}
+
+  function injectUI(){
+    const first=document.querySelector('.card');if(!first)return;
+    const card=document.createElement('div');card.className='card';card.id='pairCard';card.innerHTML=`
+      <div class="row"><b>Computer ↔ Phone</b><span id="pairState" class="pill">Not paired</span></div>
+      <div id="desktopPair" style="margin-top:8px">
+        <div class="row"><button id="pairPhone" class="good">Pair Phone</button><span class="muted">Load WOs here, then scan this QR with the phone camera.</span></div>
+        <div id="pairQrWrap" class="hidden" style="margin-top:10px;text-align:center"><div id="pairQr" style="display:inline-block;background:white;padding:8px"></div><div id="pairUrl" class="muted" style="word-break:break-all;margin-top:6px"></div></div>
+      </div>
+      <div id="phonePair" class="hidden"><div class="status" id="phonePairStatus">Connecting to computer…</div></div>`;
+    first.insertAdjacentElement('afterend',card);
+
+    const audit=document.createElement('div');audit.className='card';audit.id='auditCard';audit.innerHTML=`
+      <div class="row"><b>Lot Audit</b><span id="auditSummary" class="pill">0 units</span><button id="exportAudit" class="secondary">Export Audit CSV</button></div>
+      <div class="muted" style="margin:6px 0">Phone matches automatically mark units On Lot. Review anything Not Seen and mark it Off Lot only after you verify it.</div>
+      <div id="auditTable" style="overflow:auto;max-height:48vh"></div>`;
+    card.insertAdjacentElement('afterend',audit);
+    $('pairPhone').onclick=startHost;
+    $('exportAudit').onclick=exportAudit;
+  }
+
+  function renderPairState(text,good=false){const el=$('pairState');if(!el)return;el.textContent=text;el.style.background=good?'#dcfce7':'#e5e7eb';}
+  function renderAudit(){
+    if(!$('auditTable'))return;const units=uniqueUnits();let on=0,off=0,not=0;for(const u of units){const s=rowStatus(u.key);if(s==='ON LOT')on++;else if(s==='OFF LOT')off++;else not++;}
+    $('auditSummary').textContent=`${units.length} units · ${on} on · ${off} off · ${not} not seen`;
+    if(!units.length){$('auditTable').innerHTML='<div class="muted">Load the current work-order file on this computer.</div>';return;}
+    $('auditTable').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:5px">Status</th><th style="text-align:left;padding:5px">Unit</th><th style="text-align:left;padding:5px">RO</th><th style="text-align:left;padding:5px">Customer</th><th style="padding:5px">Audit</th></tr></thead><tbody>${units.map(u=>{const s=rowStatus(u.key),label=[u.year,u.make,u.model].filter(Boolean).join(' '),id=u.vin||u.stock||u.key;return `<tr style="border-top:1px solid #eee"><td style="padding:5px;font-weight:700">${esc(s)}</td><td style="padding:5px">${esc(label)}<div class="muted">${esc(id)}</div></td><td style="padding:5px">${esc(u.ros.join('/'))}</td><td style="padding:5px">${esc(u.customer)}</td><td style="padding:5px;white-space:nowrap"><button class="secondary audit-on" data-key="${esc(u.key)}" style="padding:6px 8px">On Lot</button> <button class="secondary audit-off" data-key="${esc(u.key)}" style="padding:6px 8px">Off Lot</button></td></tr>`}).join('')}</tbody></table>`;
+    document.querySelectorAll('.audit-on').forEach(b=>b.onclick=()=>setStatus(b.dataset.key,'ON LOT','manual'));
+    document.querySelectorAll('.audit-off').forEach(b=>b.onclick=()=>setStatus(b.dataset.key,'OFF LOT','manual'));
+  }
+
+  function exportAudit(){
+    const rows=[['Status','VIN','Stock','ROs','Customer','Year','Make','Model','Source','Updated']];
+    for(const u of uniqueUnits()){const r=pair.records.get(u.key)||{};rows.push([rowStatus(u.key),u.vin,u.stock,u.ros.join('/'),u.customer,u.year,u.make,u.model,r.source||'',r.updatedAt||'']);}
+    const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`lot-walk-audit-${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+
+  function send(msg){if(pair.conn?.open)pair.conn.send(msg);}
+  function sendWorkOrders(){if(!state.workOrders.length)return;send({type:'workOrders',rows:state.workOrders,service:state.service,sales:state.sales});}
+  function handle(msg){
+    if(!msg||typeof msg!=='object')return;
+    if(msg.type==='workOrders'&&pair.role==='phone'){setRows(msg.rows||[],'paired computer');if(typeof msg.service==='boolean')state.service=msg.service;if(typeof msg.sales==='boolean')state.sales=msg.sales;syncAreaButtons();$('dataStatus').textContent=`Paired · ${state.workOrders.length} work orders received from computer.`;}
+    if(msg.type==='scan'&&pair.role==='computer'){const rows=msg.rows||[];const key=norm(msg.vin)|| (rows[0]?.vin?norm(rows[0].vin):'') || (rows[0]?.ro?('RO:'+norm(rows[0].ro)):'');if(key)setStatus(key,'ON LOT','phone scan',{confidence:msg.confidence||'',evidence:msg.evidence||[],lastSeen:msg.time||new Date().toISOString()});}
+    if(msg.type==='area'&&pair.role==='computer'){if(typeof msg.service==='boolean')state.service=msg.service;if(typeof msg.sales==='boolean')state.sales=msg.sales;syncAreaButtons();}
+  }
+  function syncAreaButtons(){if($('serviceToggle')){$('serviceToggle').textContent=`Service Area Scanned: ${state.service?'Yes':'No'}`;$('serviceToggle').className=state.service?'good':'secondary'}if($('salesToggle')){$('salesToggle').textContent=`Sales Area Scanned: ${state.sales?'Yes':'No'}`;$('salesToggle').className=state.sales?'good':'secondary'}}
+  function attach(conn){pair.conn=conn;conn.on('open',()=>{renderPairState('Paired',true);if(pair.role==='computer'){sendWorkOrders();$('pairQrWrap')?.classList.add('hidden');}else if($('phonePairStatus'))$('phonePairStatus').textContent='Paired to computer. Work orders will load automatically.';});conn.on('data',handle);conn.on('close',()=>renderPairState('Disconnected'));conn.on('error',e=>renderPairState('Pairing error'))}
+
+  function startHost(){
+    if(typeof Peer==='undefined'){renderPairState('Pairing library unavailable');return;}
+    if(pair.peer)try{pair.peer.destroy()}catch{}
+    pair.role='computer';pair.sessionId='lw-'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);renderPairState('Starting…');
+    pair.peer=new Peer(pair.sessionId,{debug:1});pair.peer.on('open',()=>{const url=new URL(location.href);url.search='';url.searchParams.set('pair',pair.sessionId);$('pairQr').innerHTML='';new QRCode($('pairQr'),{text:url.toString(),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});$('pairUrl').textContent=url.toString();$('pairQrWrap').classList.remove('hidden');renderPairState('Waiting for phone');});pair.peer.on('connection',attach);pair.peer.on('error',()=>renderPairState('Pairing error'));
+  }
+  function startPhone(id){
+    if(typeof Peer==='undefined'){renderPairState('Pairing library unavailable');return;}pair.role='phone';$('desktopPair')?.classList.add('hidden');$('phonePair')?.classList.remove('hidden');$('auditCard')?.classList.add('hidden');renderPairState('Connecting…');pair.peer=new Peer(undefined,{debug:1});pair.peer.on('open',()=>attach(pair.peer.connect(id,{reliable:true})));pair.peer.on('error',()=>renderPairState('Pairing error'));
+  }
+
+  // Observe WO loads so the paired phone always receives the computer's current dataset.
+  const originalSetRows=setRows;setRows=function(rows,label=''){originalSetRows(rows,label);pair.fingerprint=fingerprint();loadAudit();renderAudit();if(pair.role==='computer')sendWorkOrders();};
+  const originalRenderResult=renderResult;renderResult=function(m){pair.lastMatch=m;return originalRenderResult(m);};
+
+  function sendLastScan(){const m=pair.lastMatch;if(pair.role!=='phone'||!m)return;if(m.status==='MATCH'){const r=m.rows?.[0]||{};send({type:'scan',time:new Date().toISOString(),confidence:m.confidence,evidence:m.evidence||[],vin:r.vin||'',stock:r.stock||'',rows:(m.rows||[]).map(x=>({ro:x.ro,vin:x.vin,stock:x.stock,customer:x.customer}))});}pair.lastMatch=null;}
+  function areaChanged(){if(pair.role==='phone')send({type:'area',service:state.service,sales:state.sales});}
+
+  injectUI();
+  $('proceed')?.addEventListener('click',sendLastScan);
+  $('serviceToggle')?.addEventListener('click',areaChanged);
+  $('salesToggle')?.addEventListener('click',areaChanged);
+  pair.fingerprint=fingerprint();loadAudit();renderAudit();
+  if(pairTarget)startPhone(pairTarget);
+
+  // Deterministic hooks used by CI; no live signaling server is required for these checks.
+  window.lotWalkPairingTest={handle,setStatus,getStatus:key=>rowStatus(key),units:uniqueUnits,role:r=>pair.role=r,lastMatch:m=>pair.lastMatch=m};
+})();
