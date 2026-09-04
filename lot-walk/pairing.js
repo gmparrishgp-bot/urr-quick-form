@@ -1,11 +1,11 @@
 // Lot Walk computer <-> phone pairing and desktop audit workflow.
-// PeerJS provides signaling; WO data and scan results move browser-to-browser over WebRTC.
+// PeerJS provides signaling; WO data, saved captures, and scan results move browser-to-browser over WebRTC.
 (function(){
   if(!('activeArea' in state))state.activeArea='';
   const pair={peer:null,conn:null,role:'standalone',lastMatch:null,records:new Map(),sessionId:'',fingerprint:'',target:'',reconnectTimer:null};
   const qs=new URLSearchParams(location.search),pairTarget=qs.get('pair');
 
-  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));}
   function uniqueUnits(){const map=new Map();for(const r of state.workOrders){const key=norm(r.vin)||('RO:'+norm(r.ro));if(!map.has(key))map.set(key,{key,vin:r.vin||'',stock:r.stock||'',customer:r.customer||'',year:r.year||'',make:r.make||'',model:r.model||'',ros:[]});const u=map.get(key);if(r.ro&&!u.ros.includes(r.ro))u.ros.push(r.ro);if(!u.stock&&r.stock)u.stock=r.stock;}return [...map.values()];}
   function fingerprint(){const s=state.workOrders.map(r=>`${norm(r.ro)}|${norm(r.vin)}|${norm(r.stock)}`).sort().join(';');let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
   function storageKey(){return pair.fingerprint?`lotWalkAudit:${pair.fingerprint}`:'';}
@@ -26,7 +26,7 @@
     first.insertAdjacentElement('afterend',card);
     const audit=document.createElement('div');audit.className='card';audit.id='auditCard';audit.innerHTML=`
       <div class="row"><b>Lot Audit</b><span id="auditSummary" class="pill">0 units</span><button id="exportAudit" class="secondary">Export Audit CSV</button></div>
-      <div class="muted" style="margin:6px 0">Phone matches automatically mark units On Lot and record whether they were found in Service or Sales. Review anything Not Seen and mark it Off Lot only after you verify it.</div>
+      <div class="muted" style="margin:6px 0">Saved phone photos are processed in the background. Matches automatically mark units On Lot and record Service/Sales.</div>
       <div id="auditTable" style="overflow:auto;max-height:48vh"></div>`;
     card.insertAdjacentElement('afterend',audit);
     $('pairPhone').onclick=startHost;$('disconnectPhone').onclick=disconnect;$('exportAudit').onclick=exportAudit;
@@ -40,10 +40,27 @@
 
   function send(msg){if(pair.conn?.open){pair.conn.send(msg);return true;}return false;}
   function sendWorkOrders(){if(!state.workOrders.length)return;send({type:'workOrders',rows:state.workOrders,service:state.service,sales:state.sales,activeArea:state.activeArea||'',fingerprint:fingerprint()});}
-  function handle(msg){if(!msg||typeof msg!=='object')return;if(msg.type==='workOrders'&&pair.role==='phone'){setRows(msg.rows||[],'paired computer');if(typeof msg.service==='boolean')state.service=msg.service;if(typeof msg.sales==='boolean')state.sales=msg.sales;if(['SERVICE','SALES'].includes(msg.activeArea))state.activeArea=msg.activeArea;syncAreaButtons();renderActiveArea();$('dataStatus').textContent=`Paired · ${state.workOrders.length} work orders received from computer.`;}if(msg.type==='scan'&&pair.role==='computer'){const rows=msg.rows||[];const key=norm(msg.vin)||(rows[0]?.vin?norm(rows[0].vin):'')||(rows[0]?.ro?('RO:'+norm(rows[0].ro)):'');if(key)setStatus(key,'ON LOT','phone scan',{area:msg.area||'',confidence:msg.confidence||'',evidence:msg.evidence||[],lastSeen:msg.time||new Date().toISOString()});}if(msg.type==='area'&&pair.role==='computer'){if(typeof msg.service==='boolean')state.service=msg.service;if(typeof msg.sales==='boolean')state.sales=msg.sales;syncAreaButtons();}if(msg.type==='scanArea'){if(['SERVICE','SALES'].includes(msg.activeArea)){state.activeArea=msg.activeArea;renderActiveArea();}}}
+  async function submitCapture(rec){
+    if(pair.role!=='phone'||!rec)return false;
+    const meta={id:rec.id,createdAt:rec.createdAt,processedAt:rec.processedAt||'',area:rec.area,status:rec.status,read:rec.read||'',match:rec.match||null,width:rec.width||0,height:rec.height||0};
+    let image=null;try{image=rec.blob?await rec.blob.arrayBuffer():null;}catch{}
+    return send({type:'captureResult',meta,image});
+  }
+  async function resendProcessedCaptures(){if(pair.role!=='phone'||!window.lotWalkCaptureSession?.all)return;try{for(const r of await window.lotWalkCaptureSession.all())if(['MATCH','UNRESOLVED','ERROR'].includes(r.status))await submitCapture(r);}catch(e){console.warn('capture resend',e);}}
+  function handle(msg){if(!msg||typeof msg!=='object')return;
+    if(msg.type==='workOrders'&&pair.role==='phone'){setRows(msg.rows||[],'paired computer');if(typeof msg.service==='boolean')state.service=msg.service;if(typeof msg.sales==='boolean')state.sales=msg.sales;if(['SERVICE','SALES'].includes(msg.activeArea))state.activeArea=msg.activeArea;syncAreaButtons();renderActiveArea();$('dataStatus').textContent=`Paired · ${state.workOrders.length} work orders received from computer.`;}
+    if(msg.type==='scan'&&pair.role==='computer'){const rows=msg.rows||[];const key=norm(msg.vin)||(rows[0]?.vin?norm(rows[0].vin):'')||(rows[0]?.ro?('RO:'+norm(rows[0].ro)):'');if(key)setStatus(key,'ON LOT','phone scan',{area:msg.area||'',confidence:msg.confidence||'',evidence:msg.evidence||[],lastSeen:msg.time||new Date().toISOString()});}
+    if(msg.type==='captureResult'&&pair.role==='computer'){
+      const meta=msg.meta||{},m=meta.match||{},rows=m.rows||[];const r=rows[0]||{},key=norm(r.vin)||(r.ro?('RO:'+norm(r.ro)):'');
+      if(meta.status==='MATCH'&&key)setStatus(key,'ON LOT','saved phone photo',{area:meta.area||'',captureId:meta.id,confidence:m.confidence||'',evidence:m.evidence||[],lastSeen:meta.createdAt||new Date().toISOString()});
+      if(window.lotWalkCaptureSession?.receiveRemote){const blob=msg.image?new Blob([msg.image],{type:'image/jpeg'}):null;window.lotWalkCaptureSession.receiveRemote(meta,blob).catch(console.error);}
+    }
+    if(msg.type==='area'&&pair.role==='computer'){if(typeof msg.service==='boolean')state.service=msg.service;if(typeof msg.sales==='boolean')state.sales=msg.sales;syncAreaButtons();}
+    if(msg.type==='scanArea'){if(['SERVICE','SALES'].includes(msg.activeArea)){state.activeArea=msg.activeArea;renderActiveArea();}}
+  }
   function syncAreaButtons(){if($('serviceToggle')){$('serviceToggle').textContent=`Service Area Scanned: ${state.service?'Yes':'No'}`;$('serviceToggle').className=state.service?'good':'secondary'}if($('salesToggle')){$('salesToggle').textContent=`Sales Area Scanned: ${state.sales?'Yes':'No'}`;$('salesToggle').className=state.sales?'good':'secondary'}}
   function clearReconnect(){if(pair.reconnectTimer){clearTimeout(pair.reconnectTimer);pair.reconnectTimer=null;}}
-  function attach(conn){clearReconnect();pair.conn=conn;conn.on('open',()=>{renderPairState('Paired',true);if(pair.role==='computer'){sendWorkOrders();$('pairQrWrap')?.classList.add('hidden');}else if($('phonePairStatus'))$('phonePairStatus').textContent='Paired to computer. Work orders loaded automatically.';});conn.on('data',handle);conn.on('close',()=>{renderPairState('Disconnected');if(pair.role==='phone'&&pair.target)scheduleReconnect();});conn.on('error',()=>{renderPairState('Pairing error');if(pair.role==='phone'&&pair.target)scheduleReconnect();});}
+  function attach(conn){clearReconnect();pair.conn=conn;conn.on('open',()=>{renderPairState('Paired',true);if(pair.role==='computer'){sendWorkOrders();$('pairQrWrap')?.classList.add('hidden');}else{if($('phonePairStatus'))$('phonePairStatus').textContent='Paired to computer. Work orders loaded automatically.';setTimeout(resendProcessedCaptures,250);}});conn.on('data',handle);conn.on('close',()=>{renderPairState('Disconnected');if(pair.role==='phone'&&pair.target)scheduleReconnect();});conn.on('error',()=>{renderPairState('Pairing error');if(pair.role==='phone'&&pair.target)scheduleReconnect();});}
   function scheduleReconnect(){clearReconnect();pair.reconnectTimer=setTimeout(()=>{if(pair.role==='phone'&&pair.target&&pair.peer?.open)attach(pair.peer.connect(pair.target,{reliable:true}));},1800);}
   function newSessionId(){const a=new Uint32Array(3);crypto.getRandomValues(a);return 'lw-'+[...a].map(x=>x.toString(36)).join('-');}
   function disconnect(){clearReconnect();try{pair.conn?.close()}catch{}try{pair.peer?.destroy()}catch{}pair.conn=null;pair.peer=null;pair.role='standalone';pair.target='';renderPairState('Not paired');$('pairQrWrap')?.classList.add('hidden');}
@@ -62,5 +79,6 @@
   document.addEventListener('click',e=>{if((e.target?.id==='scanNow'||e.target?.id==='proceed')&&!state.activeArea){e.preventDefault();e.stopImmediatePropagation();$('scanStatus').textContent='Choose Service Area or Sales Area before scanning.';}},true);
   document.addEventListener('change',e=>{if(e.target?.id==='photoFile'&&!state.activeArea){e.preventDefault();e.stopImmediatePropagation();e.target.value='';$('scanStatus').textContent='Choose Service Area or Sales Area before scanning.';}},true);
   $('proceed')?.addEventListener('click',sendLastScan);$('serviceToggle')?.addEventListener('click',areaChanged);$('salesToggle')?.addEventListener('click',areaChanged);pair.fingerprint=fingerprint();loadAudit();renderAudit();renderActiveArea();if(pairTarget)startPhone(pairTarget);
-  window.lotWalkPairingTest={handle,setStatus,getStatus:key=>rowStatus(key),getRecord:key=>pair.records.get(key),units:uniqueUnits,role:r=>pair.role=r,lastMatch:m=>pair.lastMatch=m,sendLastScan,connected:()=>!!pair.conn?.open,session:()=>pair.sessionId,setActiveArea};
+  window.lotWalkPairing={submitCapture,resendProcessedCaptures,connected:()=>!!pair.conn?.open,role:()=>pair.role};
+  window.lotWalkPairingTest={handle,setStatus,getStatus:key=>rowStatus(key),getRecord:key=>pair.records.get(key),units:uniqueUnits,role:r=>pair.role=r,lastMatch:m=>pair.lastMatch=m,sendLastScan,connected:()=>!!pair.conn?.open,session:()=>pair.sessionId,setActiveArea,submitCapture};
 })();
