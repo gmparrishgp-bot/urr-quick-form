@@ -17,6 +17,7 @@ jobs:
         run: |
           node --check lot-walk/app.js
           node --check lot-walk/enhancements.js
+          node --check lot-walk/pairing.js
           for f in lot-walk/scanner-v*.js; do node --check "$f"; done
       - name: Matching regression
         run: node lot-walk/validation/matching.test.js
@@ -36,7 +37,7 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Browser OCR smoke
+      - name: Browser OCR and pairing smoke
         run: |
           python3 -m http.server 4173 >/tmp/lotwalk-http.log 2>&1 &
           node lot-walk/validation/browser-smoke.test.js
