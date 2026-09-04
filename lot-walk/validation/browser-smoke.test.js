@@ -18,6 +18,7 @@ const assert = require('assert');
   const fixtures=[['4746_actual_crop.jpg','104746',5000],['1174_actual_crop.jpg','104862',5000],['L3116_crop.jpg','105252',5000],['839289_crop.jpg','105243',5000]];
   for(const [file,ro,maxMs] of fixtures){const r=await scanPath('/lot-walk/validation/real/'+file);console.log('REAL_'+file,JSON.stringify(r));assert(r.ros.includes(ro),`${file} must resolve ${ro}`);assert(['MEDIUM','HIGH'].includes(r.confidence),`${file} must be defensible, not ${r.confidence||'unresolved'}`);assert(r.elapsed<=maxMs,`${file} must resolve within ${maxMs}ms, got ${r.elapsed}ms`);}
 
+  // Deterministic data-path checks independent of the signaling service.
   const pairing=await page.evaluate(()=>{
     const t=window.lotWalkPairingTest;t.role('computer');
     t.handle({type:'scan',vin:'5ZT2AVTB9SB940013',rows:[{ro:'104849',vin:'5ZT2AVTB9SB940013'}],confidence:'HIGH',time:new Date().toISOString()});
@@ -32,5 +33,34 @@ const assert = require('assert');
   assert.equal(pairing.service,true,'area state must sync to phone');
   assert(pairing.auditPresent&&pairing.pairPresent,'pairing and audit UI must exist');
 
-  await browser.close();console.log('PASS v10 OCR gates + pairing/audit workflow regression');
+  // Live integration: two independent pages pair through the same PeerJS/WebRTC path used in production.
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.lotWalkPairingTest&&typeof window.Peer==='function',{timeout:30000});
+  await page.click('#loadDemo');
+  await page.click('#pairPhone');
+  await page.waitForFunction(()=>document.getElementById('pairUrl')?.textContent.includes('?pair='),{timeout:15000});
+  const phoneUrl=await page.locator('#pairUrl').textContent();
+  const phone=await browser.newPage({viewport:{width:430,height:820}});
+  phone.on('console',m=>{const t=m.text();if(!t.startsWith('Estimating resolution')) console.log('PHONE',m.type(),t)});
+  await phone.goto(phoneUrl,{waitUntil:'domcontentloaded',timeout:60000});
+  await page.waitForFunction(()=>document.getElementById('pairState')?.textContent==='Paired',{timeout:25000});
+  await phone.waitForFunction(()=>document.getElementById('pairState')?.textContent==='Paired'&&state.workOrders.length>20,{timeout:25000});
+  const liveTransfer=await phone.evaluate(()=>({count:state.workOrders.length,ro:state.workOrders.find(r=>r.ro==='103515')?.ro,auditHidden:document.getElementById('auditCard')?.classList.contains('hidden')}));
+  assert(liveTransfer.count>20&&liveTransfer.ro==='103515','computer WO set must transfer to phone over live connection');
+  assert.equal(liveTransfer.auditHidden,true,'desktop audit must stay hidden on phone');
+
+  // A phone-confirmed match must traverse WebRTC and change the desktop audit, not just local state.
+  await page.evaluate(()=>window.lotWalkPairingTest.setStatus('573TE3224S6654376','OFF LOT','test reset'));
+  await phone.evaluate(()=>renderResult(matchOCR('654376')));
+  await phone.click('#proceed');
+  await page.waitForFunction(()=>window.lotWalkPairingTest.getStatus('573TE3224S6654376')==='ON LOT',{timeout:10000});
+  assert.equal(await page.evaluate(()=>window.lotWalkPairingTest.getStatus('573TE3224S6654376')),'ON LOT');
+
+  // Area completion toggles must return from phone to computer on the same channel.
+  const beforeSales=await page.evaluate(()=>state.sales);
+  await phone.click('#salesToggle');
+  await page.waitForFunction(before=>state.sales!==beforeSales,beforeSales,{timeout:10000});
+  console.log('LIVE_PAIR PASS',JSON.stringify({phoneRows:liveTransfer.count,onLot:'573TE3224S6654376',salesSynced:true}));
+
+  await phone.close();await browser.close();console.log('PASS v10 OCR gates + deterministic pairing + live two-browser pairing/audit workflow');
 })().catch(e=>{console.error(e);process.exit(1)});
