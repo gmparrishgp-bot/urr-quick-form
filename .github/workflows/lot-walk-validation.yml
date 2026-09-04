@@ -17,6 +17,7 @@ jobs:
         run: |
           node --check lot-walk/app.js
           node --check lot-walk/enhancements.js
+          node --check lot-walk/pairing-turn.js
           node --check lot-walk/pairing.js
           node --check lot-walk/capture-session.js
           node --check lot-walk/pairing-reliability.js
