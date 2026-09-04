@@ -21,17 +21,20 @@ const assert = require('assert');
   // Deterministic data-path checks independent of the signaling service.
   const pairing=await page.evaluate(()=>{
     const t=window.lotWalkPairingTest;t.role('computer');
-    t.handle({type:'scan',vin:'5ZT2AVTB9SB940013',rows:[{ro:'104849',vin:'5ZT2AVTB9SB940013'}],confidence:'HIGH',time:new Date().toISOString()});
+    t.handle({type:'scan',area:'SERVICE',vin:'5ZT2AVTB9SB940013',rows:[{ro:'104849',vin:'5ZT2AVTB9SB940013'}],confidence:'HIGH',time:new Date().toISOString()});
     const desktopStatus=t.getStatus('5ZT2AVTB9SB940013');
+    const desktopArea=t.getRecord('5ZT2AVTB9SB940013')?.area;
     t.role('phone');
-    t.handle({type:'workOrders',rows:[{ro:'900001',customer:'PAIR TEST',year:'2026',make:'TEST',model:'UNIT',vin:'1TESTVIN000000001',stock:'S1',status:'OPEN'}],service:true,sales:false});
-    return {desktopStatus,phoneRows:state.workOrders.length,phoneRO:state.workOrders[0]?.ro,service:state.service,auditPresent:!!document.getElementById('auditCard'),pairPresent:!!document.getElementById('pairCard')};
+    t.handle({type:'workOrders',rows:[{ro:'900001',customer:'PAIR TEST',year:'2026',make:'TEST',model:'UNIT',vin:'1TESTVIN000000001',stock:'S1',status:'OPEN'}],service:true,sales:false,activeArea:'SALES'});
+    return {desktopStatus,desktopArea,phoneRows:state.workOrders.length,phoneRO:state.workOrders[0]?.ro,service:state.service,activeArea:state.activeArea,auditPresent:!!document.getElementById('auditCard'),pairPresent:!!document.getElementById('pairCard'),areaButtons:!!document.getElementById('scanServiceArea')&&!!document.getElementById('scanSalesArea')};
   });
   assert.equal(pairing.desktopStatus,'ON LOT','phone scan must mark desktop audit ON LOT');
+  assert.equal(pairing.desktopArea,'SERVICE','desktop audit must retain the area where the unit was found');
   assert.equal(pairing.phoneRows,1,'paired phone must receive computer WO data');
   assert.equal(pairing.phoneRO,'900001');
-  assert.equal(pairing.service,true,'area state must sync to phone');
-  assert(pairing.auditPresent&&pairing.pairPresent,'pairing and audit UI must exist');
+  assert.equal(pairing.service,true,'area completion state must sync to phone');
+  assert.equal(pairing.activeArea,'SALES','active scan area must sync to phone');
+  assert(pairing.auditPresent&&pairing.pairPresent&&pairing.areaButtons,'pairing, audit, and explicit scan-area UI must exist');
 
   // Live integration: two independent pages pair through the same PeerJS/WebRTC path used in production.
   await page.reload({waitUntil:'domcontentloaded'});
@@ -49,18 +52,26 @@ const assert = require('assert');
   assert(liveTransfer.count>20&&liveTransfer.ro==='103515','computer WO set must transfer to phone over live connection');
   assert.equal(liveTransfer.auditHidden,true,'desktop audit must stay hidden on phone');
 
-  // A phone-confirmed match must traverse WebRTC and change the desktop audit, not just local state.
+  // The phone must explicitly choose an area before a scan can be accepted.
+  await phone.click('#scanSalesArea');
+  await page.waitForFunction(()=>state.activeArea==='SALES',{timeout:10000});
+  assert.equal(await phone.evaluate(()=>state.activeArea),'SALES');
+  assert.match(await phone.locator('#activeAreaStatus').textContent(),/SALES/);
+
+  // A phone-confirmed match must traverse WebRTC and change the desktop audit with its found area.
   await page.evaluate(()=>window.lotWalkPairingTest.setStatus('573TE3224S6654376','OFF LOT','test reset'));
   await phone.evaluate(()=>renderResult(matchOCR('654376')));
   await phone.click('#proceed');
   await page.waitForFunction(()=>window.lotWalkPairingTest.getStatus('573TE3224S6654376')==='ON LOT',{timeout:10000});
-  assert.equal(await page.evaluate(()=>window.lotWalkPairingTest.getStatus('573TE3224S6654376')),'ON LOT');
+  const liveRecord=await page.evaluate(()=>window.lotWalkPairingTest.getRecord('573TE3224S6654376'));
+  assert.equal(liveRecord.status,'ON LOT');
+  assert.equal(liveRecord.area,'SALES','accepted scan must be recorded against the selected area');
 
-  // Area completion toggles must return from phone to computer on the same channel.
+  // Area completion toggles are separate from current scan-area selection and also sync back.
   const beforeSales=await page.evaluate(()=>state.sales);
   await phone.click('#salesToggle');
   await page.waitForFunction(before=>state.sales!==before,beforeSales,{timeout:10000});
-  console.log('LIVE_PAIR PASS',JSON.stringify({phoneRows:liveTransfer.count,onLot:'573TE3224S6654376',salesSynced:true}));
+  console.log('LIVE_PAIR PASS',JSON.stringify({phoneRows:liveTransfer.count,onLot:'573TE3224S6654376',foundArea:liveRecord.area,salesCompletionSynced:true}));
 
-  await phone.close();await browser.close();console.log('PASS v10 OCR gates + deterministic pairing + live two-browser pairing/audit workflow');
+  await phone.close();await browser.close();console.log('PASS v10 OCR gates + explicit scan area + live two-browser pairing/audit workflow');
 })().catch(e=>{console.error(e);process.exit(1)});
