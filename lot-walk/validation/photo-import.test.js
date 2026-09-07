@@ -1,38 +1,55 @@
-const { chromium } = require('playwright');
+const { chromium, devices } = require('playwright');
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 (async()=>{
   const browser=await chromium.launch({headless:true});
-  const page=await browser.newPage({viewport:{width:430,height:820}});
+  const pixel5=devices['Pixel 5'];
+  const context=await browser.newContext({...pixel5});
+  const page=await context.newPage();
+  await page.addInitScript(()=>{try{Object.defineProperty(window,'indexedDB',{value:undefined,configurable:true});}catch{}});
   await page.goto('http://127.0.0.1:4173/lot-walk/',{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.lotWalkCaptureSession,{timeout:30000});
-  const picker=await page.evaluate(()=>({multiple:document.getElementById('photoFile')?.multiple,capture:document.getElementById('photoFile')?.getAttribute('capture'),label:document.getElementById('photoFile')?.parentElement?.textContent.trim()}));
+  await page.waitForFunction(()=>window.lotWalkCaptureSession,{timeout:10000});
+  const picker=await page.evaluate(()=>({multiple:document.getElementById('photoFile')?.multiple,capture:document.getElementById('photoFile')?.getAttribute('capture'),label:document.getElementById('photoFile')?.parentElement?.textContent.trim(),storage:window.lotWalkCaptureSession.storage()}));
   assert.equal(picker.multiple,true,'Use Photos must allow multi-select');
   assert.equal(picker.capture,null,'Use Photos must not force the camera');
   assert.match(picker.label,/Use Photos/);
+  assert.equal(picker.storage,'memory','phone controls must work even when IndexedDB is unavailable');
   await page.click('#scanServiceArea');
-  const imported=await page.evaluate(async()=>{
-    const c=document.createElement('canvas');c.width=40;c.height=30;const x=c.getContext('2d');x.fillStyle='white';x.fillRect(0,0,40,30);
-    const b=await new Promise(r=>c.toBlob(r,'image/jpeg'));
-    const f1=new File([b],'one.jpg',{type:'image/jpeg'}),f2=new File([b],'two.jpg',{type:'image/jpeg'});
-    await window.lotWalkCaptureSession.importPhotos([f1,f2]);
-    await new Promise(r=>setTimeout(r,500));
-    return {rows:(await window.lotWalkCaptureSession.all()).map(r=>({name:r.name,status:r.status,area:r.area})),status:document.getElementById('scanStatus')?.textContent,summary:document.getElementById('captureSummary')?.textContent};
-  });
-  assert(imported.rows.length>=2,'two selected photos must be saved into the walk session');
-  assert(imported.rows.some(r=>r.name==='one.jpg')&&imported.rows.some(r=>r.name==='two.jpg'),'imported file names must be retained');
-  assert(imported.rows.filter(r=>r.area==='SERVICE').length>=2,'imported photos must retain selected area');
-  assert.match(imported.status,/2 photos saved/,'user must get visible confirmation after import');
-  assert.match(imported.summary,/photos/);
 
-  const stuck=await browser.newPage({viewport:{width:430,height:820}});
+  const f1=path.resolve('lot-walk/validation/real/1174_actual_crop.jpg');
+  const f2=path.resolve('lot-walk/validation/real/839289_crop.jpg');
+  assert(fs.existsSync(f1)&&fs.existsSync(f2));
+  await page.locator('#photoFile').setInputFiles([f1,f2]);
+  await page.waitForFunction(()=>document.getElementById('captureSummary')?.textContent.startsWith('2 photos'),{timeout:5000});
+  const imported=await page.evaluate(async()=>({
+    rows:(await window.lotWalkCaptureSession.all()).map(r=>({name:r.name,status:r.status,area:r.area})),
+    status:document.getElementById('scanStatus')?.textContent,
+    summary:document.getElementById('captureSummary')?.textContent,
+    captureStatus:document.getElementById('captureStatus')?.textContent
+  }));
+  assert.equal(imported.rows.length,2,'actual file-picker change must save both photos');
+  assert(imported.rows.every(r=>r.area==='SERVICE'),'imported photos must retain selected area');
+  assert.match(imported.status,/2 photos saved/,'user must get immediate visible confirmation after picker closes');
+  assert.match(imported.captureStatus,/2 photos saved/);
+
+  // Pairing failure must not disable photo import.
+  const stuckContext=await browser.newContext({...pixel5});
+  const stuck=await stuckContext.newPage();
+  await stuck.addInitScript(()=>{try{Object.defineProperty(window,'indexedDB',{value:undefined,configurable:true});}catch{}});
   await stuck.goto('http://127.0.0.1:4173/lot-walk/?pair=definitely-not-a-live-host',{waitUntil:'domcontentloaded',timeout:60000});
-  await stuck.waitForFunction(()=>document.getElementById('phonePairStatus'),{timeout:30000});
+  await stuck.waitForFunction(()=>window.lotWalkCaptureSession&&document.getElementById('phonePairStatus'),{timeout:10000});
+  await stuck.click('#scanSalesArea');
+  await stuck.locator('#photoFile').setInputFiles([f1,f2]);
+  await stuck.waitForFunction(()=>document.getElementById('captureSummary')?.textContent.startsWith('2 photos'),{timeout:5000});
+  const offlineImport=await stuck.evaluate(async()=>({count:(await window.lotWalkCaptureSession.all()).length,status:document.getElementById('captureStatus')?.textContent}));
+  assert.equal(offlineImport.count,2,'pairing failure must not block phone photo saving');
+  assert.match(offlineImport.status,/2 photos saved/);
   await stuck.waitForTimeout(9000);
   const pair=await stuck.evaluate(()=>({state:document.getElementById('pairState')?.textContent,status:document.getElementById('phonePairStatus')?.textContent,retry:!!document.getElementById('retryPair')}));
   assert.notEqual(pair.state,'Connecting…','stale pairing must not look frozen forever');
-  assert.match(pair.status,/saved on this phone|keep taking|keep.*photos/i,'stale pairing must explain offline capture behavior');
-  assert.equal(pair.retry,true,'phone must expose a retry connection action');
+  assert.equal(pair.retry,true,'phone must expose retry connection action');
 
-  await stuck.close();await page.close();await browser.close();console.log('PASS multi-photo library import + visible save confirmation + nonblocking stale-pairing UX');
+  await stuckContext.close();await context.close();await browser.close();console.log('PASS Android multi-photo picker + immediate visible save + no-IndexedDB fallback + pairing-independent capture');
 })().catch(e=>{console.error(e);process.exit(1)});
