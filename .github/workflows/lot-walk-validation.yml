@@ -17,7 +17,7 @@ jobs:
         run: |
           node --check lot-walk/app.js
           node --check lot-walk/enhancements.js
-          node --check lot-walk/pairing-turn.js
+          node --check lot-walk/peer-config.js
           node --check lot-walk/pairing.js
           node --check lot-walk/capture-session.js
           node --check lot-walk/pairing-reliability.js
@@ -40,8 +40,9 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Browser OCR, capture session, pairing, and photo import smoke
+      - name: Browser OCR, Android capture, and device pairing regression
         run: |
           python3 -m http.server 4173 >/tmp/lotwalk-http.log 2>&1 &
           node lot-walk/validation/browser-smoke.test.js
           node lot-walk/validation/photo-import.test.js
+          node lot-walk/validation/pair-device.test.js
